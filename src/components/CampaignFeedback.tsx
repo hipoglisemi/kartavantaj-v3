@@ -65,13 +65,10 @@ export default function CampaignFeedback({ campaignId }: CampaignFeedbackProps) 
         // But the user said "remove warning", implying they want it to work. 
         // We will allow the UI interaction.
 
-        let newVote = type;
-
         if (previousVote === type) {
             // Toggle off
             setVote(null);
             setCounts(prev => ({ ...prev, [type]: prev[type] - 1 }));
-            newVote = null as any; // Trigger delete logic or similar
         } else {
             // New vote
             setVote(type);
