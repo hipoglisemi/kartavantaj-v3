@@ -1,0 +1,326 @@
+
+
+<!DOCTYPE html>
+
+<html dir="ltr" lang="tr">
+<head><meta charset="UTF-8" /><title>
+	Bankkart
+</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5, user-scalable=yes" />
+<meta name="description" content="" />
+<meta name="keywords" content="" />
+<meta name="rating" content="General" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+        <meta name="robots" content="all" />
+        <link rel="canonical" href="https://bankkart.com.tr/" />
+    
+
+<meta name="googlebot" content="NOODP" />
+<meta name="revisit-after" content="2 days" />
+
+
+
+
+<link rel="shortcut icon" href="/favicon.ico">
+
+<meta name="pagecategory" content="" />
+<!-- FACEBOOK GRAPH -->
+<meta property="og:title" content="Bankkart" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://bankkart.com.tr/" />
+<meta property="og:image" content="" />
+<meta property="og:image:width" content="200" />
+<meta property="og:image:height" content="200" />
+<meta property="og:description" content="" />
+<!-- Twitter Metas -->
+<meta property="twitter:card" content="summary" />
+<meta property="twitter:site" content="@Bankkart" />
+<meta property="twitter:title" content="Bankkart" />
+<meta property="twitter:url" content="https://bankkart.com.tr/" />
+<meta property="twitter:image" content="" />
+<meta property="twitter:description" content="" />
+
+<!--[if lt IE 9]>
+	<script src="/_assets/js/const/html5shiv.min.js"></script>
+	<script src="/_assets/js/const/respond.min.js"></script>
+<![endif]-->
+
+<link rel="stylesheet" type="text/css" href="/_assets/css/print.css" media="print" />
+
+<!-- Matomo - Bankkart - Live-->
+<script>
+    var _paq = window._paq = window._paq || [];
+    _paq.push(["setCookieDomain", "*.bankkart.com.tr"]);
+    _paq.push(["setDomains", ["*.bankkart.com.tr"]]);
+    _paq.push(['trackPageView']);
+    _paq.push(['enableLinkTracking']);
+    (function () {
+        var u = "//zbmatomoapp.ziraatbank.com.tr/";
+        _paq.push(['setTrackerUrl', u + 'matomo.php']);
+        _paq.push(['setSiteId', '2']);
+        var d = document,
+            g = d.createElement('script'),
+            s = d.getElementsByTagName('script')[0];
+        g.async = true;
+        g.src = u + 'matomo.js';
+        s.parentNode.insertBefore(g, s);
+    })();
+</script>
+<noscript>
+    <p><img src="//zbmatomoapp.ziraatbank.com.tr/matomo.php?idsite=2&amp;rec=1" style="border:0;" alt="" /></p>
+</noscript>
+<!-- End Matomo Code --><link href="/magiclick.min.css?v=8PqP9TRkoaasJWyswGubXZmMC0sU1MaealKilMkoEH41" type="text/css" rel="stylesheet" media="screen"/>
+
+</head>
+<body class='subpage'>
+    <form method="post" action="./bankkart-logo.png?404%3bhttp%3a%2f%2fwww.bankkart.com.tr%3a80%2fassets%2fimg%2fbankkart-logo.png" id="aspnetForm">
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="wvVIOL86hQrVcavCFdcturGi5EYdTyylht3tYOaK1aDbrRVk7ABSFz8dWEduYwcvG/gYtRveQDSMwCyyRHsHKqhAHa4jzbR+3M+cMIkYpczRjgZ1" />
+
+<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="EF4C4D19" />
+<input type="hidden" name="__VIEWSTATEENCRYPTED" id="__VIEWSTATEENCRYPTED" value="" />
+<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="IGYQ7xkOFXgcV7ZSs1FiFt+b8r9YOZSCfIh8sYlGoW3Ad9/Z8+usN04PmGnEInY+Yd37zb+C/K8m9LKoEWJMP3OZ9GrERd5Gr7uWJJlA2REd+H4qie8fBPlKZZGDT/ogUngn5b9e7ZwucoFOFB+ZI49gO31BeQ+opwkwlf5chjOAnlyCxpjoVoRgI9ZnoXfBtDoPfA==" />
+
+        <div class="global-container">
+            <header>
+                <div class="logo">
+                    <a href="/">
+                        <img src="/_assets/img/logo-v3.png" alt="BankKart">
+                    </a>
+                </div>
+                <div class="main-menu">
+                    <div class="top">
+                        <nav class="top-menu">
+                            <ul>
+                                <li class="hidden-xs">
+                                    <a href="/bankkart-genc-akademi">BANKKART GENÇ AKADEMİ</a>
+                                </li>
+                                <li>
+                                    <a href="/bankkart-mobil">BANKKART MOBİL</a>
+                                </li>
+                                <li class="hidden-xs">
+                                    <a href="/hesaplama-araclari">HESAPLAMALAR</a>
+                                </li>
+                                <li class="hidden-xs">
+                                    <a href="/faiz-oranlari-ve-ucretler">FAİZ VE ÜCRETLER</a>
+                                </li>
+                                <li class="sub-menu">
+                                    <a href="#">İNTERNET ŞUBESİ</a>
+                                    <ul>
+                                        <li><a href="javascript:;" class="individual-link" onclick="GLOBAL.OpenPopup('https://bireysel.ziraatbank.com.tr/NewIB/Transactions/Login/FirstLogin.aspx?customertype=rtl');">BİREYSEL</a></li>
+                                        <li><a href="javascript:;" class="corporate-link" onclick="GLOBAL.OpenPopup('https://kurumsal.ziraatbank.com.tr/NewIB/Transactions/Login/FirstLogin.aspx?customertype=crp');">KURUMSAL</a></li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                    <div class="bottom">
+                        
+<div class="mobile-nav">
+    <span class="line"></span>
+    <span class="line"></span>
+    <span class="line"></span>
+</div>
+<nav class="menu">
+    <ul>
+        
+                <li >
+                    <a id="ctrlMainMenu_rptTopMenu_menuLink_0" href="/kartlar" href="javascript:__doPostBack(&#39;ctl00$ctrlMainMenu$rptTopMenu$ctl00$menuLink&#39;,&#39;&#39;)">Kartlar</a>
+                    
+                </li>
+            
+                <li >
+                    <a id="ctrlMainMenu_rptTopMenu_menuLink_1" href="/kart-ozellikleri" href="javascript:__doPostBack(&#39;ctl00$ctrlMainMenu$rptTopMenu$ctl01$menuLink&#39;,&#39;&#39;)">BANKKART DÜNYASI</a>
+                    
+                </li>
+            
+                <li >
+                    <a id="ctrlMainMenu_rptTopMenu_menuLink_2" href="/kampanyalar" href="javascript:__doPostBack(&#39;ctl00$ctrlMainMenu$rptTopMenu$ctl02$menuLink&#39;,&#39;&#39;)">Kampanyalar</a>
+                    
+                </li>
+            
+                <li >
+                    <a id="ctrlMainMenu_rptTopMenu_menuLink_3" href="/basvurular-ve-islemler" href="javascript:__doPostBack(&#39;ctl00$ctrlMainMenu$rptTopMenu$ctl03$menuLink&#39;,&#39;&#39;)">Başvurular & İşlemler</a>
+                    <div id="ctrlMainMenu_rptTopMenu_ctrlSubMenu_3">
+
+</div>
+                </li>
+            
+                <li >
+                    <a id="ctrlMainMenu_rptTopMenu_menuLink_4" href="/prestij-dijital-dergi" target="_blank" href="javascript:__doPostBack(&#39;ctl00$ctrlMainMenu$rptTopMenu$ctl04$menuLink&#39;,&#39;&#39;)">Prestij <span>Dijital Dergi</span></a>
+                    
+                </li>
+            
+
+        <li class="visible-xs">
+            <a href="/bankkart-mobil">BANKKART MOBİL</a>
+        </li>
+        <li class="visible-xs">
+            <a href="/hesaplama-araclari">HESAPLAMALAR</a>
+        </li>
+        <li class="visible-xs">
+            <a href="/faiz-oranlari-ve-ucretler">FAİZ VE ÜCRETLER</a>
+        </li>
+         <li class="visible-xs">
+                                    <a href="/bankkart-genc-akademi">BANKKART GENÇ AKADEMİ</a>
+        </li>
+    </ul>
+</nav>
+
+                        <div class="header-seach">
+                            <a href="javascript:;"><i class="icon-search-campaigns"></i></a>
+                            <div class="search-box-container">
+                                <div class="search-box">
+                                    <input type="text" maxlength="50" autocomplete="off" class="form-control only-noChar" placeholder="Arama yapın">
+                                    <a href="javascript:;" class="btn btn-default search-button">ARA</a>
+                                    <a href="javascript:;" class="search-close"><i class="icon-close"></i></a>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </header>
+
+            <div class="main-content">
+                
+    <div class="container">
+        <div class="subpage-detail full-width ">
+
+            <div class="error-page">
+                <i class="icon-warning"></i>
+                <div class="text">
+                    <h1>Aradığınız sayfaya ulaşılamıyor <span>(HTTP 404)</span></h1>
+                    <p class="lead">Aradığınız sayfa sitemizden kaldırılmış ya da adresi (URL) değiştirilmiş olabilir.</p>
+                    <p class="list">Bu sayfaya sitemiz üstündeki başka bir linke, butona ya da yönlendirmeye tıklayarak ulaştıysanız lütfen <a target="_blank" rel="noopener noreferrer" href="https://www.ziraatbank.com.tr/tr/Bankamiz/MusteriIliskileri/Pages/Iletisim-Formu.aspx">bizi bilgilendirin</a>.</p>
+                    <p class="list">Sayfaya doğrudan sayfa adresini yazarak ulaştıysanız adresi hatalı girip girmediğinizi kontrol edin.</p>
+                    <p class="list">Aradığınız içeriğe site içi  <a href="/arama">arama</a> özelliğimizi kullanarak ulaşmayı denebilirsiniz.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                
+            </div>
+
+            <footer>
+
+                
+                
+                    <div class="top">
+                        <div class="row">
+                            <div class="col-xs-12 col-sm-12 col-md-9">
+                                <div class="news">
+                                    <i class="icon-news"></i>
+                                    <div class="desktop hidden-xs">
+                                        
+<ul>
+    
+            <li>
+                 <a href="/duyurular">Bankkart Mobil uygulaması iOS ve Android platformlarında yayında! Sitenin üst kısmında bulunan "Bankkart Mobil" linkini kullanarak uygulama hakkında detaylı bilgi alabilirsiniz.</a>
+            </li>
+        
+            <li>
+                 <a href="/duyurular">Bankkart ile ilgili merak ettiğiniz tüm sorulara Sıkça Sorulan Sorular sayfasında Bankkart başlığı altından erişebilirsiniz.</a>
+            </li>
+        
+</ul>
+
+                                    </div>
+                                    <div class="mobile marquee hidden-lg hidden-md hidden-sm">
+                                        
+<ul>
+    
+            <li>
+                 <a href="/duyurular">Bankkart Mobil uygulaması iOS ve Android platformlarında yayında! Sitenin üst kısmında bulunan "Bankkart Mobil" linkini kullanarak uygulama hakkında detaylı bilgi alabilirsiniz.</a>
+            </li>
+        
+            <li>
+                 <a href="/duyurular">Bankkart ile ilgili merak ettiğiniz tüm sorulara Sıkça Sorulan Sorular sayfasında Bankkart başlığı altından erişebilirsiniz.</a>
+            </li>
+        
+</ul>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xs-12 col-sm-12 col-md-3">
+                                <section class="links">
+<ul class="social-links">
+	<li class="facebook"><a class="ignore-alert" href="https://www.facebook.com/bankkart" target="_blank"><i class="icon-facebook"></i> </a></li>
+	<li class="twitter"><a class="ignore-alert" href="https://twitter.com/bankkart" target="_blank"><i class="icon-x-icon"></i> </a></li>
+	<li class="instagram"><a class="ignore-alert" href="https://www.instagram.com/bankkart/" target="_blank"><i class="icon-instagram"></i> </a></li>
+	<li class="youtube"><a class="ignore-alert" href="https://www.youtube.com/bankkart" target="_blank"><i class="icon-youtube"></i> </a></li>
+</ul>
+</section>
+
+                            </div>
+                        </div>
+                    </div>
+                
+                <div class="bottom">
+                    <nav class="footer-menu">
+<ul>
+	<li><a class="external-link" href="https://www.ziraatbank.com.tr/tr/Bankamiz/MusteriIliskileri/Pages/Iletisim-Formu.aspx" target="_blank">Bize Ulaşın</a></li>
+	<li><a href="/sikca-sorulan-sorular">Sıkça Sorulan Sorular</a></li>
+	<li><a href="/odeme-noktalari">Ödeme Noktaları</a></li>
+	<li><a href="/guvenli-e-ticaret">Güvenli E-Ticaret</a></li>
+	<li><a href="/program-ortaklari">Program Ortakları</a></li>
+	<li><a class="external-link" href="http://www.ziraat.com.tr/tr/diger/SozlesmelerveFormlar/Pages/Sozlesmeler.aspx" target="_blank">Sözleşmeler</a></li>
+</ul>
+</nav>
+
+                    <div class="copyright">
+                        <a href="http://www.ziraat.com.tr" target="_blank" rel="noopener noreferrer">&copy; 2025 T.C. Ziraat Bankası A.Ş.</a>
+                    </div>
+                </div>
+            </footer>
+
+        </div>
+
+    </form>
+
+    <!-- Modal -->
+    <div class="modal modal-default fade" id="modalInline" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button aria-label="Kapat" class="close" data-dismiss="modal" type="button"><span aria-hidden="true"><i class="icon-close"></i></span></button>
+                    <h4 class="modal-title"></h4>
+                </div>
+                <div class="modal-body" id="isModalBody"></div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal -->
+
+    
+
+    <script src="/magiclick.min.js?v=XIaTNYuawobVSp8nefkhh4rM75nFuXhqiBd8rMNj9K01"></script>
+
+    <script src="/animate-icons.min.js?v=xhCjhnMHNOVyczmORsLejK6Xv50FUMy-6ZOpJs4oLC81"></script>
+
+
+    <script src="/modules.min.js?v=fy1_YnBVTv410MT8P7RkTE6ATetrtMScu_Xk1bK60xo1"></script>
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+
+</body>
+</html> 

@@ -1,0 +1,46 @@
+export interface Subscriber {
+    id: number;
+    email: string;
+    date: string;
+    source: string;
+}
+
+const STORAGE_KEY = 'newsletter_subscribers';
+
+const initialSubscribers: Subscriber[] = [
+    { id: 1, email: 'caner@test.com', date: '02.05.2024', source: 'Footer' },
+    { id: 2, email: 'merve@test.com', date: '02.05.2024', source: 'Pop-up' },
+    { id: 3, email: 'selim@test.com', date: '01.05.2024', source: 'Kampanya Detay' },
+];
+
+export const newsletterService = {
+    getSubscribers: (): Subscriber[] => {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (!stored) {
+            // Seed initial data if empty
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(initialSubscribers));
+            return initialSubscribers;
+        }
+        return JSON.parse(stored);
+    },
+
+    subscribe: (email: string, source: string = 'Footer'): boolean => {
+        const subscribers = newsletterService.getSubscribers();
+
+        // Check if already exists
+        if (subscribers.some(s => s.email === email)) {
+            return false;
+        }
+
+        const newSubscriber: Subscriber = {
+            id: Date.now(),
+            email,
+            date: new Date().toLocaleDateString('tr-TR'),
+            source
+        };
+
+        const updated = [newSubscriber, ...subscribers];
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+        return true;
+    }
+};

@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global Scale Preference */
+html {
+  zoom: 0.8;
+  /* Chrome, Edge, Safari */
+  min-height: 100%;
+}
+
+/* Firefox Specific Scale */
+@supports (-moz-appearance:none) {
+  html {
+    transform: scale(0.8);
+    transform-origin: 0 0;
+    width: 125%;
+    height: 125%;
+    overflow-x: hidden;
+  }
+}
+
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  /* Göz yormayan, çok hafif gri-mavi tonu (Slate-50) */
+  background-color: #f8fafc;
+  color: #0f172a;
+  /* Yazılar koyu lacivert (Tam siyah değil) */
+
+  /* Yazı pürüzsüzleştirme */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar Tasarımı (Light Mode uyumlu) */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Mascot Animations */
+@keyframes fly-in-land {
+  0% {
+    transform: translateX(-100vw) translateY(-20px) rotate(5deg);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  80% {
+    transform: translateX(-10px) translateY(-15px) rotate(-5deg);
+  }
+
+  100% {
+    transform: translateX(0) translateY(0) rotate(0deg);
+  }
+}
+
+@keyframes blink-squash {
+
+  0%,
+  45%,
+  55%,
+  100% {
+    transform: scaleY(1);
+  }
+
+  50% {
+    transform: scaleY(0.1);
+  }
+}
+
+.animate-fly-in-land {
+  animation: fly-in-land 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.animate-blink {
+  animation: blink-squash 20s infinite;
+  transform-origin: bottom center;
+}
