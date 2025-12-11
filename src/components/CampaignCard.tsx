@@ -15,10 +15,13 @@ const closeModal = () => {
   setSelectedCampaignId(null);
 };
 */
+import { normalizeTurkish } from '../utils/turkishStringHelper';
+
 const getBadgeStyle = (data: CampaignProps) => {
   // Combine all relevant text fields to check for keywords
   // Priority: Title > BadgeText > Earning
-  const combinedText = (data.title + ' ' + data.badgeText + ' ' + (data.earning || '')).toLowerCase();
+  const rawText = data.title + ' ' + data.badgeText + ' ' + (data.earning || '');
+  const combinedText = normalizeTurkish(rawText);
 
   // 1. TAKSİT (Öncelikli)
   // Pastel Mint - Taksit imkanı yeşil güven verir
