@@ -414,7 +414,7 @@ export default function HomePage() {
                         <button
                             onClick={toggleWalletFilter}
                             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold transition-all text-sm border shadow-sm ${isWalletFilterActive
-                                ? 'bg-purple-600 text-white border-purple-600 ring-2 ring-purple-100'
+                                ? 'bg-slate-800 text-white border-slate-800 ring-2 ring-slate-100'
                                 : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
                                 }`}
                         >
@@ -435,7 +435,7 @@ export default function HomePage() {
                     {(selectedFilters.banks.length > 0 || selectedFilters.cards.length > 0 || selectedFilters.categories.length > 0 || selectedFilters.brands.length > 0) && (
                         <div className="flex flex-wrap gap-2 mb-4 animate-in fade-in slide-in-from-top-1">
                             {selectedFilters.banks.map(f => (
-                                <button key={`bank-${f}`} onClick={() => handleFilterChange('banks', f)} className="flex items-center gap-1 px-2.5 py-1 bg-purple-50 text-purple-700 text-xs rounded-full border border-purple-100 hover:bg-purple-100 transition-colors group">
+                                <button key={`bank-${f}`} onClick={() => handleFilterChange('banks', f)} className="flex items-center gap-1 px-2.5 py-1 bg-slate-100 text-slate-700 text-xs rounded-full border border-slate-200 hover:bg-slate-200 transition-colors group">
                                     <span className="font-medium">{f}</span> <X size={12} className="group-hover:scale-110" />
                                 </button>
                             ))}
@@ -450,7 +450,7 @@ export default function HomePage() {
                                 </button>
                             ))}
                             {selectedFilters.brands.map(f => (
-                                <button key={`brand-${f}`} onClick={() => handleFilterChange('brands', f)} className="flex items-center gap-1 px-2.5 py-1 bg-pink-50 text-pink-700 text-xs rounded-full border border-pink-100 hover:bg-pink-100 transition-colors group">
+                                <button key={`brand-${f}`} onClick={() => handleFilterChange('brands', f)} className="flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs rounded-full border border-emerald-100 hover:bg-emerald-100 transition-colors group">
                                     {f} <X size={12} className="group-hover:scale-110" />
                                 </button>
                             ))}
@@ -478,7 +478,7 @@ export default function HomePage() {
                             <p className="text-gray-500 text-lg">Seçilen kriterlere uygun kampanya bulunamadı.</p>
                             <button
                                 onClick={() => setSelectedFilters({ banks: [], cards: [], categories: [], brands: [] })}
-                                className="mt-4 text-purple-600 hover:text-purple-700 font-medium hover:underline"
+                                className="mt-4 text-slate-600 hover:text-slate-800 font-medium hover:underline"
                             >
                                 Filtreleri Temizle
                             </button>
@@ -504,7 +504,7 @@ export default function HomePage() {
             {/* Scroll To Top Button */}
             <button
                 onClick={scrollToTop}
-                className={`fixed bottom-8 right-8 z-40 p-3 bg-white text-purple-600 rounded-full shadow-xl border border-purple-100 transition-all duration-300 transform hover:scale-110 ${showScrollTop ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0 pointer-events-none'}`}
+                className={`fixed bottom-8 right-8 z-40 p-3 bg-white text-slate-600 rounded-full shadow-xl border border-gray-200 transition-all duration-300 transform hover:scale-110 ${showScrollTop ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0 pointer-events-none'}`}
             >
                 <ChevronDown className="rotate-180" size={24} />
             </button>

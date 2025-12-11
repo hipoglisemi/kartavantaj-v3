@@ -20,19 +20,19 @@ const getGradient = (data: CampaignProps) => {
   const combinedText = (data.title + data.badgeText + (data.earning || '')).toLowerCase();
 
   if (combinedText.includes('puan') || combinedText.includes('chip') || combinedText.includes('bonus')) {
-    return 'bg-gradient-to-r from-purple-500 to-indigo-500'; // Puan: Mor/İndigo
+    return 'bg-indigo-500'; // Puan: Mat İndigo
   }
   if (combinedText.includes('taksit') || combinedText.includes('vade')) {
-    return 'bg-gradient-to-r from-emerald-400 to-green-500'; // Taksit: Yeşil
+    return 'bg-emerald-500'; // Taksit: Mat Yeşil
   }
   if (combinedText.includes('indirim') || combinedText.includes('iade') || combinedText.includes('nakit')) {
-    return 'bg-gradient-to-r from-blue-400 to-cyan-400'; // İndirim: Mavi
+    return 'bg-blue-500'; // İndirim: Mat Mavi
   }
 
   // Default based on category if no specific keyword found, or generic fallback
   switch (data.category) {
-    case 'Market': return 'bg-gradient-to-r from-amber-400 to-orange-400';
-    default: return 'bg-gradient-to-r from-pink-500 to-rose-500'; // Generic: Pembe
+    case 'Market': return 'bg-orange-500';
+    default: return 'bg-rose-500'; // Generic: Mat Gül
   }
 };
 
@@ -155,7 +155,7 @@ export default function CampaignCard({ data, isAdmin }: { data: CampaignProps, i
   const remainingDays = getRemainingDays(data.validUntil);
 
   return (
-    <div className="group bg-pastel-red rounded-xl border border-red-50/50 overflow-hidden hover:shadow-[0_8px_30px_rgb(225,29,72,0.1)] transition-all duration-300 hover:-translate-y-1 flex flex-col h-full relative">
+    <div className="group bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col h-full relative">
 
       {/* Admin Edit Overlay Icon */}
       {isAdmin && (
@@ -165,24 +165,24 @@ export default function CampaignCard({ data, isAdmin }: { data: CampaignProps, i
       )}
 
       {/* Resim Alanı */}
-      <div className="relative h-40 overflow-hidden bg-white">
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      <div className="relative h-40 overflow-hidden bg-white border-b border-gray-100">
+        <div className="absolute inset-0 bg-black/5 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         <img
           src={data.image}
           alt={data.title}
-          className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-700"
+          className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-700"
         />
       </div>
 
       {/* Content Section */}
-      <div className="p-3 flex-1 flex flex-col">
+      <div className="p-4 flex-1 flex flex-col">
         {/* Title */}
-        <h3 className="text-[13px] font-medium text-gray-800 mb-2 line-clamp-3 leading-tight group-hover:text-pink-600 transition-colors min-h-[3rem]">
+        <h3 className="text-[13px] font-medium text-gray-800 mb-3 line-clamp-3 leading-tight group-hover:text-gray-900 transition-colors min-h-[3rem]">
           {data.title}
         </h3>
 
-        {/* Kazanç / İndirim Şeridi (Gradient) */}
-        <div className={`h-6 flex items-center justify-center text-[11px] font-bold text-white rounded-b-lg shadow-sm ${getGradient(data)}`}>
+        {/* Kazanç / İndirim Şeridi (Flat Color) */}
+        <div className={`h-6 flex items-center justify-center text-[10px] font-bold text-white rounded-md shadow-sm opacity-90 ${getGradient(data)}`}>
           {data.earning || data.discount || data.badgeText}
         </div>
         {/* Bitiş Etiketi (Sağ Üst) */}

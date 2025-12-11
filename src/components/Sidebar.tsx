@@ -3,10 +3,10 @@ import { useState } from 'react';
 import { settingsService } from '../services/settingsService';
 import { sortTurkish } from '../utils/turkishStringHelper';
 
-// Custom Purple Colors from Guide
-const BRAND_PURPLE = '#974063';
-const BRAND_PURPLE_LIGHT = 'rgba(151, 64, 99, 0.1)';
-const BRAND_PURPLE_BORDER = 'rgba(151, 64, 99, 0.2)';
+// Custom Purple Colors from Guide -> Updated to Matte Slate (Clean & Pastel)
+const BRAND_PURPLE = '#334155'; // Slate-700
+const BRAND_PURPLE_LIGHT = 'rgba(51, 65, 85, 0.08)'; // Slate-50 equivalent
+const BRAND_PURPLE_BORDER = 'rgba(51, 65, 85, 0.15)';
 
 interface FilterSectionProps {
   title: string;
