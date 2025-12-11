@@ -15,24 +15,30 @@ const closeModal = () => {
   setSelectedCampaignId(null);
 };
 */
-const getGradient = (data: CampaignProps) => {
+const getBadgeStyle = (data: CampaignProps) => {
   // Combine text fields to check for keywords
   const combinedText = (data.title + data.badgeText + (data.earning || '')).toLowerCase();
 
-  if (combinedText.includes('puan') || combinedText.includes('chip') || combinedText.includes('bonus')) {
-    return 'bg-indigo-500'; // Puan: Mat İndigo
-  }
+  // PASTEL RENK PALETİ (Owl Eyes Inspired & Matte)
+  // Taksit: Pastel Mint (Soft Green)
   if (combinedText.includes('taksit') || combinedText.includes('vade')) {
-    return 'bg-emerald-500'; // Taksit: Mat Yeşil
+    return 'bg-[#d1fae5] text-[#065f46]'; // emerald-100 bg, emerald-800 text
   }
+  // Puan: Pastel Periwinkle (Soft Indigo)
+  if (combinedText.includes('puan') || combinedText.includes('chip') || combinedText.includes('bonus')) {
+    return 'bg-[#e0e7ff] text-[#3730a3]'; // indigo-100 bg, indigo-800 text
+  }
+  // İndirim: Pastel Sky (Soft Blue)
   if (combinedText.includes('indirim') || combinedText.includes('iade') || combinedText.includes('nakit')) {
-    return 'bg-blue-500'; // İndirim: Mat Mavi
+    return 'bg-[#dbeafe] text-[#1e40af]'; // blue-100 bg, blue-800 text
   }
 
-  // Default based on category if no specific keyword found, or generic fallback
+  // Default based on category
   switch (data.category) {
-    case 'Market': return 'bg-orange-500';
-    default: return 'bg-rose-500'; // Generic: Mat Gül
+    case 'Market': return 'bg-[#ffedd5] text-[#9a3412]'; // orange-100, orange-800
+    case 'Giyim': return 'bg-[#fce7f3] text-[#9d174d]'; // pink-100, pink-800
+    case 'Elektronik': return 'bg-[#f3f4f6] text-[#1f2937]'; // gray-100, gray-800
+    default: return 'bg-[#f1f5f9] text-[#334155]'; // slate-100, slate-700 (General Owl Gray)
   }
 };
 
@@ -181,8 +187,8 @@ export default function CampaignCard({ data, isAdmin }: { data: CampaignProps, i
           {data.title}
         </h3>
 
-        {/* Kazanç / İndirim Şeridi (Flat Color) */}
-        <div className={`h-6 flex items-center justify-center text-[10px] font-bold text-white rounded-md shadow-sm opacity-90 ${getGradient(data)}`}>
+        {/* Kazanç / İndirim Şeridi (Pastel & Matte) */}
+        <div className={`h-6 flex items-center justify-center text-[10px] font-bold rounded-md shadow-sm ${getBadgeStyle(data)}`}>
           {data.earning || data.discount || data.badgeText}
         </div>
         {/* Bitiş Etiketi (Sağ Üst) */}
