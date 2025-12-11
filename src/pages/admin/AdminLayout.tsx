@@ -57,17 +57,7 @@ export default function AdminLayout() {
     const navigate = useNavigate();
     const location = useLocation();
 
-    useEffect(() => {
-        // Admin yetki kontrolü
-        const isAdmin = localStorage.getItem('isAdmin');
-        const setupComplete = localStorage.getItem('admin_setup_complete');
-        
-        if (isAdmin !== 'true') {
-            navigate('/panel/login');
-        } else if (setupComplete !== 'true') {
-            navigate('/panel/setup');
-        }
-    }, [navigate]);
+    // Yetki kontrolü kaldırıldı - sadece UI render edilir
 
     // Data Source Check
     const campaigns = campaignService.getCampaigns();

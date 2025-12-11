@@ -15,6 +15,15 @@ export default function AdminDashboard() {
     const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
     const [openBankId, setOpenBankId] = useState<string | null>(null);
 
+    // Yetki kontrolü
+    useEffect(() => {
+        const isAdmin = localStorage.getItem('isAdmin');
+        if (isAdmin !== 'true') {
+            navigate('/panel');
+            return;
+        }
+    }, [navigate]);
+
     // Modal State
     const [confirmModal, setConfirmModal] = useState<{
         isOpen: boolean;
