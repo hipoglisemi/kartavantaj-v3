@@ -54,32 +54,126 @@ const router = createBrowserRouter([
   },
   {
     path: "/panel",
+    element: <AdminLogin />,
+  },
+  {
+    path: "/panel/setup",
+    element: <AdminSetup />,
+  },
+  {
+    path: "/panel/login",
+    element: <AdminLogin />,
+  },
+  {
+    path: "/panel/dashboard",
+    element: <AdminLayout />,
     children: [
-      { index: true, element: <AdminLogin /> },
-      { path: "setup", element: <AdminSetup /> },
-      { path: "login", element: <AdminLogin /> },
-      {
-        path: "*",
-        element: <AdminLayout />,
-        children: [
-          { path: "dashboard", element: <AdminDashboard /> },
-          { path: "analytics", element: <AdminAnalytics /> },
-          { path: "members", element: <AdminMembers /> },
-          { path: "newsletter", element: <AdminNewsletter /> },
-          { path: "campaigns", element: <AdminCampaigns /> },
-          { path: "advanced", element: <div className="p-10">Gelişmiş ayarlar yakında...</div> },
-          { path: "bulk-upload", element: <AdminBulkUpload /> },
-          { path: "scrapers", element: <AdminScrapers /> },
-          { path: "integrations", element: <AdminIntegrations /> },
-          { path: "settings", element: <AdminSettings /> },
-          { path: "audience", element: <div className="p-10">Kitle analizleri yakında...</div> },
-          { path: "seo", element: <AdminSeo /> },
-          { path: "ai", element: <AdminAI /> },
-          { path: "logos", element: <AdminLogos /> },
-          { path: "design", element: <AdminDesign /> },
-          { path: "backup", element: <AdminBackup /> },
-        ]
-      }
+      { index: true, element: <AdminDashboard /> },
+    ]
+  },
+  {
+    path: "/panel/analytics",
+    element: <AdminLayout />,
+    children: [
+      { index: true, element: <AdminAnalytics /> },
+    ]
+  },
+  {
+    path: "/panel/members",
+    element: <AdminLayout />,
+    children: [
+      { index: true, element: <AdminMembers /> },
+    ]
+  },
+  {
+    path: "/panel/newsletter",
+    element: <AdminLayout />,
+    children: [
+      { index: true, element: <AdminNewsletter /> },
+    ]
+  },
+  {
+    path: "/panel/campaigns",
+    element: <AdminLayout />,
+    children: [
+      { index: true, element: <AdminCampaigns /> },
+    ]
+  },
+  {
+    path: "/panel/bulk-upload",
+    element: <AdminLayout />,
+    children: [
+      { index: true, element: <AdminBulkUpload /> },
+    ]
+  },
+  {
+    path: "/panel/scrapers",
+    element: <AdminLayout />,
+    children: [
+      { index: true, element: <AdminScrapers /> },
+    ]
+  },
+  {
+    path: "/panel/integrations",
+    element: <AdminLayout />,
+    children: [
+      { index: true, element: <AdminIntegrations /> },
+    ]
+  },
+  {
+    path: "/panel/settings",
+    element: <AdminLayout />,
+    children: [
+      { index: true, element: <AdminSettings /> },
+    ]
+  },
+  {
+    path: "/panel/seo",
+    element: <AdminLayout />,
+    children: [
+      { index: true, element: <AdminSeo /> },
+    ]
+  },
+  {
+    path: "/panel/ai",
+    element: <AdminLayout />,
+    children: [
+      { index: true, element: <AdminAI /> },
+    ]
+  },
+  {
+    path: "/panel/logos",
+    element: <AdminLayout />,
+    children: [
+      { index: true, element: <AdminLogos /> },
+    ]
+  },
+  {
+    path: "/panel/design",
+    element: <AdminLayout />,
+    children: [
+      { index: true, element: <AdminDesign /> },
+    ]
+  },
+  {
+    path: "/panel/backup",
+    element: <AdminLayout />,
+    children: [
+      { index: true, element: <AdminBackup /> },
+    ]
+  },
+  {
+    path: "/panel/advanced",
+    element: <AdminLayout />,
+    children: [
+      { index: true, element: <div className="p-10">Gelişmiş ayarlar yakında...</div> },
+    ]
+  },
+  {
+    path: "/panel/audience",
+    element: <AdminLayout />,
+    children: [
+      { index: true, element: <div className="p-10">Kitle analizleri yakında...</div> },
     ]
   },
   {
