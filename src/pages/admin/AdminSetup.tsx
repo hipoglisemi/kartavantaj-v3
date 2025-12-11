@@ -15,12 +15,10 @@ export default function AdminSetup() {
     });
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [isSetupComplete, setIsSetupComplete] = useState(false);
-    const [isResetMode, setIsResetMode] = useState(false);
     const [verificationCode, setVerificationCode] = useState('');
     const [showTotpSetup, setShowTotpSetup] = useState(false);
     const [showCodeInput, setShowCodeInput] = useState(false);
     const [totpSecret, setTotpSecret] = useState('');
-    const [qrCodeUrl, setQrCodeUrl] = useState('');
 
     useEffect(() => {
         // Güvenlik logu - setup sayfasına erişim
@@ -40,7 +38,6 @@ export default function AdminSetup() {
         // URL'den reset parametresini kontrol et
         const resetParam = searchParams.get('reset');
         if (resetParam === 'true') {
-            setIsResetMode(true);
             setShowTotpSetup(true);
             generateTotpSecret();
             return;
@@ -136,14 +133,8 @@ export default function AdminSetup() {
 
     const generateTotpSecret = () => {
         const secret = generateSecret();
-        const adminEmail = localStorage.getItem('admin_email') || 'admin@kartavantaj.com';
-        const issuer = 'KartAvantaj';
-        
-        // Google Authenticator URL formatı
-        const otpUrl = `otpauth://totp/${encodeURIComponent(issuer)}:${encodeURIComponent(adminEmail)}?secret=${secret}&issuer=${encodeURIComponent(issuer)}`;
         
         setTotpSecret(secret);
-        setQrCodeUrl(otpUrl);
         
         // TOTP secret'ı kaydet
         localStorage.setItem('admin_totp_secret', secret);
@@ -231,7 +222,6 @@ export default function AdminSetup() {
         localStorage.removeItem('isAdmin');
         
         setIsSetupComplete(false);
-        setIsResetMode(false);
         setShowTotpSetup(false);
         setShowCodeInput(false);
         setStep(1);
@@ -245,7 +235,6 @@ export default function AdminSetup() {
         setErrors({});
         setVerificationCode('');
         setTotpSecret('');
-        setQrCodeUrl('');
     };
 
     const handleShowResetInfo = () => {
@@ -328,7 +317,6 @@ export default function AdminSetup() {
                             <button
                                 onClick={() => {
                                     setShowTotpSetup(false);
-                                    setIsResetMode(false);
                                     navigate('/panel');
                                 }}
                                 className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
