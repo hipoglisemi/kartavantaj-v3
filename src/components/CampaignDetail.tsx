@@ -1,4 +1,4 @@
-import { Calendar, CreditCard, ArrowRight, Heart, Share2, TrendingUp, Smartphone, Sparkles, Loader2, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { Calendar, CreditCard, ArrowRight, Heart, Share2, TrendingUp, Smartphone, Sparkles, Loader2, ThumbsUp, ThumbsDown, ChevronRight, Home } from 'lucide-react';
 import CampaignCard, { type CampaignProps } from './CampaignCard';
 import { campaignParser } from '../services/campaignParser';
 import { useState, useEffect } from 'react';
@@ -15,9 +15,11 @@ interface CampaignDetailProps {
     isAdmin?: boolean;
     onSave?: (updated: CampaignProps) => void;
     onDelete?: (id: number) => void;
+    onHomeClick?: () => void;
+    onBankClick?: (bankName: string) => void;
 }
 
-export default function CampaignDetail({ data, isAdmin, onSave, onDelete }: CampaignDetailProps) {
+export default function CampaignDetail({ data, isAdmin, onSave, onDelete, onHomeClick, onBankClick }: CampaignDetailProps) {
     const { confirm, alert } = useConfirmation();
     const [user, setUser] = useState<any>(null);
     const [favorited, setFavorited] = useState(false);
@@ -198,11 +200,63 @@ export default function CampaignDetail({ data, isAdmin, onSave, onDelete }: Camp
 
     const providerLogo = data.cardLogo || getProviderLogo(data.bank);
 
+    const handleShare = async () => {
+        const shareData = {
+            title: data.title,
+            text: `${data.bank} - ${data.title}\n${data.description?.substring(0, 100)}...`,
+            url: window.location.href
+        };
+
+        if (navigator.share) {
+            try {
+                await navigator.share(shareData);
+            } catch (err) {
+                // User cancelled or not supported
+            }
+        } else {
+            // Fallback
+            try {
+                await navigator.clipboard.writeText(window.location.href);
+                await alert('Kampanya linki kopyalandı!', 'Başarılı');
+            } catch (err) {
+                // Ignore
+            }
+        }
+    };
+
+    // Get unique categories for edit dropdown
+    // Let's use dynamic + defaults to be safe
+    const availableCategories = Array.from(new Set([
+        'Giyim', 'Market', 'Elektronik', 'Seyahat', 'Restoran',
+        'Akaryakıt', 'E-Ticaret', 'Kozmetik', 'Eğitim', 'Sağlık', 'Mobilya', 'Diğer',
+        ...allCampaigns.map(c => c.category || 'Diğer')
+    ])).sort();
+
     return (
-        <div className="container mx-auto">
+        <div className="container mx-auto max-w-5xl">
+
+            {/* Breadcrumb */}
+            <div className="flex items-center gap-1.5 text-xs text-gray-400 font-medium mb-3 ml-1 select-none">
+                <div
+                    className={`flex items-center gap-1 transition-colors ${onHomeClick ? 'cursor-pointer hover:text-gray-600' : ''}`}
+                    onClick={onHomeClick}
+                >
+                    <Home size={12} />
+                    <span>Anasayfa</span>
+                </div>
+                <ChevronRight size={10} className="text-gray-300" />
+                <span
+                    className={`transition-colors ${onBankClick ? 'cursor-pointer hover:text-gray-600' : ''}`}
+                    onClick={() => onBankClick && onBankClick(data.bank)}
+                >
+                    {data.bank}
+                </span>
+                <ChevronRight size={10} className="text-gray-300" />
+                <span className="text-purple-600 truncate max-w-[200px] md:max-w-xs">{data.title}</span>
+            </div>
 
             {/* Hero Alanı (Split Layout) */}
-            <div className="bg-white rounded-2xl shadow-lg overflow-hidden flex flex-col md:flex-row mb-8 relative">
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden flex flex-col md:flex-row mb-6 relative">
 
                 {/* Admin Edit Button */}
                 {isAdmin && (
@@ -253,19 +307,19 @@ export default function CampaignDetail({ data, isAdmin, onSave, onDelete }: Camp
                 )}
 
                 {/* Sol: Görsel */}
-                <div className="md:w-1/2 h-64 md:h-auto relative group">
+                <div className="md:w-1/2 h-56 md:h-auto relative group">
                     <img
                         src={data.image}
                         alt={data.title}
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
                     {/* Banka Logosu (Sol Üst) */}
-                    <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-md px-4 py-2 rounded-xl shadow-lg z-10 border border-gray-100 min-w-[100px] flex items-center justify-center">
+                    <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-xl shadow-lg z-10 border border-gray-100 min-w-[80px] flex items-center justify-center">
                         {providerLogo ? (
                             <img
                                 src={providerLogo}
                                 alt={data.bank}
-                                className="object-contain max-h-10 w-auto"
+                                className="object-contain max-h-8 w-auto"
                             />
                         ) : (
                             <span className="text-gray-800 text-sm font-bold">{data.bank}</span>
@@ -279,382 +333,270 @@ export default function CampaignDetail({ data, isAdmin, onSave, onDelete }: Camp
                 </div>
 
                 {/* Sağ: Başlık ve Açıklama */}
-                <div className="md:w-1/2 p-6 md:p-8 flex flex-col justify-center">
-                    <div className="flex items-center justify-between mb-4">
-                        const CATEGORIES = [
-                        'Market', 'Akaryakıt', 'Giyim', 'Elektronik', 'Restoran',
-                        'Seyahat', 'E-Ticaret', 'Sağlık', 'Eğitim', 'Kozmetik',
-                        'Mobilya', 'Genel', 'Diğer', 'Eğlence'
-                        ].sort();
-
-                        export default function CampaignDetail({data, isAdmin, onSave, onDelete}: CampaignDetailProps) {
-                            // ... (rest of the component logic remains initially same until we hit the render part)
-                            // Actually, I can't put the constant inside the replacement if I want to keep the existing code clean.
-                            // The user wants me to edit specific lines. I should probably add the constant at the top of the file in a separate step or just inside the component for simplicity if I can't reach top.
-                            // BUT the replace_file_content tool requires me to be precise. 
-                            // Let's add the constant at the top first, or simply inline the options if it's cleaner. 
-                            // I will use a separate replacement for the rendering logic.
-                            // Wait, I can do it in one go if I include the lines around where I insert.
-                            // But lines 20-280 are huge. 
-                            // I'll stick to replacing the render block at 284. I'll define the constant locally inside the render or just textually.
-
-                            // ...
-                            // Let's just hardcode the options in the select for now or define the array inside the component scope if I don't want to touch imports.
-                            // Better: Helper function or array inside component.
-
-                            // Changing the logic at 284:
-                            /*
-                                                {isEditing ? (
-                                                    <select
-                                                        value={editForm.category}
-                                                        onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
-                                                        className="inline-block px-3 py-1 rounded-full text-xs font-bold bg-gray-100 border border-gray-300 text-gray-700 outline-none focus:ring-2 focus:ring-purple-500"
-                                                    >
-                                                        {['Market', 'Akaryakıt', 'Giyim', 'Elektronik', 'Restoran', 'Seyahat', 'E-Ticaret', 'Sağlık', 'Eğitim', 'Kozmetik', 'Mobilya', 'Genel', 'Diğer', 'Eğlence'].map(cat => (
-                                                            <option key={cat} value={cat}>{cat}</option>
-                                                        ))}
-                                                    </select>
-                                                ) : (
-                                                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${data.badgeColor === 'green' ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700'}`}>
-                                                        {data.category}
-                                                    </span>
-                                                )}
-                            */
-
-                            // The previous tool call I am making right now is asking for replacement content.
-                            // I'll execute the change on the render block.
-
-                            {
-                                isEditing?(
-                            <div className = "flex items-center gap-2" >
-                                        <select
-                                            value={editForm.category}
-                                            onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
-                                            className="px-3 py-1 rounded-full text-xs font-bold bg-white border border-gray-300 text-gray-700 shadow-sm outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer"
-                                        >
-                                            {['Market', 'Akaryakıt', 'Giyim', 'Elektronik', 'Restoran', 'Seyahat', 'E-Ticaret', 'Sağlık', 'Eğitim', 'Kozmetik', 'Mobilya', 'Genel', 'Diğer', 'Eğlence'].sort().map(cat => (
-                                                <option key={cat} value={cat}>{cat}</option>
-                                            ))}
-                                        </select>
-                            </div>
-                    ) : (
-                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${data.badgeColor === 'green' ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700'}`}>
-                        {data.category}
-                    </span>
-                        )}
-                    {/* Kutu (Legacy - Removed Calculator) */}
-                    {!isEditing && (
-                        <div className="flex items-center gap-2">
-                            <CampaignFeedback campaignId={data.id} />
-
-                            <button
-                                onClick={handleFavorite}
-                                className={`p-2 rounded-full transition-all active:scale-95 ${favorited ? 'bg-pink-100 text-pink-600' : 'hover:bg-gray-100 text-gray-500'}`}
-                                title="Favorilere Ekle"
-                            >
-                                <Heart size={20} fill={favorited ? "currentColor" : "none"} />
-                            </button>
-                            <button className="p-2 rounded-full hover:bg-gray-100 text-gray-500 transition-all active:scale-95" title="Paylaş">
-                                <Share2 size={20} />
-                            </button>
-                        </div>
-                    )}
-                </div>
-
-                {aiMessage && (
-                    <div className={`mt-4 p-3 rounded-lg flex items-start gap-2 text-sm ${aiMessage.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
-                        {aiMessage.type === 'success' ? <ThumbsUp size={16} className="mt-0.5" /> : <ThumbsDown size={16} className="mt-0.5" />}
-                        <span>{aiMessage.text}</span>
-                    </div>
-                )}
-
-                {isEditing ? (
-                    <div className="space-y-4">
-                        <input
-                            type="text"
-                            value={editForm.title}
-                            onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-                            className="w-full text-lg font-bold border border-purple-200 rounded-lg p-2 focus:ring-2 focus:ring-purple-500 outline-none"
-                            placeholder="Kampanya Başlığı"
-                        />
-                        <textarea
-                            value={editForm.badgeText}
-                            onChange={(e) => setEditForm({ ...editForm, badgeText: e.target.value })}
-                            className="w-full h-24 border border-purple-200 rounded-lg p-2 focus:ring-2 focus:ring-purple-500 outline-none resize-none text-sm"
-                            placeholder="Açıklama / Rozet Metni"
-                        />
-                    </div>
-                ) : (
-                    <>
-                        <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-2 leading-tight">
-                            {data.title}
-                        </h2>
-                        <p className="text-gray-600 text-[13px] md:text-sm leading-relaxed">
-                            {data.description || `${data.bank} kartlarınızla yapacağınız alışverişlerde kaçırılmayacak fırsatlar sizi bekliyor. Kampanya detaylarını inceleyerek hemen katılın!`}
-                        </p>
-                    </>
-                )}
-            </div>
-        </div>
-
-            {/* Kampanya Detayları - Grid */ }
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
-
-        {/* Kutu 1: Katılım Tarihi */}
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex flex-col gap-2 h-full">
-            <div className="flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-emerald-500" />
-                <h3 className="font-bold text-xs text-gray-900">Katılım Tarihi</h3>
-            </div>
-            <div className="text-[13px] text-gray-600">
-                {isEditing ? (
-                    <div className="space-y-2">
-                        <input
-                            type="text"
-                            placeholder="Başlangıç (Örn: 2024-01-15)"
-                            className="w-full border rounded p-1 text-xs"
-                            value={editForm.valid_from || ''}
-                            onChange={e => setEditForm({ ...editForm, valid_from: e.target.value })}
-                        />
-                        <input
-                            type="text"
-                            placeholder="Bitiş (Örn: 2024-03-31)"
-                            className="w-full border rounded p-1 text-xs"
-                            value={editForm.validUntil || ''}
-                            onChange={e => setEditForm({ ...editForm, validUntil: e.target.value })}
-                        />
-                    </div>
-                ) : (
-                    // Format Logic: Both, Only End, Only Start
-                    (() => {
-                        const start = data.valid_from ? new Date(data.valid_from as string).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }) : null;
-                        const end = data.validUntil ? new Date(data.validUntil as string).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }) : null;
-
-                        if (start && end) return `${start} - ${end}`;
-                        if (end) return `${end} tarihine kadar`;
-                        if (start) return `${start} tarihinden itibaren`;
-                        return 'Belirtilmemiş';
-                    })()
-                )}
-            </div>
-        </div>
-
-        {/* Kutu 2: Avantaj (3 Alt Kutu) */}
-        <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 flex flex-col gap-3 h-full">
-            <div className="flex items-center gap-2">
-                <TrendingUp className="h-6 w-6 text-purple-500" />
-                <h3 className="font-bold text-gray-900">Fırsat Detayları</h3>
-            </div>
-            <div className="space-y-2 mt-1">
-                {/* Harcama */}
-                <div className="bg-red-50 border border-red-100 rounded-lg p-2.5">
-                    <span className="text-[10px] uppercase font-bold text-red-800 block mb-0.5">Harcama</span>
-                    {isEditing ? (
-                        <input
-                            type="number"
-                            className="w-full text-xs border rounded"
-                            value={editForm.min_spend || ''}
-                            onChange={e => setEditForm({ ...editForm, min_spend: parseInt(e.target.value) || 0 })}
-                        />
-                    ) : (
-                        <p className="text-sm font-semibold text-red-950">
-                            {data.min_spend ? `₺${data.min_spend.toLocaleString('tr-TR')}` : (data.spendAmount || '-')}
-                        </p>
-                    )}
-                </div>
-
-                {/* Kazanç */}
-                <div className="bg-green-50 border border-green-100 rounded-lg p-2.5">
-                    <span className="text-[10px] uppercase font-bold text-green-800 block mb-0.5">Kazanç</span>
-                    {isEditing ? (
-                        <input
-                            type="text"
-                            className="w-full text-xs border rounded"
-                            value={editForm.earning || ''}
-                            onChange={e => setEditForm({ ...editForm, earning: e.target.value })}
-                        />
-                    ) : (
-                        <p className="text-sm font-semibold text-green-950">
-                            {data.earning || data.earnAmount || '-'}
-                        </p>
-                    )}
-                </div>
-
-                {/* Ek Avantaj */}
-                <div className="bg-purple-50 border border-purple-100 rounded-lg p-2.5">
-                    <span className="text-[10px] uppercase font-bold text-purple-800 block mb-0.5">Ek Avantaj</span>
-                    {isEditing ? (
-                        <input
-                            type="text"
-                            className="w-full text-xs border rounded"
-                            value={editForm.discount || ''}
-                            onChange={e => setEditForm({ ...editForm, discount: e.target.value })}
-                        />
-                    ) : (
-                        <p className="text-sm font-semibold text-purple-950">
-                            {data.discount || '-'}
-                        </p>
-                    )}
-                </div>
-            </div>
-        </div>
-
-        {/* Kutu 3: Geçerli Kartlar */}
-        <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 flex flex-col gap-3 h-full">
-            <div className="flex items-center gap-2">
-                <CreditCard className="h-6 w-6 text-indigo-500" />
-                <h3 className="font-bold text-gray-900">Geçerli Kartlar</h3>
-            </div>
-            <div>
-                {isEditing ? (
-                    <textarea
-                        className="w-full h-32 text-xs border rounded p-1"
-                        value={editForm.eligible_customers ? editForm.eligible_customers.join(', ') : (editForm.validCards || '')}
-                        onChange={e => setEditForm({ ...editForm, eligible_customers: e.target.value.split(',').map(s => s.trim()) })}
-                        placeholder="Kartları virgülle ayırın"
-                    />
-                ) : (
-                    <p className="text-sm text-gray-600 leading-relaxed">
-                        {data.eligible_customers && data.eligible_customers.length > 0
-                            ? data.eligible_customers.join(', ')
-                            : (data.validCards || data.bank)}
-                    </p>
-                )}
-            </div>
-        </div>
-
-        {/* Kutu 4: Katılım Şekli */}
-        <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 flex flex-col gap-3 h-full">
-            <div className="flex items-center gap-2">
-                <Smartphone className="h-6 w-6 text-amber-500" />
-                <h3 className="font-bold text-gray-900">Katılım Şekli</h3>
-            </div>
-            <div>
-                {isEditing ? (
-                    <textarea
-                        className="w-full h-32 text-xs border rounded p-1"
-                        value={editForm.participation_method || editForm.joinMethod || ''}
-                        onChange={e => setEditForm({ ...editForm, participation_method: e.target.value })}
-                    />
-                ) : (
-                    <p className="text-sm text-gray-600 leading-relaxed">
-                        {data.participation_method || data.joinMethod || 'Kampanya detaylarını kontrol ediniz.'}
-                    </p>
-                )}
-            </div>
-        </div>
-
-    </div>
-
-    {/* Kampanya Detayları (Akordiyon) */ }
-    <div className="mt-8">
-        {isEditing ? (
-            <div className="space-y-4">
-                <h3 className="font-bold text-gray-900">Kampanya Koşulları (Her satır bir madde)</h3>
-                <textarea
-                    value={editForm.terms ? editForm.terms.join('\n') : ''}
-                    onChange={(e) => setEditForm({ ...editForm, terms: e.target.value.split('\n') })}
-                    className="w-full h-40 border border-purple-200 rounded-lg p-4 focus:ring-2 focus:ring-purple-500 outline-none"
-                    placeholder="Madde 1&#10;Madde 2&#10;Madde 3"
-                />
-
-                <h3 className="font-bold text-gray-900">Kampanya Linki</h3>
-                <input
-                    type="text"
-                    value={editForm.url || ''}
-                    onChange={(e) => setEditForm({ ...editForm, url: e.target.value })}
-                    className="w-full border border-purple-200 rounded-lg p-2 focus:ring-2 focus:ring-purple-500 outline-none"
-                    placeholder="https://..."
-                />
-            </div>
-        ) : (
-            <Accordion title="Kampanya Detayları ve Koşullar">
-                <div className="text-gray-600 space-y-6 text-sm leading-relaxed">
-
-                    {/* 1. Katılım Adımları (Varsa) */}
-                    {data.participation_points && data.participation_points.length > 0 && (
-                        <div>
-                            <h4 className="font-bold text-gray-900 mb-2">Nasıl Katılırım?</h4>
-                            <ul className="list-decimal pl-5 space-y-1">
-                                {data.participation_points.map((step, idx) => (
-                                    <li key={idx}>{step}</li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
-
-                    {/* 2. Koşullar (Varsa) */}
-                    {data.conditions && data.conditions.length > 0 && (
-                        <div>
-                            <h4 className="font-bold text-gray-900 mb-2">Kampanya Koşulları</h4>
-                            <ul className="list-disc pl-5 space-y-1">
-                                {data.conditions.map((cond, idx) => (
-                                    <li key={idx}>{cond}</li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
-
-                    {/* 3. Legacy Fallback */}
-                    {(!data.conditions || data.conditions.length === 0) && (!data.participation_points || data.participation_points.length === 0) && (
-                        <div>
-                            {data.terms && data.terms.length > 0 ? (
-                                <ul className="list-decimal pl-5 space-y-1">
-                                    {data.terms.map((term, idx) => (
-                                        <li key={idx}>{term}</li>
+                <div className="md:w-1/2 p-5 md:p-6 flex flex-col justify-center">
+                    <div className="flex items-center justify-between mb-3">
+                        {isEditing ? (
+                            <div className="relative group">
+                                <select
+                                    value={editForm.category}
+                                    onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
+                                    className="appearance-none bg-purple-50 border border-purple-200 text-purple-700 text-xs font-bold rounded-full px-3 py-1 pr-7 focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer"
+                                >
+                                    {availableCategories.map(cat => (
+                                        <option key={cat} value={cat}>{cat}</option>
                                     ))}
-                                </ul>
-                            ) : (
-                                <div className="space-y-2">
-                                    <p>1. Bu kampanya yalnızca belirtilen tarihler arasında geçerlidir ve stoklarla sınırlıdır.</p>
-                                    <p>2. Kampanyaya katılım için banka mobil uygulamasından veya SMS ile kayıt olunması gerekmektedir.</p>
-                                </div>
-                            )}
-                        </div>
+                                </select>
+                                <ChevronRight className="absolute right-2 top-1/2 -translate-y-1/2 text-purple-400 rotate-90 pointer-events-none" size={12} />
+                            </div>
+                        ) : (
+                            <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${data.badgeColor === 'green' ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700'}`}>
+                                {data.category}
+                            </span>
+                        )}
+                        {/* Kutu (Legacy - Removed Calculator) */}
+                        {!isEditing && (
+                            <div className="flex items-center gap-2">
+                                <CampaignFeedback campaignId={data.id} />
+
+                                <button
+                                    onClick={handleFavorite}
+                                    className={`p-1.5 rounded-full transition-all active:scale-95 ${favorited ? 'bg-pink-100 text-pink-600' : 'hover:bg-gray-100 text-gray-500'}`}
+                                    title="Favorilere Ekle"
+                                >
+                                    <Heart size={18} fill={favorited ? "currentColor" : "none"} />
+                                </button>
+                                <button
+                                    onClick={handleShare}
+                                    className="p-1.5 rounded-full hover:bg-gray-100 text-gray-500 transition-all active:scale-95"
+                                    title="Paylaş"
+                                >
+                                    <Share2 size={18} />
+                                </button>
+                            </div>
+                        ) : (
+                        <>
+                            <h2 className="text-lg font-bold text-gray-900 mb-2 leading-tight">
+                                {data.title}
+                            </h2>
+                            <p className="text-gray-600 text-xs md:text-sm leading-relaxed">
+                                {data.description || `${data.bank} kartlarınızla yapacağınız alışverişlerde kaçırılmayacak fırsatlar sizi bekliyor. Kampanya detaylarını inceleyerek hemen katılın!`}
+                            </p>
+                        </>
                     )}
-                </div>
-            </Accordion>
-        )}
+                    </div>
 
-        {!isEditing && (
-            <button
-                onClick={async () => data.url ? window.open(data.url, '_blank') : await alert('Kampanya linki bulunamadı.', 'Hata')}
-                className="w-full bg-[#57AC79] hover:bg-[#469666] text-white text-sm py-4 rounded-xl font-bold mt-4 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 transform active:scale-95"
-            >
-                Kampanyaya Katıl <ArrowRight size={18} />
-            </button>
-        )}
-    </div>
+                    {/* Kampanya Detayları - Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mt-6">
 
-    {/* Footer / Other Campaigns */ }
-    <div className="mt-16 mb-8 text-center border-t border-gray-100 pt-8">
-        <div className="flex items-center justify-center gap-2 text-xs text-gray-400 font-medium">
-            <span>Bu sayfada yer alan kampanya bilgileri</span>
-            {providerLogo ? (
-                <img src={providerLogo || ''} alt={data.bank} className={`object-contain mx-1 grayscale opacity-70 ${data.bank.toLowerCase().includes('adios') || (providerLogo && providerLogo.includes('adios')) ? 'h-6' : 'h-4'}`} />
-            ) : (
-                <span className="uppercase">{data.bank}</span>
-            )}
-            <span>verilerinden derlenmiştir.</span>
-        </div>
-    </div>
+                        {/* Kutu 1: Katılım Tarihi */}
+                        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex flex-col gap-2 h-full">
+                            <div className="flex items-center gap-2">
+                                <Calendar className="h-4 w-4 text-emerald-500" />
+                                <h3 className="font-bold text-xs text-gray-900">Katılım Tarihi</h3>
+                            </div>
+                            <div className="text-xs text-gray-600">
+                                {isEditing ? (
+                                    <div className="space-y-2">
+                                        <input
+                                            type="text"
+                                            placeholder="Başlangıç (Örn: 2024-01-15)"
+                                            className="w-full border rounded p-1 text-xs"
+                                            value={editForm.valid_from || ''}
+                                            onChange={e => setEditForm({ ...editForm, valid_from: e.target.value })}
+                                        />
+                                        <input
+                                            type="text"
+                                            placeholder="Bitiş (Örn: 2024-03-31)"
+                                            className="w-full border rounded p-1 text-xs"
+                                            value={editForm.validUntil || ''}
+                                            onChange={e => setEditForm({ ...editForm, validUntil: e.target.value })}
+                                        />
+                                    </div>
+                                ) : (
+                                    // Format Logic: Both, Only End, Only Start
+                                    (() => {
+                                        const start = data.valid_from ? new Date(data.valid_from as string).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }) : null;
+                                        const end = data.validUntil ? new Date(data.validUntil as string).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }) : null;
 
-    {
-        relatedCampaigns.length > 0 && (
-            <div className="mt-8 mb-12">
-                <div className="flex items-center justify-between mb-5">
-                    <h3 className="text-xl font-bold text-gray-800">Diğer {data.bank} {data.category} Kampanyaları</h3>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {relatedCampaigns.map((kampanya) => (
-                        <div key={kampanya.id} className="relative group">
-                            <CampaignCard data={kampanya} />
+                                        if (start && end) return `${start} - ${end}`;
+                                        if (end) return `${end} tarihine kadar`;
+                                        if (start) return `${start} tarihinden itibaren`;
+                                        return 'Belirtilmemiş';
+                                    })()
+                                )}
+                            </div>
                         </div>
-                    ))}
+
+                        {/* Kutu 2: Avantaj (3 Alt Kutu) */}
+                        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex flex-col gap-2 h-full">
+                            <div className="flex items-center gap-2">
+                                <TrendingUp className="h-5 w-5 text-purple-500" />
+                                <h3 className="font-bold text-xs text-gray-900">Fırsat Detayları</h3>
+                            </div>
+                            <div className="space-y-1.5 mt-0.5">
+                                {/* Harcama */}
+                                <div className="bg-red-50 border border-red-100 rounded-lg p-2">
+                                    <span className="text-[9px] uppercase font-bold text-red-800 block mb-0.5">Harcama</span>
+                                    {isEditing ? (
+                                        <input
+                                            type="number"
+                                            className="w-full text-xs border rounded"
+                                            value={editForm.min_spend || ''}
+                                            onChange={e => setEditForm({ ...editForm, min_spend: parseInt(e.target.value) || 0 })}
+                                        />
+                                    ) : (
+                                        <p className="text-xs font-semibold text-red-950">
+                                            {data.min_spend ? `₺${data.min_spend.toLocaleString('tr-TR')}` : (data.spendAmount || '-')}
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* Kazanç */}
+                                <div className="bg-green-50 border border-green-100 rounded-lg p-2">
+                                    <span className="text-[9px] uppercase font-bold text-green-800 block mb-0.5">Kazanç</span>
+                                    {isEditing ? (
+                                        <input
+                                            type="text"
+                                            className="w-full text-xs border rounded"
+                                            value={editForm.earning || ''}
+                                            onChange={e => setEditForm({ ...editForm, earning: e.target.value })}
+                                        />
+                                    ) : (
+                                        <p className="text-xs font-semibold text-green-950">
+                                            {data.earning || data.earnAmount || '-'}
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* Ek Avantaj */}
+                                <div className="bg-purple-50 border border-purple-100 rounded-lg p-2">
+                                    <span className="text-[9px] uppercase font-bold text-purple-800 block mb-0.5">Ek Avantaj</span>
+                                    {isEditing ? (
+                                        <input
+                                            type="text"
+                                            className="w-full text-xs border rounded"
+                                            value={editForm.discount || ''}
+                                            onChange={e => setEditForm({ ...editForm, discount: e.target.value })}
+                                        />
+                                    ) : (
+                                        <p className="text-xs font-semibold text-purple-950">
+                                            {data.discount || '-'}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Kutu 3: Geçerli Kartlar */}
+                        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex flex-col gap-2 h-full">
+                            <div className="flex items-center gap-2">
+                                <CreditCard className="h-5 w-5 text-indigo-500" />
+                                <h3 className="font-bold text-xs text-gray-900">Geçerli Kartlar</h3>
+                            </div>
+                            <div>
+                                {isEditing ? (
+                                    <textarea
+                                        className="w-full h-24 text-xs border rounded p-1"
+                                        value={editForm.eligible_customers ? editForm.eligible_customers.join(', ') : (editForm.validCards || '')}
+                                        onChange={e => setEditForm({ ...editForm, eligible_customers: e.target.value.split(',').map(s => s.trim()) })}
+                                        placeholder="Kartları virgülle ayırın"
+                                    />
+                                ) : (
+                                    <p className="text-xs text-gray-600 leading-relaxed">
+                                        {data.eligible_customers && data.eligible_customers.length > 0
+                                            ? data.eligible_customers.join(', ')
+                                            : (data.validCards || data.bank)}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Kutu 4: Katılım Şekli */}
+                        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex flex-col gap-2 h-full">
+                            <div className="flex items-center gap-2">
+                                <Smartphone className="h-5 w-5 text-amber-500" />
+                                <h3 className="font-bold text-xs text-gray-900">Katılım Şekli</h3>
+                            </div>
+                            <div>
+                                {isEditing ? (
+                                    <textarea
+                                        className="w-full h-24 text-xs border rounded p-1"
+                                        value={editForm.participation_method || editForm.joinMethod || ''}
+                                        onChange={e => setEditForm({ ...editForm, participation_method: e.target.value })}
+                                    />
+                                ) : (
+                                    <p className="text-xs text-gray-600 leading-relaxed">
+                                        {data.participation_method || data.joinMethod || 'Kampanya detaylarını kontrol ediniz.'}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+
+                    </div>
+
+                    {/* Kampanya Detayları (Akordiyon) */}
+                    <div className="mt-8">
+                        {isEditing ? (
+                            <div className="space-y-4">
+                                <input
+                                    type="text"
+                                    value={editForm.title}
+                                    onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                                    className="w-full text-lg font-bold border border-purple-200 rounded-lg p-2 focus:ring-2 focus:ring-purple-500 outline-none"
+                                    placeholder="Kampanya Başlığı"
+                                />
+                                <textarea
+                                    value={editForm.badgeText}
+                                    onChange={(e) => setEditForm({ ...editForm, badgeText: e.target.value })}
+                                    className="w-full h-24 border border-purple-200 rounded-lg p-2 focus:ring-2 focus:ring-purple-500 outline-none resize-none text-sm"
+                                    placeholder="Açıklama / Rozet Metni"
+                                />
+                            </div>
+                        ) : (
+                            <>
+                                <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-2 leading-tight">
+                                    {data.title}
+                                </h2>
+                                <p className="text-gray-600 text-[13px] md:text-sm leading-relaxed">
+                                    {data.description || `${data.bank} kartlarınızla yapacağınız alışverişlerde kaçırılmayacak fırsatlar sizi bekliyor. Kampanya detaylarını inceleyerek hemen katılın!`}
+                                </p>
+                            </>
+                        )}
+                    </div>
                 </div>
+
+                {/* Footer / Other Campaigns */}
+                <div className="mt-6 mb-8 text-center border-t border-gray-100 pt-8">
+                    <div className="flex items-center justify-center gap-2 text-xs text-gray-400 font-medium">
+                        <span>Bu sayfada yer alan kampanya bilgileri</span>
+                        {providerLogo ? (
+                            <img src={providerLogo || ''} alt={data.bank} className={`object-contain mx-1 grayscale opacity-70 ${data.bank.toLowerCase().includes('adios') || (providerLogo && providerLogo.includes('adios')) ? 'h-6' : 'h-4'}`} />
+                        ) : (
+                            <span className="uppercase">{data.bank}</span>
+                        )}
+                        <span>verilerinden derlenmiştir.</span>
+                    </div>
+                </div>
+
+                {
+                    relatedCampaigns.length > 0 && (
+                        <div className="mt-8 mb-12">
+                            <div className="flex items-center justify-between mb-5">
+                                <h3 className="text-xl font-bold text-gray-800">Diğer {data.bank} {data.category} Kampanyaları</h3>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                {relatedCampaigns.map((kampanya) => (
+                                    <div key={kampanya.id} className="relative group">
+                                        <CampaignCard data={kampanya} />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )
+                }
             </div>
-        )
-    }
-        </div >
+            )
+            }
+        </div>
     );
 }

@@ -1,6 +1,5 @@
 
 import { useState, useEffect } from 'react';
-import logo from '../assets/logo-full.png';
 import { Menu, User, Flame, ChevronRight } from 'lucide-react';
 import AuthModal from './AuthModal';
 import UserMenu from './UserMenu';
@@ -54,14 +53,14 @@ export default function Header() {
           {/* --- SOL: LOGO --- */}
           <div onClick={() => navigate('/')} className="flex items-center gap-2 cursor-pointer group relative overflow-visible">
             <img
-              src={settings.logo?.url || logo}
+              src={settings.logo?.url || "/assets/header-logo-clean.png"}
               alt="KartAvantaj"
               className="w-auto object-contain drop-shadow-sm transition-all duration-300"
               style={{
                 height: `${settings.logo?.height || 48}px`,
-                // Force remove any browser/tailwind limits
-                maxHeight: 'none',
-                maxWidth: 'none',
+                // Ensure it fits within 90px header
+                maxHeight: '80px',
+                maxWidth: '100%',
                 opacity: settings.logo?.opacity ?? 1,
                 transform: `translate(${settings.logo?.offsetX || 0}px, ${settings.logo?.offsetY || 0}px)`
               }}

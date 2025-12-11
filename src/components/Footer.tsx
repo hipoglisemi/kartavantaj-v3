@@ -1,4 +1,4 @@
-import { CreditCard, Facebook, Twitter, Instagram, Linkedin, Youtube, Mail, MapPin } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Linkedin, Youtube, Mail, MapPin, Play, Apple } from 'lucide-react';
 import { useState } from 'react';
 import Modal from './Modal';
 import { settingsService } from '../services/settingsService';
@@ -48,28 +48,35 @@ export default function Footer() {
 
             {/* Sol: Marka & Açıklama */}
             <div className="max-w-md">
-              <div className="flex items-center gap-2 mb-2">
-                {(settings.footerLogo?.url || settings.logo?.url) ? (
-                  <img
-                    src={settings.footerLogo?.url || settings.logo?.url}
-                    alt="Logo"
-                    className="object-contain transition-all duration-300"
-                    style={{
-                      height: `${settings.footerLogo?.height || 32}px`,
-                      opacity: settings.footerLogo?.opacity ?? 0.9,
-                      transform: `translate(${settings.footerLogo?.offsetX || 0}px, ${settings.footerLogo?.offsetY || 0}px)`
-                    }}
-                  />
-                ) : (
-                  <div className="flex items-center gap-2 text-white">
-                    <CreditCard size={24} />
-                    <span className="text-xl font-bold tracking-tight">KartAvantaj</span>
-                  </div>
-                )}
-              </div>
+
               <p className="text-sm text-gray-400 leading-relaxed mb-6">
                 {settings.footer.description}
               </p>
+
+              {/* Mobile App Placeholders */}
+              <div className="mb-8 w-fit relative group">
+                <div className="flex gap-3 mb-2">
+                  <div className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-lg opacity-50 cursor-not-allowed hover:bg-white/10 transition-colors">
+                    <Play size={20} className="fill-current" />
+                    <div className="text-left leading-none">
+                      <div className="text-[9px] uppercase font-bold tracking-wider opacity-70">Google Play</div>
+                      <div className="text-sm font-bold">Store</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-lg opacity-50 cursor-not-allowed hover:bg-white/10 transition-colors">
+                    <Apple size={22} className="fill-current -mt-0.5" />
+                    <div className="text-left leading-none">
+                      <div className="text-[9px] uppercase font-bold tracking-wider opacity-70">App Store</div>
+                      <div className="text-sm font-bold">Store</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 mt-3 opacity-60 w-[120%] -ml-[10%]">
+                  <div className="h-px bg-gradient-to-r from-transparent via-white/20 to-white/20 flex-1"></div>
+                  <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-emerald-400 whitespace-nowrap">Yakında</span>
+                  <div className="h-px bg-gradient-to-l from-transparent via-white/20 to-white/20 flex-1"></div>
+                </div>
+              </div>
 
               {socialLinks.length > 0 && (
                 <div className="flex gap-3">
@@ -117,15 +124,26 @@ export default function Footer() {
                     <Mail size={16} className="shrink-0 text-gray-500" />
                     <a href={`mailto:${settings.footer.email}`} className="hover:text-white transition-colors">{settings.footer.email}</a>
                   </li>
-                  <li className="pt-2">
-                    <a href="/admin" className="text-xs px-3 py-1 bg-white/5 border border-white/10 text-gray-400 rounded-lg hover:bg-white/10 hover:text-white transition-colors">Yönetici Girişi</a>
-                  </li>
+
                 </ul>
               </div>
             </div>
           </div>
 
-          <div className="border-t border-white/10 mt-12 pt-6 text-center text-xs text-gray-500">
+          <div className="flex justify-center mt-8 mb-0 relative z-10">
+            <img
+              src="/assets/logo-clean.png"
+              alt="Logo"
+              className="object-contain transition-all duration-300"
+              style={{
+                height: '60px',
+                opacity: 0.9,
+                transform: `translate(${settings.footerLogo?.offsetX || 0}px, ${settings.footerLogo?.offsetY || 0}px)`
+              }}
+            />
+          </div>
+
+          <div className="border-t border-white/10 pt-6 text-center text-xs text-gray-500">
             {settings.footer.copyright || `© ${currentYear} KartAvantaj. Tüm hakları saklıdır.`}
           </div>
         </div>

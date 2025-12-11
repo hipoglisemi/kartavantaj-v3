@@ -31,7 +31,7 @@ function FilterSection({ title, counts, selectedItems, placeholder, onToggle }: 
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center justify-between w-full mb-3 group"
       >
-        <h3 className="font-bold text-gray-900 text-sm flex items-center gap-2">
+        <h3 className="font-bold text-gray-900 text-sm flex items-center justify-start gap-2 flex-1">
           <span className="w-1.5 h-1.5 rounded-full group-hover:scale-125 transition-transform" style={{ backgroundColor: BRAND_PURPLE }}></span>
           {title}
         </h3>
@@ -136,7 +136,7 @@ function NestedFilterSection({
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center justify-between w-full mb-3 group"
       >
-        <h3 className="font-bold text-gray-900 text-sm flex items-center gap-2">
+        <h3 className="font-bold text-gray-900 text-sm flex items-center justify-start gap-2 flex-1">
           <span className="w-1.5 h-1.5 rounded-full group-hover:scale-125 transition-transform" style={{ backgroundColor: BRAND_PURPLE }}></span>
           {title}
         </h3>

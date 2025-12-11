@@ -3,8 +3,10 @@ import { createClient } from '@supabase/supabase-js';
 
 // Helper for dynamic supabase
 const getSupabase = () => {
-    const url = localStorage.getItem('supabase_project_url');
-    const key = localStorage.getItem('supabase_anon_key');
+    // 1. Check keys set by AdminSettings (sb_url / sb_key)
+    const url = localStorage.getItem('sb_url') || import.meta.env.VITE_SUPABASE_URL;
+    const key = localStorage.getItem('sb_key') || import.meta.env.VITE_SUPABASE_ANON_KEY;
+
     if (!url || !key) return null;
     return createClient(url, key);
 };
@@ -376,20 +378,36 @@ export const campaignParser = {
     /**
      * Fetches custom AI rules from Supabase.
      */
-    async fetchRules(): Promise<{ rule_text: string, user_feedback: string }[]> {
+    async fetchRules(): Promise<{ id: number, rule_text: string, user_feedback: string }[]> {
         const client = getSupabase();
         if (!client) return [];
 
         const { data, error } = await client
             .from('ai_rules')
-            .select('rule_text, user_feedback')
-            .eq('is_active', true);
+            .select('id, rule_text, user_feedback')
+            .eq('is_active', true)
+            .order('created_at', { ascending: false });
 
         if (error) {
             console.error("Error fetching AI rules:", error);
             return [];
         }
         return data || [];
+    },
+
+    /**
+     * Deletes a rule by ID (soft delete or hard delete depending on policy, here hard delete for simplicity)
+     */
+    async deleteRule(id: number): Promise<void> {
+        const client = getSupabase();
+        if (!client) throw new Error("Supabase connection required.");
+
+        const { error } = await client
+            .from('ai_rules')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw new Error("Delete Error: " + error.message);
     },
 
     /**
@@ -412,18 +430,67 @@ export const campaignParser = {
             Output ONLY the rule text. No explanations.
         `;
 
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${cleanKey}`;
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-        });
+        // Helper to try models sequentially
+        const tryModel = async (modelName: string): Promise<string> => {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${cleanKey}`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+            });
 
-        if (!response.ok) throw new Error("Gemini API Error during learning.");
-        const data = await response.json();
-        const ruleText = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+            if (!response.ok) {
+                const errText = await response.text();
+                throw new Error(`${modelName} Error (${response.status}): ${errText}`);
+            }
 
-        if (!ruleText) throw new Error("Could not extract rule.");
+            const data = await response.json();
+            const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+            if (!text) throw new Error(`${modelName} returned no text.`);
+            return text;
+        };
+
+        // Fallback Chain
+        let ruleText = "";
+        let errors: string[] = [];
+
+        // Strategy: Use "Lite" models found in user's available list. 
+        // These likely have separate/fresh quotas compared to the main Flash/Pro models.
+
+        // 1. Try Gemini 2.0 Flash Lite (New, Lightweight)
+        if (!ruleText) {
+            try { ruleText = await tryModel("gemini-2.0-flash-lite-preview-02-05"); } catch (e: any) { errors.push(e.message); }
+        }
+
+        // 2. Try Gemini 2.0 Flash Lite (Stable alias)
+        if (!ruleText) {
+            try { ruleText = await tryModel("gemini-2.0-flash-lite"); } catch (e: any) { errors.push(e.message); }
+        }
+
+        // 3. Try Gemini 2.5 Flash Lite
+        if (!ruleText) {
+            try { ruleText = await tryModel("gemini-2.5-flash-lite"); } catch (e: any) { errors.push(e.message); }
+        }
+
+        // 4. Try Generic "Flash Lite Latest"
+        if (!ruleText) {
+            try { ruleText = await tryModel("gemini-flash-lite-latest"); } catch (e: any) { errors.push(e.message); }
+        }
+
+        // 5. Try Gemma 27B (Alternative backend)
+        if (!ruleText) {
+            try { ruleText = await tryModel("gemma-3-27b-it"); } catch (e: any) { errors.push(e.message); }
+        }
+
+        // 6. Final retry on main Flash (in case quota reset)
+        if (!ruleText) {
+            try { ruleText = await tryModel("gemini-2.5-flash"); } catch (e: any) { errors.push(e.message); }
+        }
+
+        if (!ruleText) {
+            // Keep diagnostic for future issues
+            throw new Error(`AI Hatası: Tüm 'Lite' ve 'Flash' modelleri denendi ancak kota/erişim sorunu devam ediyor.\n\nDetaylar:\n${errors.join('\n')}`);
+        }
 
         // 2. Save to Supabase
         const { error } = await client

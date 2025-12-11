@@ -49,12 +49,12 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
 
     return (
         <div
-            className="fixed top-0 left-0 w-full h-full bg-black/50 backdrop-blur-md z-50 flex items-center justify-center p-4"
+            className="fixed top-0 left-0 w-full h-full bg-black/50 backdrop-blur-md z-50 flex items-start justify-center pt-8 pb-0 px-4"
             onClick={onClose}
         >
             <div
                 ref={modalContentRef}
-                className="relative bg-white rounded-2xl shadow-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto scroll-smooth"
+                className="relative bg-white rounded-t-2xl rounded-b-none shadow-lg max-w-6xl w-full h-full overflow-y-auto scroll-smooth"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Kapat Butonu */}

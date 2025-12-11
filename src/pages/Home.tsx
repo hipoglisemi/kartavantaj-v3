@@ -428,60 +428,31 @@ export default function HomePage() {
                     </div>
 
                     {/* Admin Debug / Refresh */}
-                    {isAdmin && (
-                        <div className="mb-4 p-3 bg-purple-50 rounded-lg border border-purple-100 flex flex-col md:flex-row items-center justify-between text-xs text-purple-700 gap-2">
-                            <div className="flex items-center gap-2">
-                                <strong>Admin Modu:</strong>
-                                <span>Toplam {campaigns.length} kampanya.</span>
-
-                                {/* Connection Status Indicator */}
-                                <div className="ml-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-white border border-gray-200 shadow-sm">
-                                    <div className={`w-2 h-2 rounded-full ${campaigns.length > 0 && campaigns[0].id && Number(campaigns[0].id) > 100000 ? 'bg-orange-500' : 'bg-green-500'}`}></div>
-                                    <span className="font-bold">
-                                        {/* Simple heuristic: Supabase IDs are usually ints. If we fallback to local JSON, they might be small ints or specific values. 
-                                            Actually, let's allow the user to click to test connection. 
-                                        */}
-                                        Veri Kaynağı: {campaigns.length > 0 && campaigns.some((c: any) => c.id < 1000) ? 'YEREL (Fallback)' : 'SUPABASE (Canlı)'}
-                                    </span>
-                                </div>
-                            </div>
-
-                            {/* Breadcrumbs (Active Filters) */}
-                            {(selectedFilters.banks.length > 0 || selectedFilters.cards.length > 0 || selectedFilters.categories.length > 0 || selectedFilters.brands.length > 0) && (
-                                <div className="flex flex-wrap gap-2 mb-4 animate-in fade-in slide-in-from-top-1">
-                                    {selectedFilters.banks.map(f => (
-                                        <button key={`bank-${f}`} onClick={() => handleFilterChange('banks', f)} className="flex items-center gap-1 px-2.5 py-1 bg-purple-50 text-purple-700 text-xs rounded-full border border-purple-100 hover:bg-purple-100 transition-colors group">
-                                            <span className="font-medium">{f}</span> <X size={12} className="group-hover:scale-110" />
-                                        </button>
-                                    ))}
-                                    {selectedFilters.cards.map(f => (
-                                        <button key={`card-${f}`} onClick={() => handleFilterChange('cards', f)} className="flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 text-xs rounded-full border border-blue-100 hover:bg-blue-100 transition-colors group">
-                                            <span className="font-medium">{f}</span> <X size={12} className="group-hover:scale-110" />
-                                        </button>
-                                    ))}
-                                    {selectedFilters.categories.map(f => (
-                                        <button key={`cat-${f}`} onClick={() => handleFilterChange('categories', f)} className="flex items-center gap-1 px-2.5 py-1 bg-gray-100 text-gray-700 text-xs rounded-full border border-gray-200 hover:bg-gray-200 transition-colors group">
-                                            {f} <X size={12} className="group-hover:scale-110" />
-                                        </button>
-                                    ))}
-                                    {selectedFilters.brands.map(f => (
-                                        <button key={`brand-${f}`} onClick={() => handleFilterChange('brands', f)} className="flex items-center gap-1 px-2.5 py-1 bg-pink-50 text-pink-700 text-xs rounded-full border border-pink-100 hover:bg-pink-100 transition-colors group">
-                                            {f} <X size={12} className="group-hover:scale-110" />
-                                        </button>
-                                    ))}
-                                    <button onClick={() => setSelectedFilters({ banks: [], cards: [], categories: [], brands: [] })} className="text-xs text-gray-400 hover:text-red-500 underline ml-1 transition-colors">
-                                        Temizle
-                                    </button>
-                                </div>
-                            )}
-                            <button
-                                onClick={() => {
-                                    setCampaigns(campaignService.getCampaigns());
-                                    alert("Veriler yenilendi!");
-                                }}
-                                className="underline hover:text-purple-900 cursor-pointer"
-                            >
-                                Verileri Yenile
+                    {/* Breadcrumbs (Active Filters) */}
+                    {(selectedFilters.banks.length > 0 || selectedFilters.cards.length > 0 || selectedFilters.categories.length > 0 || selectedFilters.brands.length > 0) && (
+                        <div className="flex flex-wrap gap-2 mb-4 animate-in fade-in slide-in-from-top-1">
+                            {selectedFilters.banks.map(f => (
+                                <button key={`bank-${f}`} onClick={() => handleFilterChange('banks', f)} className="flex items-center gap-1 px-2.5 py-1 bg-purple-50 text-purple-700 text-xs rounded-full border border-purple-100 hover:bg-purple-100 transition-colors group">
+                                    <span className="font-medium">{f}</span> <X size={12} className="group-hover:scale-110" />
+                                </button>
+                            ))}
+                            {selectedFilters.cards.map(f => (
+                                <button key={`card-${f}`} onClick={() => handleFilterChange('cards', f)} className="flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 text-xs rounded-full border border-blue-100 hover:bg-blue-100 transition-colors group">
+                                    <span className="font-medium">{f}</span> <X size={12} className="group-hover:scale-110" />
+                                </button>
+                            ))}
+                            {selectedFilters.categories.map(f => (
+                                <button key={`cat-${f}`} onClick={() => handleFilterChange('categories', f)} className="flex items-center gap-1 px-2.5 py-1 bg-gray-100 text-gray-700 text-xs rounded-full border border-gray-200 hover:bg-gray-200 transition-colors group">
+                                    {f} <X size={12} className="group-hover:scale-110" />
+                                </button>
+                            ))}
+                            {selectedFilters.brands.map(f => (
+                                <button key={`brand-${f}`} onClick={() => handleFilterChange('brands', f)} className="flex items-center gap-1 px-2.5 py-1 bg-pink-50 text-pink-700 text-xs rounded-full border border-pink-100 hover:bg-pink-100 transition-colors group">
+                                    {f} <X size={12} className="group-hover:scale-110" />
+                                </button>
+                            ))}
+                            <button onClick={() => setSelectedFilters({ banks: [], cards: [], categories: [], brands: [] })} className="text-xs text-gray-400 hover:text-red-500 underline ml-1 transition-colors">
+                                Temizle
                             </button>
                         </div>
                     )}
@@ -543,6 +514,11 @@ export default function HomePage() {
                         isAdmin={isAdmin}
                         onSave={handleUpdateCampaign}
                         onDelete={handleDeleteCampaign}
+                        onHomeClick={() => closeModal()}
+                        onBankClick={(bankName) => {
+                            setSelectedFilters({ banks: [bankName], cards: [], categories: [], brands: [] });
+                            closeModal();
+                        }}
                     />
                 )}
             </Modal>

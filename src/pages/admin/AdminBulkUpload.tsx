@@ -16,6 +16,7 @@ interface BankConfig {
 }
 
 import { FALLBACK_LOGOS } from '../../services/campaignService';
+import { useConfirmation } from '../../context/ConfirmationContext';
 
 // Simplified Bank/Card Persistence Helpers
 const getBanksConfig = (): BankConfig[] => {
@@ -56,6 +57,7 @@ export default function AdminBulkUpload() {
     const [activeTab, setActiveTab] = useState<'json' | 'csv'>('json');
     const [jsonContent, setJsonContent] = useState('');
     const [csvContent, setCsvContent] = useState('');
+    const { alert } = useConfirmation();
 
     const [previewData, setPreviewData] = useState<CampaignProps[] | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -240,7 +242,7 @@ export default function AdminBulkUpload() {
         }
     };
 
-    const handleUpload = () => {
+    const handleUpload = async () => {
         if (!previewData) return;
         if (!selectedCardId) {
             setError("Lütfen yükleme yapılacak KARTI seçiniz.");
@@ -301,7 +303,7 @@ export default function AdminBulkUpload() {
         window.dispatchEvent(new Event('campaigns-updated'));
         window.dispatchEvent(new Event('storage'));
 
-        alert(`${previewData.length} kampanya başarıyla eklendi!`);
+        await alert(`${previewData.length} kampanya başarıyla eklendi!`, "Başarılı");
 
         setJsonContent('');
         setCsvContent('');
@@ -367,7 +369,7 @@ export default function AdminBulkUpload() {
         const apiKey = localStorage.getItem('gemini_key') || '';
 
         if (!apiKey) {
-            alert("Lütfen önce Ayarlar sayfasından Gemini API Anahtarınızı giriniz.");
+            await alert("Lütfen önce Ayarlar sayfasından Gemini API Anahtarınızı giriniz.", "API Anahtarı Eksik");
             return;
         }
 

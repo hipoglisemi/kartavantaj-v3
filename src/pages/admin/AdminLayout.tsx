@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Settings, Database, LogOut, UploadCloud, ShieldAlert, Home, Search, Bot, Users, Image, Activity, Mail, CloudUpload, Loader2 } from 'lucide-react';
+import { campaignService } from '../../services/campaignService';
 import { settingsService } from '../../services/settingsService';
 
 function PublishButton() {
@@ -55,6 +56,10 @@ function PublishButton() {
 export default function AdminLayout() {
     const navigate = useNavigate();
     const location = useLocation();
+
+    // Data Source Check
+    const campaigns = campaignService.getCampaigns();
+    const isLocal = campaigns.length > 0 && campaigns.some((c: any) => c.id < 1000);
 
     const handleLogout = () => {
         localStorage.removeItem('isAdmin');
@@ -137,6 +142,12 @@ export default function AdminLayout() {
 
                         {/* Publish Changes Button */}
                         <PublishButton />
+
+                        {/* Data Source Indicator */}
+                        <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-50 border border-gray-200 rounded-lg text-[10px] text-gray-500">
+                            <div className={`w-1.5 h-1.5 rounded-full ${isLocal ? 'bg-orange-500' : 'bg-green-500'}`}></div>
+                            <span className="font-semibold">{isLocal ? 'YEREL' : 'SUPABASE'}</span>
+                        </div>
 
                         <a href="/" className="flex items-center gap-2 text-xs text-gray-500 hover:text-purple-600 transition-colors">
                             <Home size={16} />

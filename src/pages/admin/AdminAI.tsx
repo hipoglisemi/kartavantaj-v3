@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bot, Send, Sparkles, Loader2, Zap, BarChart, Search, BrainCircuit } from 'lucide-react';
+import { Bot, Send, Sparkles, Loader2, Zap, BarChart, Search, BrainCircuit, Trash2 } from 'lucide-react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { campaignService } from '../../services/campaignService'; // Use service
-import { campaignParser } from '../../services/campaignParser'; // Use parser
+import { campaignParser } from '../../services/campaignParser';
+import { useToast } from '../../context/ToastContext';
+import { useConfirmation } from '../../context/ConfirmationContext';
 
 interface Message {
     id: number;
@@ -48,12 +50,15 @@ export default function AdminAI() {
     // Training State
     const [trainingInput, setTrainingInput] = useState('');
     const [isTraining, setIsTraining] = useState(false);
-    const [rules, setRules] = useState<{ rule_text: string, user_feedback: string }[]>([]);
+    const [rules, setRules] = useState<{ id: number, rule_text: string, user_feedback: string }[]>([]);
 
     useEffect(() => {
         // Fetch rules on mount
         campaignParser.fetchRules().then(setRules);
     }, []);
+
+    const { success, error } = useToast();
+    const { confirm } = useConfirmation();
 
     const handleTrain = async () => {
         if (!trainingInput.trim()) return;
@@ -66,9 +71,9 @@ export default function AdminAI() {
             const updatedRules = await campaignParser.fetchRules();
             setRules(updatedRules);
             setTrainingInput('');
-            alert(`Kural Öğrenildi: "${rule}"`);
+            success(`Kural Öğrenildi: "${rule}"`);
         } catch (e: any) {
-            alert("Eğitim hatası: " + e.message);
+            error("Eğitim hatası: " + e.message);
         } finally {
             setIsTraining(false);
         }
@@ -85,6 +90,22 @@ export default function AdminAI() {
     useEffect(() => {
         scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
+
+    const handleDeleteRule = async (id: number) => {
+        if (!await confirm({
+            title: 'Kuralı Sil',
+            message: 'Bu kuralı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.',
+            type: 'danger'
+        })) return;
+
+        try {
+            await campaignParser.deleteRule(id);
+            setRules(prev => prev.filter(r => r.id !== id));
+            success("Kural başarıyla silindi.");
+        } catch (e: any) {
+            error("Silme hatası: " + e.message);
+        }
+    };
 
     const handleSend = async () => {
         if (!input.trim()) return;
@@ -315,12 +336,18 @@ export default function AdminAI() {
                         </h3>
 
                         {rules.map((rule) => (
-                            <div key={rule.rule_text} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-start justify-between group hover:border-violet-100 transition-colors">
+                            <div key={rule.id} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between group hover:border-violet-200 transition-all">
                                 <div>
                                     <p className="font-bold text-gray-800 text-sm mb-1">{rule.rule_text}</p>
                                     <p className="text-xs text-gray-500 italic">"{rule.user_feedback}"</p>
                                 </div>
-                                {/* Delete button would go here but simpler to just show for now */}
+                                <button
+                                    onClick={() => handleDeleteRule(rule.id)}
+                                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                                    title="Kuralı Sil"
+                                >
+                                    <Trash2 size={18} />
+                                </button>
                             </div>
                         ))}
 
