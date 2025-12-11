@@ -6,6 +6,7 @@
 html {
   /* Chrome, Edge, Safari */
   min-height: 100%;
+  background-color: #f8fafc;
 }
 
 
@@ -23,6 +24,8 @@ body {
   background-color: #f8fafc;
   color: #0f172a;
   /* Yazılar koyu lacivert (Tam siyah değil) */
+  overflow-x: hidden;
+  /* Prevent horizontal scroll/voids */
 
   /* Yazı pürüzsüzleştirme */
   -webkit-font-smoothing: antialiased;
