@@ -43,7 +43,7 @@ export default function Footer() {
   return (
     <>
       <footer className="bg-gradient-to-br from-gray-900 via-zinc-900 to-black border-t border-white/10 py-8 mt-auto text-gray-400">
-        <div className="container mx-auto px-4">
+        <div className="w-full max-w-6xl mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-start gap-8">
 
             {/* Sol: Marka & Açıklama */}

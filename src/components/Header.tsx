@@ -48,23 +48,25 @@ export default function Header() {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50 border-b border-gray-100 bg-white/90 backdrop-blur-md transition-all">
-        <div className="container mx-auto px-4 h-[90px] flex items-center justify-between">
+        <div className="w-full max-w-6xl mx-auto px-4 h-[90px] flex items-center justify-between">
 
-          {/* --- SOL: LOGO --- */}
-          <div onClick={() => navigate('/')} className="flex items-center gap-2 cursor-pointer group relative overflow-visible">
-            <img
-              src={settings.logo?.url || "/assets/header-logo-clean.png"}
-              alt="KartAvantaj"
-              className="w-auto object-contain drop-shadow-sm transition-all duration-300"
-              style={{
-                height: `${settings.logo?.height || 48}px`,
-                // Ensure it fits within 90px header
-                maxHeight: '80px',
-                maxWidth: '100%',
-                opacity: settings.logo?.opacity ?? 1,
-                transform: `translate(${settings.logo?.offsetX || 0}px, ${settings.logo?.offsetY || 0}px)`
-              }}
-            />
+          {/* --- SOL: LOGO (Aligned with Sidebar) --- */}
+          <div className="flex md:w-72 justify-start md:justify-center items-center shrink-0">
+            <div onClick={() => navigate('/')} className="flex items-center gap-2 cursor-pointer group relative overflow-visible">
+              <img
+                src={settings.logo?.url || "/assets/header-logo-clean.png"}
+                alt="KartAvantaj"
+                className="w-auto object-contain drop-shadow-sm transition-all duration-300"
+                style={{
+                  height: `${settings.logo?.height || 48}px`,
+                  // Ensure it fits within 90px header
+                  maxHeight: '80px',
+                  maxWidth: '100%',
+                  opacity: settings.logo?.opacity ?? 1,
+                  transform: `translate(${settings.logo?.offsetX || 0}px, ${settings.logo?.offsetY || 0}px)`
+                }}
+              />
+            </div>
           </div>
 
 

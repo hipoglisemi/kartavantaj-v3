@@ -370,12 +370,12 @@ export default function HomePage() {
             />
 
             {/* Reklam Alanı: Hero Altı */}
-            <div className="container mx-auto px-4 mt-8">
+            <div className="w-full max-w-6xl mx-auto px-4 mt-8">
                 <AdUnit slotId="1234567890" />
             </div>
 
             {/* Ana İçerik Alanı (Sidebar + Grid) */}
-            <section id="campaign-results" className="container mx-auto px-4 py-8 flex flex-col md:flex-row gap-6">
+            <section id="campaign-results" className="w-full max-w-6xl mx-auto px-4 py-8 flex flex-col md:flex-row gap-6">
                 {/* Sol Menü */}
                 <Sidebar
                     counts={filterOptions}
