@@ -16,30 +16,44 @@ const closeModal = () => {
 };
 */
 const getBadgeStyle = (data: CampaignProps) => {
-  // Combine text fields to check for keywords
-  const combinedText = (data.title + data.badgeText + (data.earning || '')).toLowerCase();
+  // Combine all relevant text fields to check for keywords
+  // Priority: Title > BadgeText > Earning
+  const combinedText = (data.title + ' ' + data.badgeText + ' ' + (data.earning || '')).toLowerCase();
 
-  // PASTEL RENK PALETİ (Owl Eyes Inspired & Matte)
-  // Taksit: Pastel Mint (Soft Green)
+  // 1. TAKSİT (Öncelikli)
+  // Pastel Mint - Taksit imkanı yeşil güven verir
   if (combinedText.includes('taksit') || combinedText.includes('vade')) {
-    return 'bg-[#d1fae5] text-[#065f46]'; // emerald-100 bg, emerald-800 text
-  }
-  // Puan: Pastel Periwinkle (Soft Indigo)
-  if (combinedText.includes('puan') || combinedText.includes('chip') || combinedText.includes('bonus')) {
-    return 'bg-[#e0e7ff] text-[#3730a3]'; // indigo-100 bg, indigo-800 text
-  }
-  // İndirim: Pastel Sky (Soft Blue)
-  if (combinedText.includes('indirim') || combinedText.includes('iade') || combinedText.includes('nakit')) {
-    return 'bg-[#dbeafe] text-[#1e40af]'; // blue-100 bg, blue-800 text
+    return 'bg-[#DCFCE7] text-[#166534]'; // emerald-100 bg, emerald-800 text
   }
 
-  // Default based on category
-  switch (data.category) {
-    case 'Market': return 'bg-[#ffedd5] text-[#9a3412]'; // orange-100, orange-800
-    case 'Giyim': return 'bg-[#fce7f3] text-[#9d174d]'; // pink-100, pink-800
-    case 'Elektronik': return 'bg-[#f3f4f6] text-[#1f2937]'; // gray-100, gray-800
-    default: return 'bg-[#f1f5f9] text-[#334155]'; // slate-100, slate-700 (General Owl Gray)
+  // 2. MİL (YENİ - Uçuş/Seyahat)
+  // Pastel Cyan - Gökyüzü/Tatil hissiyatı
+  if (combinedText.includes('mil ') || combinedText.includes(' mil') || combinedText.includes('miles')) {
+    return 'bg-[#CFFAFE] text-[#155E75]'; // cyan-100 bg, cyan-800 text
   }
+
+  // 3. PUAN / CHIP-PARA
+  // Pastel Periwinkle - Değerli/Puan hissiyatı (Mor/Mavi)
+  if (combinedText.includes('puan') || combinedText.includes('chip') || combinedText.includes('bonus') || combinedText.includes('para')) {
+    return 'bg-[#E0E7FF] text-[#3730A3]'; // indigo-100 bg, indigo-800 text
+  }
+
+  // 4. İNDİRİM / % / KUPON / KOD / İADE
+  // Pastel Sky Blue - İndirim ferahlığı
+  if (
+    combinedText.includes('indirim') ||
+    combinedText.includes('iade') ||
+    combinedText.includes('nakit') ||
+    combinedText.includes('%') ||
+    combinedText.includes('kupon') ||
+    combinedText.includes('kod')
+  ) {
+    return 'bg-[#DBEAFE] text-[#1E40AF]'; // blue-100 bg, blue-800 text
+  }
+
+  // 5. DİĞER (Varsayılan - GRİ YOK)
+  // Pastel Peach - Enerjik ve sıcak, dikkat çekici ama mat
+  return 'bg-[#FFEDD5] text-[#9A3412]'; // orange-100 bg, orange-800 text
 };
 
 const getRemainingDays = (validUntil: string | null | undefined): number | null => {
