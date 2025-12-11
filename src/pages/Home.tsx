@@ -13,6 +13,8 @@ import { ChevronDown, X, Wallet } from "lucide-react";
 import { campaignService } from "../services/campaignService";
 import { authService } from "../services/authService";
 
+import FloatingBackground from "../components/FloatingBackground";
+
 export default function HomePage() {
     const [campaigns, setCampaigns] = useState<CampaignProps[]>([]);
     const [selectedCampaignId, setSelectedCampaignId] = useState<number | null>(null);
@@ -361,7 +363,8 @@ export default function HomePage() {
     const selectedCampaign = campaigns.find(c => c.id === selectedCampaignId);
 
     return (
-        <div className="min-h-screen flex flex-col font-sans bg-gray-50 text-gray-900">
+        <div className="min-h-screen flex flex-col font-sans bg-gray-50 text-gray-900 relative">
+            <FloatingBackground />
             <Header />
             <HeroSection
                 searchTerm={searchTerm}
