@@ -62,7 +62,7 @@ export default function AdminLayout() {
         const isAdmin = localStorage.getItem('isAdmin');
         const setupComplete = localStorage.getItem('admin_setup_complete');
         
-        if (!isAdmin) {
+        if (isAdmin !== 'true') {
             navigate('/panel/login');
         } else if (setupComplete !== 'true') {
             navigate('/panel/setup');

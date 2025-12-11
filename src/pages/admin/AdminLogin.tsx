@@ -10,13 +10,6 @@ export default function AdminLogin() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        // Eğer zaten giriş yapmışsa dashboard'a yönlendir
-        const isAdmin = localStorage.getItem('isAdmin');
-        if (isAdmin === 'true') {
-            navigate('/panel/dashboard');
-            return;
-        }
-
         // Kurulum kontrolü
         const setupComplete = localStorage.getItem('admin_setup_complete');
         if (setupComplete !== 'true') {
