@@ -76,7 +76,7 @@ export default function Header() {
             <div
               key={activeAnns[currentAnnIndex]?.id} // Key change triggers animation
               onClick={() => activeAnns[currentAnnIndex]?.link && window.open(activeAnns[currentAnnIndex].link, '_self')}
-              className="hidden md:flex items-center gap-4 bg-gradient-to-r from-pastel-gray to-white border border-gray-200 pl-2 pr-4 py-2 rounded-full cursor-pointer group hover:border-brand-red/30 hover:shadow-md transition-all w-[480px] mx-auto animate-in fade-in slide-in-from-top-1 duration-500 overflow-hidden relative"
+              className="hidden md:flex items-center gap-4 bg-gradient-to-r from-pastel-gray to-white border border-gray-200 pl-2 pr-4 py-2 rounded-full cursor-pointer group hover:border-brand-red/30 hover:shadow-md transition-all w-[640px] mx-auto animate-in fade-in slide-in-from-top-1 duration-500 overflow-hidden relative"
             >
               <div className="flex items-center gap-2 bg-pastel-red text-brand-red px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide shrink-0">
                 <Flame size={12} className="fill-brand-red animate-pulse" />
