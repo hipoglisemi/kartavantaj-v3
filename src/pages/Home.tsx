@@ -14,6 +14,7 @@ import { campaignService } from "../services/campaignService";
 import { authService } from "../services/authService";
 
 import FloatingBackground from "../components/FloatingBackground";
+import EmailVerificationBanner from "../components/EmailVerificationBanner";
 
 export default function HomePage() {
     const [campaigns, setCampaigns] = useState<CampaignProps[]>([]);
@@ -366,6 +367,14 @@ export default function HomePage() {
         <div className="min-h-screen flex flex-col font-sans bg-gray-50 text-gray-900 relative">
             <FloatingBackground />
             <Header />
+            
+            {/* Email Verification Banner - sadece giriş yapmış kullanıcılar için */}
+            {user && (
+                <div className="w-full max-w-6xl mx-auto px-4 mt-20">
+                    <EmailVerificationBanner />
+                </div>
+            )}
+            
             <HeroSection
                 searchTerm={searchTerm}
                 onSearchChange={setSearchTerm}

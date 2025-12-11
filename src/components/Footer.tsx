@@ -144,7 +144,17 @@ export default function Footer() {
           </div>
 
           <div className="border-t border-white/10 pt-6 text-center text-xs text-gray-500">
-            {settings.footer.copyright || `© ${currentYear} KartAvantaj. Tüm hakları saklıdır.`}
+            <div className="flex items-center justify-center gap-4">
+              <span>{settings.footer.copyright || `© ${currentYear} KartAvantaj. Tüm hakları saklıdır.`}</span>
+              <span className="text-gray-600">•</span>
+              <a 
+                href="/panel" 
+                className="text-gray-600 hover:text-gray-400 transition-colors opacity-50 hover:opacity-100"
+                title="Admin Paneli"
+              >
+                Panel
+              </a>
+            </div>
           </div>
         </div>
       </footer>

@@ -57,29 +57,42 @@ export default function AdminLayout() {
     const navigate = useNavigate();
     const location = useLocation();
 
+    useEffect(() => {
+        // Admin yetki kontrolü
+        const isAdmin = localStorage.getItem('isAdmin');
+        const setupComplete = localStorage.getItem('admin_setup_complete');
+        
+        if (!isAdmin) {
+            navigate('/panel/login');
+        } else if (setupComplete !== 'true') {
+            navigate('/panel/setup');
+        }
+    }, [navigate]);
+
     // Data Source Check
     const campaigns = campaignService.getCampaigns();
     const isLocal = campaigns.length > 0 && campaigns.some((c: any) => c.id < 1000);
 
     const handleLogout = () => {
         localStorage.removeItem('isAdmin');
-        navigate('/admin');
+        localStorage.removeItem('admin_last_login');
+        navigate('/panel/login');
     };
 
     const navItems = [
-        { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
-        { name: 'Trafik Analizi', path: '/admin/analytics', icon: Activity },
-        { name: 'Kampanyalar', path: '/admin/campaigns', icon: UploadCloud },
-        { name: 'Toplu Yükleme', path: '/admin/bulk-upload', icon: Database },
-        { name: 'Üye Yönetimi', path: '/admin/members', icon: Users },
-        { name: 'Bülten Yönetimi', path: '/admin/newsletter', icon: Mail },
-        { name: 'Scraper Araçları', path: '/admin/scrapers', icon: Bot },
-        { name: 'AI Asistan', path: '/admin/ai', icon: Bot },
-        { name: 'SEO Paneli', path: '/admin/seo', icon: Search },
-        { name: 'Ayarlar & Entegrasyon', path: '/admin/settings', icon: Settings },
-        { name: 'Logolar', path: '/admin/logos', icon: Image },
-        { name: 'Yedekleme & Kurtarma', path: '/admin/backup', icon: Database },
-        { name: 'Site Tasarımı', path: '/admin/design', icon: LayoutDashboard },
+        { name: 'Dashboard', path: '/panel/dashboard', icon: LayoutDashboard },
+        { name: 'Trafik Analizi', path: '/panel/analytics', icon: Activity },
+        { name: 'Kampanyalar', path: '/panel/campaigns', icon: UploadCloud },
+        { name: 'Toplu Yükleme', path: '/panel/bulk-upload', icon: Database },
+        { name: 'Üye Yönetimi', path: '/panel/members', icon: Users },
+        { name: 'Bülten Yönetimi', path: '/panel/newsletter', icon: Mail },
+        { name: 'Scraper Araçları', path: '/panel/scrapers', icon: Bot },
+        { name: 'AI Asistan', path: '/panel/ai', icon: Bot },
+        { name: 'SEO Paneli', path: '/panel/seo', icon: Search },
+        { name: 'Ayarlar & Entegrasyon', path: '/panel/settings', icon: Settings },
+        { name: 'Logolar', path: '/panel/logos', icon: Image },
+        { name: 'Yedekleme & Kurtarma', path: '/panel/backup', icon: Database },
+        { name: 'Site Tasarımı', path: '/panel/design', icon: LayoutDashboard },
     ];
 
     return (

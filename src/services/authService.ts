@@ -61,9 +61,38 @@ export const authService = {
     signUp: async (email: string, password: string) => {
         const client = createSupabaseClient();
         if (!client) throw new Error("Veritabanı bağlantısı eksik. Lütfen 'Entegrasyonlar' sayfasından anahtarları giriniz.");
-        const { data, error } = await client.auth.signUp({ email, password });
+        const { data, error } = await client.auth.signUp({
+            email,
+            password,
+            options: {
+                emailRedirectTo: `${window.location.origin}/auth/confirm`
+            }
+        });
         if (error) throw error;
         return data;
+    },
+
+    // Resend Email Confirmation
+    resendConfirmation: async (email: string) => {
+        const client = createSupabaseClient();
+        if (!client) throw new Error("Veritabanı bağlantısı eksik.");
+        const { data, error } = await client.auth.resend({
+            type: 'signup',
+            email: email,
+            options: {
+                emailRedirectTo: `${window.location.origin}/auth/confirm`
+            }
+        });
+        if (error) throw error;
+        return data;
+    },
+
+    // Check if user email is confirmed
+    isEmailConfirmed: async () => {
+        const client = createSupabaseClient();
+        if (!client) return false;
+        const { data: { user } } = await client.auth.getUser();
+        return user?.email_confirmed_at !== null;
     },
 
     // Sign In with Email

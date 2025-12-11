@@ -6,6 +6,7 @@ import {
 } from "react-router-dom";
 import HomePage from "./pages/Home";
 import AdminLogin from "./pages/admin/AdminLogin";
+import AdminSetup from "./pages/admin/AdminSetup";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminSettings from './pages/admin/AdminSettings';
@@ -21,6 +22,7 @@ import AdminIntegrations from "./pages/admin/AdminIntegrations";
 import AdminAnalytics from './pages/admin/AdminAnalytics';
 import AdminMembers from './pages/admin/AdminMembers';
 import AdminNewsletter from './pages/admin/AdminNewsletter';
+import EmailConfirmation from './pages/EmailConfirmation';
 
 import ProfileLayout from "./pages/profile/ProfileLayout";
 import { ProfileInfo, ProfileFavorites, ProfileSettings, ProfileWallet } from "./pages/profile/ProfilePages";
@@ -36,6 +38,10 @@ const router = createBrowserRouter([
     errorElement: <div className="p-10 text-center">Bir hata oluştu.</div>,
   },
   {
+    path: "/auth/confirm",
+    element: <EmailConfirmation />,
+  },
+  {
     path: "/profile",
     element: <ProfileLayout />,
     children: [
@@ -47,35 +53,46 @@ const router = createBrowserRouter([
     ]
   },
   {
-    path: "/admin/login",
-    element: <AdminLogin />,
-  },
-  {
     path: "/panel",
-    element: <AdminLogin />,
+    children: [
+      { index: true, element: <AdminLogin /> },
+      { path: "setup", element: <AdminSetup /> },
+      { path: "login", element: <AdminLogin /> },
+      {
+        path: "*",
+        element: <AdminLayout />,
+        children: [
+          { path: "dashboard", element: <AdminDashboard /> },
+          { path: "analytics", element: <AdminAnalytics /> },
+          { path: "members", element: <AdminMembers /> },
+          { path: "newsletter", element: <AdminNewsletter /> },
+          { path: "campaigns", element: <AdminCampaigns /> },
+          { path: "advanced", element: <div className="p-10">Gelişmiş ayarlar yakında...</div> },
+          { path: "bulk-upload", element: <AdminBulkUpload /> },
+          { path: "scrapers", element: <AdminScrapers /> },
+          { path: "integrations", element: <AdminIntegrations /> },
+          { path: "settings", element: <AdminSettings /> },
+          { path: "audience", element: <div className="p-10">Kitle analizleri yakında...</div> },
+          { path: "seo", element: <AdminSeo /> },
+          { path: "ai", element: <AdminAI /> },
+          { path: "logos", element: <AdminLogos /> },
+          { path: "design", element: <AdminDesign /> },
+          { path: "backup", element: <AdminBackup /> },
+        ]
+      }
+    ]
   },
   {
-    path: "/admin",
-    element: <AdminLayout />,
-    children: [
-      { path: "", element: <Navigate to="dashboard" replace /> },
-      { path: "dashboard", element: <AdminDashboard /> },
-      { path: "analytics", element: <AdminAnalytics /> },
-      { path: "members", element: <AdminMembers /> },
-      { path: "newsletter", element: <AdminNewsletter /> },
-      { path: "campaigns", element: <AdminCampaigns /> },
-      { path: "advanced", element: <div className="p-10">Gelişmiş ayarlar yakında...</div> },
-      { path: "bulk-upload", element: <AdminBulkUpload /> },
-      { path: "scrapers", element: <AdminScrapers /> },
-      { path: "integrations", element: <AdminIntegrations /> },
-      { path: "settings", element: <AdminSettings /> },
-      { path: "audience", element: <div className="p-10">Kitle analizleri yakında...</div> },
-      { path: "seo", element: <AdminSeo /> },
-      { path: "ai", element: <AdminAI /> },
-      { path: "logos", element: <AdminLogos /> },
-      { path: "design", element: <AdminDesign /> },
-      { path: "backup", element: <AdminBackup /> },
-    ]
+    path: "/admin/login",
+    element: <Navigate to="/panel/login" replace />,
+  },
+  {
+    path: "/admin/setup", 
+    element: <Navigate to="/panel/setup" replace />,
+  },
+  {
+    path: "/admin/*",
+    element: <Navigate to="/panel/dashboard" replace />,
   },
   {
     path: "*",

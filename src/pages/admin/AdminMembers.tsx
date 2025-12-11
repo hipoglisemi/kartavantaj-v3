@@ -32,24 +32,54 @@ export default function AdminMembers() {
 
     const handleUpdateCredentials = async (e: React.FormEvent) => {
         e.preventDefault();
-        const storedPass = localStorage.getItem('admin_password') || '1234';
+        const storedPass = localStorage.getItem('admin_password');
+
+        if (!storedPass) {
+            error("Hata: Admin kurulumu tamamlanmamış.");
+            return;
+        }
 
         if (credentialCurrentPass !== storedPass) {
             error("Hata: Mevcut şifre yanlış girildi.");
             return;
         }
 
-        if (credentialNewPass.length < 4) {
-            error("Hata: Yeni şifre en az 4 karakter olmalıdır.");
+        if (credentialNewPass.length < 6) {
+            error("Hata: Yeni şifre en az 6 karakter olmalıdır.");
+            return;
+        }
+
+        if (credentialUser.length < 3) {
+            error("Hata: Kullanıcı adı en az 3 karakter olmalıdır.");
             return;
         }
 
         localStorage.setItem('admin_username', credentialUser);
         localStorage.setItem('admin_password', credentialNewPass);
+        localStorage.setItem('admin_last_update', new Date().toISOString());
 
-        success("Giriş bilgileri güncellendi! Bir sonraki girişte yeni şifrenizi kullanın.");
+        success("Giriş bilgileri güncellendi! Bir sonraki girişte yeni bilgilerinizi kullanın.");
         setCredentialCurrentPass('');
         setCredentialNewPass('');
+    };
+
+    const handleShowResetInfo = () => {
+        const resetUrl = `${window.location.origin}/panel/setup?reset=true`;
+        
+        const message = `🔐 KURULUM SIFIRLAMA BİLGİLERİ\n\n` +
+                       `Reset URL: ${resetUrl}\n\n` +
+                       `📱 Kurulumu sıfırlamak için:\n` +
+                       `1. Yukarıdaki URL'yi kullanın\n` +
+                       `2. Google Authenticator kodunuzu girin\n\n` +
+                       `⚠️ Bu işlem tüm admin ayarlarını siler!\n` +
+                       `Bu bilgiyi güvenli bir yerde saklayın.`;
+        
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(resetUrl);
+            alert(message + '\n\n✅ Reset URL panoya kopyalandı!');
+        } else {
+            alert(message);
+        }
     };
 
     const saveSettings = (newSettings: any) => {
@@ -258,6 +288,26 @@ export default function AdminMembers() {
                                     <button type="submit" className="w-full bg-gray-800 text-white py-2.5 rounded-lg text-sm font-bold hover:bg-gray-900 transition-colors">Bilgileri Güncelle</button>
                                 </div>
                             </form>
+                        </div>
+
+                        {/* --- RESET BİLGİLERİ --- */}
+                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                            <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                <Lock size={18} className="text-red-500" />
+                                Kurulum Sıfırlama
+                            </h2>
+                            <div className="space-y-3">
+                                <div className="bg-red-50 text-red-700 p-3 rounded-lg text-xs leading-relaxed">
+                                    <span className="font-bold block mb-1">⚠️ Dikkat:</span>
+                                    Reset anahtarı ile admin paneli tamamen sıfırlanabilir. Bu bilgileri güvenli tutun.
+                                </div>
+                                <button 
+                                    onClick={handleShowResetInfo}
+                                    className="w-full bg-red-600 text-white py-2.5 rounded-lg text-sm font-bold hover:bg-red-700 transition-colors"
+                                >
+                                    Reset Bilgilerini Göster
+                                </button>
+                            </div>
                         </div>
 
                         {/* --- ADD ADMIN --- */}

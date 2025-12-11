@@ -27,6 +27,8 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login', initi
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
+    const [showResendEmail, setShowResendEmail] = useState(false);
+    const [resendLoading, setResendLoading] = useState(false);
 
     const resetState = () => {
         setEmail('');
@@ -37,6 +39,8 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login', initi
         setIsForgotPassword(false);
         setResetPasswordMode(false);
         setLoading(false);
+        setShowResendEmail(false);
+        setResendLoading(false);
     };
 
     const handleClose = () => {
@@ -75,10 +79,26 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login', initi
                 if (password !== confirmPassword) {
                     throw new Error("Şifreler eşleşmiyor.");
                 }
-                await authService.signUp(email, password);
-                setSuccessMessage("Üyelik başarılı! Lütfen e-postanızı onaylayın.");
+                const result = await authService.signUp(email, password);
+                
+                if (result.user && !result.user.email_confirmed_at) {
+                    setSuccessMessage(`Üyelik başarılı! ${email} adresine onay e-postası gönderildi. Lütfen e-postanızı kontrol edin ve onay linkine tıklayın.`);
+                    setShowResendEmail(true);
+                } else {
+                    setSuccessMessage("Üyelik başarılı! Giriş yapabilirsiniz.");
+                    handleClose();
+                }
             } else {
                 await authService.signIn(email, password);
+                
+                // Email onayı kontrolü
+                const isConfirmed = await authService.isEmailConfirmed();
+                if (!isConfirmed) {
+                    setError("E-posta adresiniz henüz onaylanmamış. Lütfen gelen kutunuzu kontrol edin.");
+                    setShowResendEmail(true);
+                    return;
+                }
+                
                 handleClose();
             }
 
@@ -97,6 +117,24 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login', initi
             await authService.signInWithGoogle();
         } catch (err: any) {
             setError(err.message || "Google girişi başlatılamadı.");
+        }
+    };
+
+    const handleResendEmail = async () => {
+        if (!email) {
+            setError("E-posta adresi gerekli.");
+            return;
+        }
+
+        setResendLoading(true);
+        try {
+            await authService.resendConfirmation(email);
+            setSuccessMessage("Onay e-postası tekrar gönderildi. Lütfen gelen kutunuzu kontrol edin.");
+            setError(null);
+        } catch (err: any) {
+            setError(err.message || "E-posta gönderilirken bir hata oluştu.");
+        } finally {
+            setResendLoading(false);
         }
     };
 
@@ -166,6 +204,21 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login', initi
                     {successMessage && (
                         <div className="bg-green-50 text-green-600 p-3 rounded-lg text-sm mb-4 border border-green-100 text-center">
                             {successMessage}
+                        </div>
+                    )}
+
+                    {showResendEmail && (
+                        <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-4">
+                            <p className="text-blue-700 text-sm mb-3 text-center">
+                                E-posta gelmedi mi?
+                            </p>
+                            <button
+                                onClick={handleResendEmail}
+                                disabled={resendLoading}
+                                className="w-full bg-blue-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {resendLoading ? 'Gönderiliyor...' : 'Onay E-postasını Tekrar Gönder'}
+                            </button>
                         </div>
                     )}
 

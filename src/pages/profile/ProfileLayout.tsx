@@ -1,6 +1,7 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { User, Heart, Settings, LogOut, Wallet } from 'lucide-react';
 import Header from '../../components/Header';
+import EmailVerificationBanner from '../../components/EmailVerificationBanner';
 import { authService } from '../../services/authService';
 
 export default function ProfileLayout() {
@@ -54,6 +55,7 @@ export default function ProfileLayout() {
 
                     {/* Content */}
                     <div className="md:col-span-3">
+                        <EmailVerificationBanner />
                         <Outlet />
                     </div>
                 </div>

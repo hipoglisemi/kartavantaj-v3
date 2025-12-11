@@ -1,31 +1,71 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock } from 'lucide-react';
+import { Lock, Settings } from 'lucide-react';
 
 export default function AdminLogin() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [isSetupComplete, setIsSetupComplete] = useState(false);
+    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        // Eğer zaten giriş yapmışsa dashboard'a yönlendir
+        const isAdmin = localStorage.getItem('isAdmin');
+        if (isAdmin === 'true') {
+            navigate('/panel/dashboard');
+            return;
+        }
+
+        // Kurulum kontrolü
+        const setupComplete = localStorage.getItem('admin_setup_complete');
+        if (setupComplete !== 'true') {
+            navigate('/panel/setup');
+        } else {
+            setIsSetupComplete(true);
+        }
+        setLoading(false);
+    }, [navigate]);
 
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Get stored credentials or use defaults
-        const storedUser = localStorage.getItem('admin_username') || 'admin';
-        const storedPass = localStorage.getItem('admin_password') || '1234';
+        const storedUser = localStorage.getItem('admin_username');
+        const storedPass = localStorage.getItem('admin_password');
+
+        if (!storedUser || !storedPass) {
+            alert('Admin kurulumu tamamlanmamış. Kurulum sayfasına yönlendiriliyorsunuz.');
+            navigate('/panel/setup');
+            return;
+        }
 
         if (username === storedUser && password === storedPass) {
             localStorage.setItem('isAdmin', 'true');
-
-            // Ensure defaults are saved if they weren't before (so they can be changed later)
-            if (!localStorage.getItem('admin_username')) localStorage.setItem('admin_username', 'admin');
-            if (!localStorage.getItem('admin_password')) localStorage.setItem('admin_password', '1234');
-
-            navigate('/admin/dashboard');
+            localStorage.setItem('admin_last_login', new Date().toISOString());
+            navigate('/panel/dashboard');
         } else {
             alert('Hatalı kullanıcı adı veya şifre!');
         }
     };
+
+    const handleGoToSetup = () => {
+        navigate('/panel/setup');
+    };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Yükleniyor...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (!isSetupComplete) {
+        return null; // Navigate will handle redirect
+    }
 
     return (
         <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -68,8 +108,15 @@ export default function AdminLogin() {
                     </button>
                 </form>
 
-                <div className="mt-6 text-center">
-                    <a href="/" className="text-sm text-gray-500 hover:text-gray-800">Ana Sayfaya Dön</a>
+                <div className="mt-6 text-center space-y-2">
+                    <button
+                        onClick={handleGoToSetup}
+                        className="flex items-center justify-center gap-2 w-full text-sm text-gray-500 hover:text-gray-800 py-2"
+                    >
+                        <Settings size={16} />
+                        Kurulum Ayarları
+                    </button>
+                    <a href="/" className="block text-sm text-gray-500 hover:text-gray-800">Ana Sayfaya Dön</a>
                 </div>
             </div>
         </div>
