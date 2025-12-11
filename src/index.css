@@ -2,11 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Global Scale Preference Removed to fix Full Screen Issue */
+/* Global Scale Preference Restored for Minimalist Look */
 html {
+  zoom: 0.8;
   /* Chrome, Edge, Safari */
   min-height: 100%;
   background-color: #f8fafc;
+}
+
+/* Firefox Specific Scale */
+@supports (-moz-appearance:none) {
+  html {
+    transform: scale(0.8);
+    transform-origin: top center;
+    width: 125%;
+    height: 125%;
+    overflow-x: hidden;
+  }
 }
 
 
