@@ -91,11 +91,17 @@ export class TOTPService {
             // 6 haneli kod üret
             const token = (code % 1000000).toString().padStart(6, '0');
             
-            // Debug bilgisi (geçici)
-            if (window.location.hostname === 'localhost') {
-                const remaining = this.getTimeRemaining();
-                console.log(`TOTP: ${token}, Kalan: ${remaining}s, Epoch: ${epoch}, Counter: ${timeCounter}`);
-            }
+            // Debug bilgisi (geçici - production'da da aktif)
+            const remaining = this.getTimeRemaining();
+            const now = new Date();
+            console.log(`🔐 TOTP Debug:`, {
+                token,
+                kalan_saniye: remaining,
+                epoch,
+                counter: timeCounter,
+                zaman: now.toLocaleTimeString('tr-TR'),
+                milisaniye: now.getMilliseconds()
+            });
             
             return token;
         } catch (error) {
