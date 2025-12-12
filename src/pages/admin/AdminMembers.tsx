@@ -244,6 +244,22 @@ export default function AdminMembers() {
             });
             const updated = { ...settings, admins: updatedAdmins };
             saveSettings(updated);
+            
+            // Eski sistem verilerini de temizle
+            try {
+                const adminList = JSON.parse(SecurityService.getSecureItem('admin_list') || '[]');
+                const cleanedList = adminList.filter((adminEmail: string) => adminEmail !== email);
+                SecurityService.setSecureItem('admin_list', JSON.stringify(cleanedList));
+                
+                // Admin credentials'ını da sil
+                SecurityService.removeSecureItem(`admin_cred_${email}`);
+                
+                // TOTP secret'ını da sil
+                TOTPService.removeAdminSecret(email);
+            } catch (e) {
+                console.warn('Eski sistem verileri temizlenirken hata:', e);
+            }
+            
             success(`${email} yönetici listesinden kaldırıldı.`);
         }
     };

@@ -44,10 +44,20 @@ export default function AdminRegisterModal({ isOpen, onClose }: AdminRegisterMod
             newErrors.confirmPassword = 'Şifreler eşleşmiyor';
         }
 
-        // Email zaten kayıtlı mı kontrol et
-        const adminList = getAdminList();
-        if (adminList.includes(formData.email)) {
-            newErrors.email = 'Bu email adresi zaten kayıtlı';
+        // Email zaten kayıtlı mı kontrol et (yeni sistem)
+        const currentSettings = settingsService.getLocalSettings();
+        const existingAdmin = currentSettings.admins.find(admin => 
+            typeof admin === 'string' ? admin === formData.email : admin.email === formData.email
+        );
+        
+        if (existingAdmin) {
+            const adminStatus = typeof existingAdmin === 'string' ? 'active' : existingAdmin.status;
+            if (adminStatus === 'active') {
+                newErrors.email = 'Bu email adresi zaten aktif admin olarak kayıtlı';
+            } else if (adminStatus === 'pending') {
+                newErrors.email = 'Bu email adresi için onay bekleyen başvuru var';
+            }
+            // rejected durumunda yeniden başvuru yapabilir
         }
 
         setErrors(newErrors);
