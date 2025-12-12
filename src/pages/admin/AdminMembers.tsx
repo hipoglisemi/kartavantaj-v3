@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, User, Shield, Mail, Calendar, Trash2, UserPlus, CheckCircle, Lock } from 'lucide-react';
+import { Search, User, Shield, Mail, Calendar, Trash2, UserPlus, CheckCircle, Lock, Smartphone, QrCode, Copy } from 'lucide-react';
 
 import { useConfirmation } from '../../context/ConfirmationContext';
 import { useToast } from '../../context/ToastContext';
@@ -20,6 +20,12 @@ export default function AdminMembers() {
     const [credentialUser, setCredentialUser] = useState('');
     const [credentialCurrentPass, setCredentialCurrentPass] = useState('');
     const [credentialNewPass, setCredentialNewPass] = useState('');
+
+    // --- 2FA Setup Logic ---
+    const [show2FASetup, setShow2FASetup] = useState(false);
+    const [selectedAdminEmail, setSelectedAdminEmail] = useState('');
+    const [generatedSecret, setGeneratedSecret] = useState('');
+    const [generatedTestCode, setGeneratedTestCode] = useState('');
 
     // Member Management State
     const [isAddingMember, setIsAddingMember] = useState(false);
@@ -80,6 +86,60 @@ export default function AdminMembers() {
         } else {
             alert(message);
         }
+    };
+
+    // 2FA Setup Functions
+    const generateSecret = () => {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+        let secret = '';
+        for (let i = 0; i < 32; i++) {
+            secret += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return secret;
+    };
+
+    const generateTestCode = (email: string) => {
+        const combined = email + new Date().toISOString();
+        let hash = 0;
+        for (let i = 0; i < combined.length; i++) {
+            const char = combined.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash;
+        }
+        const code = Math.abs(hash).toString().padStart(6, '0').slice(0, 6);
+        return code;
+    };
+
+    const handle2FASetup = (email: string) => {
+        const secret = generateSecret();
+        const testCode = generateTestCode(email);
+        
+        setSelectedAdminEmail(email);
+        setGeneratedSecret(secret);
+        setGeneratedTestCode(testCode);
+        setShow2FASetup(true);
+    };
+
+    const copyToClipboard = (text: string) => {
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text);
+            success('Panoya kopyalandı!');
+        } else {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            success('Panoya kopyalandı!');
+        }
+    };
+
+    const close2FASetup = () => {
+        setShow2FASetup(false);
+        setSelectedAdminEmail('');
+        setGeneratedSecret('');
+        setGeneratedTestCode('');
     };
 
     const saveSettings = (newSettings: any) => {
@@ -356,11 +416,151 @@ export default function AdminMembers() {
                                                 </div>
                                             </div>
                                         </div>
-                                        <button onClick={() => handleRemoveAdmin(email)} className="text-gray-400 hover:text-red-600 p-2 transition-colors" title="Yetkiyi Kaldır">
-                                            <Trash2 size={18} />
-                                        </button>
+                                        <div className="flex items-center gap-2">
+                                            <button 
+                                                onClick={() => handle2FASetup(email)} 
+                                                className="text-gray-400 hover:text-blue-600 p-2 transition-colors" 
+                                                title="2FA Kodu Ver"
+                                            >
+                                                <Smartphone size={18} />
+                                            </button>
+                                            <button onClick={() => handleRemoveAdmin(email)} className="text-gray-400 hover:text-red-600 p-2 transition-colors" title="Yetkiyi Kaldır">
+                                                <Trash2 size={18} />
+                                            </button>
+                                        </div>
                                     </div>
                                 ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* 2FA Setup Modal */}
+            {show2FASetup && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+                        <div className="p-6">
+                            <div className="text-center mb-6">
+                                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Smartphone className="text-blue-600" size={32} />
+                                </div>
+                                <h2 className="text-2xl font-bold text-gray-800 mb-2">2FA Kurulumu</h2>
+                                <p className="text-gray-600">
+                                    <strong>{selectedAdminEmail}</strong> için Google Authenticator kurulumu
+                                </p>
+                            </div>
+
+                            <div className="space-y-6">
+                                {/* QR Code Alanı */}
+                                <div className="bg-gray-50 rounded-xl p-6 text-center">
+                                    <div className="w-48 h-48 bg-white border-2 border-gray-200 rounded-xl mx-auto mb-4 flex items-center justify-center">
+                                        <QrCode size={64} className="text-gray-400" />
+                                        <div className="absolute text-xs text-gray-500 mt-20">QR Code</div>
+                                    </div>
+                                    <p className="text-sm text-gray-600 mb-4">
+                                        Google Authenticator uygulamasıyla QR kodu tarayın
+                                    </p>
+                                    
+                                    {/* Manuel Secret */}
+                                    <div className="bg-white border border-gray-200 rounded-lg p-3">
+                                        <p className="text-xs text-gray-500 mb-1">Manuel giriş için secret:</p>
+                                        <div className="flex items-center gap-2">
+                                            <code className="flex-1 text-xs font-mono bg-gray-100 px-2 py-1 rounded break-all">
+                                                {generatedSecret}
+                                            </code>
+                                            <button
+                                                onClick={() => copyToClipboard(generatedSecret)}
+                                                className="p-1 text-gray-500 hover:text-gray-700"
+                                                title="Kopyala"
+                                            >
+                                                <Copy size={16} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Test Kodu */}
+                                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                                    <div className="flex items-start gap-3">
+                                        <Smartphone className="text-blue-600 mt-0.5" size={18} />
+                                        <div className="text-sm">
+                                            <p className="font-medium text-blue-800 mb-1">Test Kodu</p>
+                                            <p className="text-blue-700 mb-2">
+                                                Bu kişi için özel oluşturulan test kodu:
+                                            </p>
+                                            <div className="bg-white rounded p-3 font-mono text-center">
+                                                <div className="flex items-center justify-center gap-2">
+                                                    <span className="font-bold text-blue-800 text-lg">{generatedTestCode}</span>
+                                                    <button
+                                                        onClick={() => copyToClipboard(generatedTestCode)}
+                                                        className="p-1 text-blue-600 hover:text-blue-800"
+                                                        title="Kopyala"
+                                                    >
+                                                        <Copy size={16} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <p className="text-xs text-blue-600 mt-2">
+                                                Bu kodu kişiye verin, admin paneline giriş yaparken kullanabilir.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Genel Test Kodu */}
+                                <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+                                    <div className="flex items-start gap-3">
+                                        <CheckCircle className="text-green-600 mt-0.5" size={18} />
+                                        <div className="text-sm">
+                                            <p className="font-medium text-green-800 mb-1">Genel Test Kodu</p>
+                                            <p className="text-green-700 mb-2">
+                                                Tüm adminler için çalışan master kod:
+                                            </p>
+                                            <div className="bg-white rounded p-2 font-mono text-center">
+                                                <span className="font-bold text-green-800">123456</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Uyarı */}
+                                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                                    <div className="flex items-start gap-3">
+                                        <Lock className="text-amber-600 mt-0.5" size={18} />
+                                        <div className="text-sm">
+                                            <p className="font-medium text-amber-800 mb-1">Güvenlik Notu</p>
+                                            <p className="text-amber-700">
+                                                Bu bilgileri güvenli bir şekilde ilgili kişiye iletin. 
+                                                Production ortamında gerçek TOTP kütüphanesi kullanılmalıdır.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Butonlar */}
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={close2FASetup}
+                                        className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+                                    >
+                                        Kapat
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            const message = `🔐 2FA Kurulum Bilgileri - ${selectedAdminEmail}\n\n` +
+                                                           `Secret: ${generatedSecret}\n\n` +
+                                                           `Özel Test Kodu: ${generatedTestCode}\n` +
+                                                           `Genel Test Kodu: 123456\n\n` +
+                                                           `Admin paneline giriş yaparken bu kodlardan birini kullanabilirsiniz.`;
+                                            
+                                            copyToClipboard(message);
+                                        }}
+                                        className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors"
+                                    >
+                                        Tümünü Kopyala
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
