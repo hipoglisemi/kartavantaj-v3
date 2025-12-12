@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, Trash2, Eye, EyeOff, Globe, CloudUpload, RefreshCw, CheckCircle } from 'lucide-react';
+import { Save, Trash2, Eye, EyeOff, CloudUpload, RefreshCw, CheckCircle } from 'lucide-react';
 
 import { settingsService } from '../../services/settingsService';
 import { campaignService } from '../../services/campaignService';
@@ -31,7 +31,7 @@ export default function AdminSettings() {
 
     // UI State
     const [showKeys, setShowKeys] = useState<Record<string, boolean>>({});
-    const [savedStatus, setSavedStatus] = useState<string | null>(null);
+    const [savedStatus] = useState<string | null>(null);
     const [migrationStatus, setMigrationStatus] = useState<string>('idle');
     const [migratedCount, setMigratedCount] = useState(0);
 
@@ -234,69 +234,7 @@ export default function AdminSettings() {
                 })}
             </div>
 
-            {/* --- GOOGLE ADS SETTINGS --- */}
-            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm mt-8">
-                <div className="flex items-center gap-3 mb-6">
-                    <div className="p-3 bg-orange-50 text-orange-600 rounded-lg">
-                        <Globe size={24} />
-                    </div>
-                    <div>
-                        <h2 className="text-xl font-bold text-gray-900">Google Ads Ayarları</h2>
-                        <p className="text-sm text-gray-500">Reklam gösterimini buradan yönetebilirsiniz.</p>
-                    </div>
-                </div>
-
-                <div className="space-y-4">
-                    <div className="flex items-center gap-4">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                                type="checkbox"
-                                checked={JSON.parse(localStorage.getItem('ad_config') || '{}').enabled || false}
-                                onChange={(e) => {
-                                    const current = JSON.parse(localStorage.getItem('ad_config') || '{}');
-                                    localStorage.setItem('ad_config', JSON.stringify({ ...current, enabled: e.target.checked }));
-                                    window.dispatchEvent(new Event('storage'));
-                                    // Force re-render (simple way for this standalone component)
-                                    setSavedStatus('Durum güncellendi');
-                                    setTimeout(() => setSavedStatus(null), 1000);
-                                }}
-                                className="w-5 h-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                            />
-                            <span className="font-medium text-gray-700">Reklamları Aktifleştir</span>
-                        </label>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-xs font-semibold text-gray-500 mb-1">Yayıncı ID (Publisher ID)</label>
-                            <input
-                                type="text"
-                                placeholder="ca-pub-XXXXXXXXXXXXXXXX"
-                                defaultValue={JSON.parse(localStorage.getItem('ad_config') || '{}').clientId || ''}
-                                onChange={(e) => {
-                                    const current = JSON.parse(localStorage.getItem('ad_config') || '{}');
-                                    localStorage.setItem('ad_config', JSON.stringify({ ...current, clientId: e.target.value }));
-                                }}
-                                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm font-mono"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-xs font-semibold text-gray-500 mb-1">Varsayılan Slot ID</label>
-                            <input
-                                type="text"
-                                placeholder="1234567890"
-                                defaultValue={JSON.parse(localStorage.getItem('ad_config') || '{}').slotId || ''}
-                                onChange={(e) => {
-                                    const current = JSON.parse(localStorage.getItem('ad_config') || '{}');
-                                    localStorage.setItem('ad_config', JSON.stringify({ ...current, slotId: e.target.value }));
-                                }}
-                                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm font-mono"
-                            />
-                        </div>
-                    </div>
-                    <p className="text-xs text-gray-400">Not: Değişiklikler anında kaydedilir.</p>
-                </div>
-            </div>
+            {/* Google Ads ayarları Entegrasyonlar sayfasına taşındı */}
 
             <div className="flex justify-end pt-4">
                 <button
