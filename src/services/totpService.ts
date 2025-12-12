@@ -39,9 +39,9 @@ export class TOTPService {
         }
     }
 
-    // QR Code URL'i oluştur
+    // QR Code URL'i oluştur (Google Authenticator standardı)
     static generateQRCodeURL(secret: string, email: string, issuer: string = 'KartAvantaj'): string {
-        return `otpauth://totp/${encodeURIComponent(issuer)}:${encodeURIComponent(email)}?secret=${secret}&issuer=${encodeURIComponent(issuer)}`;
+        return `otpauth://totp/${encodeURIComponent(issuer)}:${encodeURIComponent(email)}?secret=${secret}&issuer=${encodeURIComponent(issuer)}&algorithm=SHA1&digits=6&period=30`;
     }
 
     // QR Code image oluştur (base64)
@@ -55,24 +55,26 @@ export class TOTPService {
         }
     }
 
-    // TOTP token üret
+    // TOTP token üret (Google Authenticator uyumlu)
     static generateTOTP(secret: string, timeStep: number = 30): string {
         try {
             if (!secret || secret.length < 16) {
                 return '123456';
             }
 
-            // Zaman adımını hesapla (30 saniye)
+            // Zaman adımını hesapla (30 saniye) - UTC zaman kullan
             const epoch = Math.floor(Date.now() / 1000);
             const timeCounter = Math.floor(epoch / timeStep);
 
             // Secret'ı decode et
             const key = this.base32Decode(secret);
             
-            // Time counter'ı 8 byte'a çevir
+            // Time counter'ı 8 byte'a çevir (Big Endian)
             const timeBytes = new ArrayBuffer(8);
             const timeView = new DataView(timeBytes);
-            timeView.setUint32(4, timeCounter, false); // Big endian
+            // Üst 4 byte sıfır, alt 4 byte time counter
+            timeView.setUint32(0, 0, false);
+            timeView.setUint32(4, timeCounter, false);
 
             // HMAC-SHA1 hesapla
             const shaObj = new jsSHA('SHA-1', 'ARRAYBUFFER');
@@ -80,7 +82,7 @@ export class TOTPService {
             shaObj.update(timeBytes);
             const hmac = shaObj.getHMAC('UINT8ARRAY');
 
-            // Dynamic truncation
+            // Dynamic truncation (RFC 4226)
             const offset = hmac[hmac.length - 1] & 0x0f;
             const code = ((hmac[offset] & 0x7f) << 24) |
                         ((hmac[offset + 1] & 0xff) << 16) |
@@ -90,6 +92,17 @@ export class TOTPService {
             // 6 haneli kod üret
             const token = (code % 1000000).toString().padStart(6, '0');
             
+            // Debug için log (sadece development)
+            if (window.location.hostname === 'localhost') {
+                console.log('TOTP Debug:', {
+                    secret: secret.substring(0, 8) + '...',
+                    epoch,
+                    timeCounter,
+                    token,
+                    timeRemaining: 30 - (epoch % 30)
+                });
+            }
+            
             return token;
         } catch (error) {
             ConsoleProtection.safeError('TOTP üretim hatası');
@@ -97,13 +110,40 @@ export class TOTPService {
         }
     }
 
-    // TOTP token doğrula
+    // TOTP token doğrula (zaman toleransı ile)
     static verifyToken(token: string, secret: string): boolean {
         try {
-            const currentToken = this.generateTOTP(secret);
-            const prevToken = this.generateTOTP(secret, 30); // Önceki 30 saniye
+            const epoch = Math.floor(Date.now() / 1000);
+            const currentWindow = Math.floor(epoch / 30);
             
-            return token === currentToken || token === prevToken;
+            // Mevcut, önceki ve sonraki zaman pencerelerini kontrol et
+            for (let i = -1; i <= 1; i++) {
+                const timeCounter = currentWindow + i;
+                const timeBytes = new ArrayBuffer(8);
+                const timeView = new DataView(timeBytes);
+                timeView.setUint32(0, 0, false);
+                timeView.setUint32(4, timeCounter, false);
+
+                const key = this.base32Decode(secret);
+                const shaObj = new jsSHA('SHA-1', 'ARRAYBUFFER');
+                shaObj.setHMACKey(key, 'UINT8ARRAY');
+                shaObj.update(timeBytes);
+                const hmac = shaObj.getHMAC('UINT8ARRAY');
+
+                const offset = hmac[hmac.length - 1] & 0x0f;
+                const code = ((hmac[offset] & 0x7f) << 24) |
+                            ((hmac[offset + 1] & 0xff) << 16) |
+                            ((hmac[offset + 2] & 0xff) << 8) |
+                            (hmac[offset + 3] & 0xff);
+
+                const generatedToken = (code % 1000000).toString().padStart(6, '0');
+                
+                if (token === generatedToken) {
+                    return true;
+                }
+            }
+            
+            return false;
         } catch (error) {
             ConsoleProtection.safeError('TOTP verification error');
             return false;
