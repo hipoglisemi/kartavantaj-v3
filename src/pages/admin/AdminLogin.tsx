@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, Settings, Smartphone } from 'lucide-react';
 import TOTPService from '../../services/totpService';
+import SecurityService from '../../services/securityService';
 
 export default function AdminLogin() {
     const [username, setUsername] = useState('');
@@ -14,15 +15,14 @@ export default function AdminLogin() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        // Eğer zaten giriş yapmışsa dashboard'a yönlendir
-        const isAdmin = localStorage.getItem('isAdmin');
-        if (isAdmin === 'true') {
+        // Güvenli session kontrolü
+        if (SecurityService.isValidAdminSession()) {
             navigate('/panel/dashboard');
             return;
         }
 
-        // Kurulum kontrolü
-        const setupComplete = localStorage.getItem('admin_setup_complete');
+        // Kurulum kontrolü (şifreli)
+        const setupComplete = SecurityService.getSecureItem('admin_setup_complete');
         if (setupComplete !== 'true') {
             navigate('/panel/setup');
         } else {
@@ -31,31 +31,50 @@ export default function AdminLogin() {
         setLoading(false);
     }, [navigate]);
 
-    // 2FA kodu doğrulama (Gerçek TOTP)
+    // 2FA kodu doğrulama (Güvenli TOTP)
     const verifyTwoFactorCode = (token: string) => {
-        // Gerçek TOTP doğrulaması
-        const adminEmail = localStorage.getItem('admin_email');
-        return TOTPService.verifyAdminLogin(token, adminEmail || undefined);
+        try {
+            const adminEmail = SecurityService.getSecureItem('admin_email');
+            return TOTPService.verifyAdminLogin(token, adminEmail || undefined);
+        } catch {
+            SecurityService.logSecurityEvent('TOTP_VERIFICATION_ERROR');
+            return false;
+        }
     };
 
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
         setErrors({});
 
-        const storedUser = localStorage.getItem('admin_username');
-        const storedPass = localStorage.getItem('admin_password');
+        try {
+            // Brute force koruması
+            if (!SecurityService.checkBruteForce('admin_login')) {
+                setErrors({ login: 'Çok fazla başarısız deneme. 15 dakika sonra tekrar deneyin.' });
+                SecurityService.logSecurityEvent('LOGIN_BRUTE_FORCE_BLOCKED');
+                return;
+            }
 
-        if (!storedUser || !storedPass) {
-            alert('Admin kurulumu tamamlanmamış. Kurulum sayfasına yönlendiriliyorsunuz.');
-            navigate('/panel/setup');
-            return;
-        }
+            const storedUser = SecurityService.getSecureItem('admin_username');
+            const storedPass = SecurityService.getSecureItem('admin_password');
 
-        // 1. Adım: Kullanıcı adı ve şifre kontrolü
-        if (username === storedUser && password === storedPass) {
-            setShowTwoFactor(true);
-        } else {
-            setErrors({ login: 'Hatalı kullanıcı adı veya şifre!' });
+            if (!storedUser || !storedPass) {
+                SecurityService.logSecurityEvent('LOGIN_SETUP_INCOMPLETE');
+                navigate('/panel/setup');
+                return;
+            }
+
+            // 1. Adım: Kullanıcı adı ve şifre kontrolü
+            if (username === storedUser && password === storedPass) {
+                SecurityService.clearFailedAttempts('admin_login');
+                SecurityService.logSecurityEvent('LOGIN_CREDENTIALS_SUCCESS', { username });
+                setShowTwoFactor(true);
+            } else {
+                SecurityService.recordFailedAttempt('admin_login');
+                SecurityService.logSecurityEvent('LOGIN_CREDENTIALS_FAILED', { username, ip: 'client' });
+                setErrors({ login: 'Hatalı kullanıcı adı veya şifre!' });
+            }
+        } catch {
+            setErrors({ login: 'Giriş işlemi başarısız oldu.' });
         }
     };
 
@@ -68,13 +87,20 @@ export default function AdminLogin() {
             return;
         }
 
-        // 2. Adım: 2FA kodu kontrolü
-        if (verifyTwoFactorCode(twoFactorCode)) {
-            localStorage.setItem('isAdmin', 'true');
-            localStorage.setItem('admin_last_login', new Date().toISOString());
-            navigate('/panel/dashboard');
-        } else {
-            setErrors({ twoFactor: 'Geçersiz doğrulama kodu' });
+        try {
+            // 2. Adım: 2FA kodu kontrolü
+            if (verifyTwoFactorCode(twoFactorCode)) {
+                // Güvenli session oluştur
+                SecurityService.createAdminSession();
+                localStorage.setItem('isAdmin', 'true');
+                SecurityService.setSecureItem('admin_last_login', new Date().toISOString());
+                SecurityService.logSecurityEvent('ADMIN_LOGIN_SUCCESS', { username });
+                navigate('/panel/dashboard');
+            } else {
+                setErrors({ twoFactor: 'Geçersiz doğrulama kodu' });
+            }
+        } catch {
+            setErrors({ twoFactor: 'Doğrulama işlemi başarısız oldu.' });
         }
     };
 

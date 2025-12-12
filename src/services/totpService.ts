@@ -1,5 +1,6 @@
 import jsSHA from 'jssha';
 import QRCode from 'qrcode';
+import SecurityService from './securityService';
 
 export class TOTPService {
     // Base32 decode fonksiyonu
@@ -120,69 +121,109 @@ export class TOTPService {
         return countDown;
     }
 
-    // Admin için TOTP secret'ı kaydet
+    // Admin için TOTP secret'ı kaydet (şifreli)
     static saveAdminSecret(email: string, secret: string): void {
-        const adminSecrets = this.getAdminSecrets();
-        adminSecrets[email] = secret;
-        localStorage.setItem('admin_totp_secrets', JSON.stringify(adminSecrets));
+        try {
+            const adminSecrets = this.getAdminSecrets();
+            adminSecrets[email] = secret;
+            SecurityService.setSecureItem('admin_totp_secrets', JSON.stringify(adminSecrets));
+        } catch {
+            // Sessizce başarısız ol
+        }
     }
 
-    // Admin'in TOTP secret'ını al
+    // Admin'in TOTP secret'ını al (şifreli)
     static getAdminSecret(email: string): string | null {
-        const adminSecrets = this.getAdminSecrets();
-        return adminSecrets[email] || null;
+        try {
+            const adminSecrets = this.getAdminSecrets();
+            return adminSecrets[email] || null;
+        } catch {
+            return null;
+        }
     }
 
-    // Tüm admin secret'larını al
+    // Tüm admin secret'larını al (şifreli)
     static getAdminSecrets(): Record<string, string> {
-        const stored = localStorage.getItem('admin_totp_secrets');
-        return stored ? JSON.parse(stored) : {};
+        try {
+            const stored = SecurityService.getSecureItem('admin_totp_secrets');
+            return stored ? JSON.parse(stored) : {};
+        } catch {
+            return {};
+        }
     }
 
-    // Admin secret'ını sil
+    // Admin secret'ını sil (şifreli)
     static removeAdminSecret(email: string): void {
-        const adminSecrets = this.getAdminSecrets();
-        delete adminSecrets[email];
-        localStorage.setItem('admin_totp_secrets', JSON.stringify(adminSecrets));
+        try {
+            const adminSecrets = this.getAdminSecrets();
+            delete adminSecrets[email];
+            SecurityService.setSecureItem('admin_totp_secrets', JSON.stringify(adminSecrets));
+        } catch {
+            // Sessizce başarısız ol
+        }
     }
 
     // Master admin için özel doğrulama (kurulum sıfırlama için)
     static verifyMasterToken(token: string): boolean {
-        const masterSecret = localStorage.getItem('admin_totp_secret');
-        if (masterSecret) {
-            return this.verifyToken(token, masterSecret);
+        try {
+            const masterSecret = SecurityService.getSecureItem('admin_totp_secret');
+            if (masterSecret && this.verifyToken(token, masterSecret)) {
+                return true;
+            }
+            
+            // Fallback: test kodu (sadece development)
+            if (token === '123456' && window.location.hostname === 'localhost') {
+                return true;
+            }
+            
+            return false;
+        } catch {
+            return false;
         }
-        
-        // Fallback: test kodu
-        if (token === '123456') {
-            return true;
-        }
-        
-        return false;
     }
 
     // Admin giriş doğrulaması
     static verifyAdminLogin(token: string, email?: string): boolean {
-        // 1. Eğer email verilmişse, o admin'in secret'ını kontrol et
-        if (email) {
-            const adminSecret = this.getAdminSecret(email);
-            if (adminSecret && this.verifyToken(token, adminSecret)) {
+        try {
+            // Brute force koruması
+            const identifier = email || 'admin_login';
+            if (!SecurityService.checkBruteForce(identifier)) {
+                SecurityService.logSecurityEvent('TOTP_BRUTE_FORCE_BLOCKED', { email, token: '***' });
+                return false;
+            }
+
+            // 1. Eğer email verilmişse, o admin'in secret'ını kontrol et
+            if (email) {
+                const adminSecret = this.getAdminSecret(email);
+                if (adminSecret && this.verifyToken(token, adminSecret)) {
+                    SecurityService.clearFailedAttempts(identifier);
+                    SecurityService.logSecurityEvent('TOTP_LOGIN_SUCCESS', { email });
+                    return true;
+                }
+            }
+
+            // 2. Master admin secret'ını kontrol et
+            const masterSecret = SecurityService.getSecureItem('admin_totp_secret');
+            if (masterSecret && this.verifyToken(token, masterSecret)) {
+                SecurityService.clearFailedAttempts(identifier);
+                SecurityService.logSecurityEvent('TOTP_MASTER_LOGIN_SUCCESS');
                 return true;
             }
-        }
 
-        // 2. Master admin secret'ını kontrol et
-        const masterSecret = localStorage.getItem('admin_totp_secret');
-        if (masterSecret && this.verifyToken(token, masterSecret)) {
-            return true;
-        }
+            // 3. Fallback: test kodu (sadece localhost)
+            if (token === '123456' && window.location.hostname === 'localhost') {
+                SecurityService.clearFailedAttempts(identifier);
+                SecurityService.logSecurityEvent('TOTP_TEST_LOGIN', { warning: 'Test code used' });
+                return true;
+            }
 
-        // 3. Fallback: test kodu (geliştirme amaçlı)
-        if (token === '123456') {
-            return true;
+            // Başarısız deneme kaydet
+            SecurityService.recordFailedAttempt(identifier);
+            SecurityService.logSecurityEvent('TOTP_LOGIN_FAILED', { email, token: '***' });
+            return false;
+        } catch {
+            return false;
         }
-
-        return false;
     }
 }
 
