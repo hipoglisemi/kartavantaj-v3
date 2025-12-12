@@ -115,12 +115,13 @@ export default function AdminMembers() {
             
             // QR Code'u ayrı olarak oluştur
             try {
+                console.log('QR Code oluşturuluyor...');
                 const qrImage = await TOTPService.generateQRCodeImage(secret, email, 'KartAvantaj Admin');
-                console.log('QR Code oluşturuldu');
+                console.log('QR Code başarıyla oluşturuldu, boyut:', qrImage.length);
                 setQrCodeImage(qrImage);
             } catch (qrError) {
                 console.error('QR Code oluşturma hatası:', qrError);
-                // QR Code olmasa da devam et
+                error('QR Code oluşturulamadı, manuel secret kullanın: ' + (qrError instanceof Error ? qrError.message : 'Bilinmeyen hata'));
                 setQrCodeImage('');
             }
             
@@ -137,12 +138,11 @@ export default function AdminMembers() {
         const remaining = TOTPService.getTimeRemaining();
         setTimeRemaining(remaining);
         
-        if (remaining === 30 || remaining === 29) {
-            // Yeni token oluştur (30 saniyede bir)
-            if (generatedSecret) {
-                console.log('Timer: Yeni token oluşturuluyor...');
-                const newToken = TOTPService.generateToken(generatedSecret);
-                console.log('Timer: Yeni token:', newToken);
+        // Her saniye yeni token oluştur (TOTP kendi içinde 30 saniyeyi yönetir)
+        if (generatedSecret) {
+            const newToken = TOTPService.generateToken(generatedSecret);
+            if (newToken !== currentToken) {
+                console.log('Timer: Token güncellendi:', newToken);
                 setCurrentToken(newToken);
             }
         }

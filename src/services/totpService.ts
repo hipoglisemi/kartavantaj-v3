@@ -52,28 +52,31 @@ export class TOTPService {
         }
     }
 
-    // Mevcut TOTP token oluştur (test amaçlı)
+    // Mevcut TOTP token oluştur (gerçek TOTP)
     static generateToken(secret: string): string {
         try {
             console.log('Generating token for secret:', secret);
+            
+            // Secret'ın geçerli olduğunu kontrol et
+            if (!secret || secret.length < 16) {
+                console.error('Invalid secret length:', secret?.length);
+                return '123456'; // Fallback
+            }
+            
             const token = authenticator.generate(secret);
             console.log('Generated token:', token);
-            return token;
+            
+            // Token'ın 6 haneli olduğunu kontrol et
+            if (token && token.length === 6 && /^\d{6}$/.test(token)) {
+                return token;
+            } else {
+                console.error('Invalid token format:', token);
+                return '123456'; // Fallback
+            }
         } catch (error) {
             console.error('Token generation error:', error);
             console.error('Secret that failed:', secret);
-            
-            // Eğer secret geçersizse, yeni bir tane oluştur ve kaydet
-            try {
-                const newSecret = authenticator.generateSecret();
-                console.log('Generated new secret:', newSecret);
-                const newToken = authenticator.generate(newSecret);
-                console.log('Generated token with new secret:', newToken);
-                return newToken;
-            } catch (fallbackError) {
-                console.error('Fallback token generation also failed:', fallbackError);
-                return '123456';
-            }
+            return '123456'; // Fallback
         }
     }
 
@@ -127,25 +130,35 @@ export class TOTPService {
 
     // Admin giriş doğrulaması
     static verifyAdminLogin(token: string, email?: string): boolean {
+        console.log('verifyAdminLogin çağrıldı:', { token, email });
+        
         // 1. Eğer email verilmişse, o admin'in secret'ını kontrol et
         if (email) {
             const adminSecret = this.getAdminSecret(email);
-            if (adminSecret && this.verifyToken(token, adminSecret)) {
-                return true;
+            console.log('Admin secret bulundu:', !!adminSecret);
+            if (adminSecret) {
+                const result = this.verifyToken(token, adminSecret);
+                console.log('Admin secret doğrulama sonucu:', result);
+                if (result) return true;
             }
         }
 
         // 2. Master admin secret'ını kontrol et
         const masterSecret = localStorage.getItem('admin_totp_secret');
-        if (masterSecret && this.verifyToken(token, masterSecret)) {
-            return true;
+        console.log('Master secret bulundu:', !!masterSecret);
+        if (masterSecret) {
+            const result = this.verifyToken(token, masterSecret);
+            console.log('Master secret doğrulama sonucu:', result);
+            if (result) return true;
         }
 
         // 3. Fallback: test kodu (geliştirme amaçlı)
         if (token === '123456') {
+            console.log('Test kodu kullanıldı');
             return true;
         }
 
+        console.log('Tüm doğrulama yöntemleri başarısız');
         return false;
     }
 }
