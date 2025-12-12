@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Database, Github, Server, CheckCircle, XCircle, Save, RefreshCw, UploadCloud } from 'lucide-react';
+import { Database, Github, Server, CheckCircle, XCircle, Save, RefreshCw, UploadCloud, Bot } from 'lucide-react';
 
-type ServiceType = 'supabase' | 'github' | 'vercel';
+type ServiceType = 'supabase' | 'github' | 'vercel' | 'gemini';
 
 interface ServiceConfig {
     connected: boolean;
@@ -12,7 +12,8 @@ export default function AdminIntegrations() {
     const [configs, setConfigs] = useState<Record<ServiceType, ServiceConfig>>({
         supabase: { connected: false, url: '', key: '' },
         github: { connected: false, repo: '', token: '' },
-        vercel: { connected: false, token: '', project: '' }
+        vercel: { connected: false, token: '', project: '' },
+        gemini: { connected: false, apiKey: '' }
     });
 
     // Load from localStorage on mount
@@ -20,6 +21,30 @@ export default function AdminIntegrations() {
         const stored = localStorage.getItem('adminIntegrations');
         if (stored) {
             setConfigs(JSON.parse(stored));
+        } else {
+            // Mevcut anahtarları yükle
+            setConfigs(prev => ({
+                ...prev,
+                supabase: {
+                    connected: !!localStorage.getItem('sb_url'),
+                    url: localStorage.getItem('sb_url') || '',
+                    key: localStorage.getItem('sb_key') || ''
+                },
+                github: {
+                    connected: !!localStorage.getItem('github_token'),
+                    token: localStorage.getItem('github_token') || '',
+                    repo: ''
+                },
+                vercel: {
+                    connected: !!localStorage.getItem('vercel_token'),
+                    token: localStorage.getItem('vercel_token') || '',
+                    project: ''
+                },
+                gemini: {
+                    connected: !!localStorage.getItem('gemini_key'),
+                    apiKey: localStorage.getItem('gemini_key') || ''
+                }
+            }));
         }
     }, []);
 
@@ -30,14 +55,20 @@ export default function AdminIntegrations() {
         setConfigs(newConfigs);
         localStorage.setItem('adminIntegrations', JSON.stringify(newConfigs));
 
-        // Save individual keys for authService compatibility
+        // Save individual keys for compatibility
         if (service === 'supabase') {
-            if (newConfigs.supabase.url) localStorage.setItem('supabase_url', newConfigs.supabase.url);
-            if (newConfigs.supabase.key) localStorage.setItem('supabase_key', newConfigs.supabase.key);
+            if (newConfigs.supabase.url) localStorage.setItem('sb_url', newConfigs.supabase.url);
+            if (newConfigs.supabase.key) localStorage.setItem('sb_key', newConfigs.supabase.key);
             // Reload page to apply changes to authService (simplest way)
             if (confirm('Değişikliklerin etkili olması için sayfa yenilensin mi?')) {
                 window.location.reload();
             }
+        } else if (service === 'github') {
+            if (newConfigs.github.token) localStorage.setItem('github_token', newConfigs.github.token);
+        } else if (service === 'vercel') {
+            if (newConfigs.vercel.token) localStorage.setItem('vercel_token', newConfigs.vercel.token);
+        } else if (service === 'gemini') {
+            if (newConfigs.gemini.apiKey) localStorage.setItem('gemini_key', newConfigs.gemini.apiKey);
         }
 
         alert(`${service.charAt(0).toUpperCase() + service.slice(1)} bağlantısı başarıyla kuruldu!`);
@@ -66,7 +97,42 @@ export default function AdminIntegrations() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                {/* Gemini AI Card */}
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                    <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex justify-between items-start">
+                        <div className="flex items-center gap-3">
+                            <div className="bg-purple-100 p-2.5 rounded-lg">
+                                <Bot className="text-purple-600" size={24} />
+                            </div>
+                            <h3 className="font-bold text-gray-900">Google Gemini AI</h3>
+                        </div>
+                        <StatusBadge connected={configs.gemini.connected} />
+                    </div>
+                    <div className="p-6 space-y-4">
+                        <div>
+                            <label className="block text-xs font-medium text-gray-500 mb-1">API Key</label>
+                            <input
+                                type="password"
+                                className="w-full text-sm border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500"
+                                placeholder="AIzaSy..."
+                                value={configs.gemini.apiKey}
+                                onChange={(e) => handleChange('gemini', 'apiKey', e.target.value)}
+                            />
+                        </div>
+                        <button
+                            onClick={() => handleConnect('gemini')}
+                            disabled={!configs.gemini.apiKey}
+                            className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                        >
+                            Bağlan
+                        </button>
+                        <p className="text-xs text-gray-500">
+                            AI asistan ve kampanya analizi için gerekli
+                        </p>
+                    </div>
+                </div>
 
                 {/* Database Card */}
                 <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, Trash2, Eye, EyeOff, Key, Database, Globe, Github, CloudUpload, RefreshCw, CheckCircle } from 'lucide-react';
+import { Save, Trash2, Eye, EyeOff, Globe, CloudUpload, RefreshCw, CheckCircle } from 'lucide-react';
 
 import { settingsService } from '../../services/settingsService';
 import { campaignService } from '../../services/campaignService';
@@ -16,48 +16,8 @@ interface SettingItem {
     type: 'password' | 'text';
 }
 
-const SETTINGS_CONFIG: SettingItem[] = [
-    {
-        key: 'gemini_key',
-        label: 'Google Gemini API Key',
-        description: 'Kampanya verilerini işlemek ve AI asistanı için gerekli.',
-        icon: Key,
-        placeholder: 'AIzaSy...',
-        type: 'password'
-    },
-    {
-        key: 'sb_url',
-        label: 'Veritabanı URL (Project URL)',
-        description: 'Veritabanı bağlantı adresi.',
-        icon: Database,
-        placeholder: 'https://xyz.supabase.co',
-        type: 'text'
-    },
-    {
-        key: 'sb_key',
-        label: 'Veritabanı Anahtarı (Service Role Key)',
-        description: 'Yazma/silme yetkisi için gizli anahtar.',
-        icon: Key,
-        placeholder: 'eyJh... (service_role)',
-        type: 'password'
-    },
-    {
-        key: 'github_token',
-        label: 'GitHub Token',
-        description: 'Site güncellemelerini tetiklemek için (Opsiyonel).',
-        icon: Github,
-        placeholder: 'ghp_...',
-        type: 'password'
-    },
-    {
-        key: 'vercel_token',
-        label: 'Sunucu Token (Opsiyonel)',
-        description: 'Deployment yönetimi için.',
-        icon: Globe,
-        placeholder: 'Token giriniz...',
-        type: 'password'
-    }
-];
+// API anahtarları AdminIntegrations sayfasına taşındı
+const SETTINGS_CONFIG: SettingItem[] = [];
 
 import { useConfirmation } from '../../context/ConfirmationContext';
 import { useToast } from '../../context/ToastContext';
