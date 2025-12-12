@@ -46,9 +46,9 @@ export default function NotFound() {
                 <div className="flex justify-center">
                     <button
                         onClick={() => navigate('/')}
-                        className="bg-gradient-to-r from-blue-600 to-blue-800 text-white px-12 py-4 rounded-xl font-semibold hover:from-blue-700 hover:to-blue-900 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center gap-3 text-lg"
+                        className="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
                     >
-                        <Home size={24} />
+                        <Home size={20} />
                         Ana Sayfaya Dön
                     </button>
                 </div>
@@ -56,7 +56,7 @@ export default function NotFound() {
                 {/* Alt Bilgi */}
                 <div className="mt-12 text-center">
                     <p className="text-gray-500 text-sm">
-                        Hata kodu: 404 | KartAvantaj © 2024
+                        Hata kodu: 404 | KartAvantaj © 2025
                         <br />
                         Sorun devam ederse destek ekibimizle iletişime geçin.
                     </p>
