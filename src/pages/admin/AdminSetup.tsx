@@ -11,8 +11,10 @@ export default function AdminSetup() {
         password: '',
         confirmPassword: '',
         email: '',
-        siteName: 'KartAvantaj'
+        siteName: 'KartAvantaj',
+        googleEmails: [] as string[]
     });
+    const [newGoogleEmail, setNewGoogleEmail] = useState('');
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [isSetupComplete, setIsSetupComplete] = useState(false);
     const [verificationCode, setVerificationCode] = useState('');
@@ -110,6 +112,11 @@ export default function AdminSetup() {
             setupDate: new Date().toISOString()
         };
         localStorage.setItem('site_settings', JSON.stringify(siteSettings));
+
+        // Google email'leri kaydet
+        if (formData.googleEmails.length > 0) {
+            localStorage.setItem('admin_google_emails', JSON.stringify(formData.googleEmails));
+        }
 
         // TOTP secret oluştur ve kaydet
         generateTotpSecret();
@@ -230,8 +237,10 @@ export default function AdminSetup() {
             password: '',
             confirmPassword: '',
             email: '',
-            siteName: 'KartAvantaj'
+            siteName: 'KartAvantaj',
+            googleEmails: []
         });
+        setNewGoogleEmail('');
         setErrors({});
         setVerificationCode('');
         setTotpSecret('');
@@ -241,6 +250,29 @@ export default function AdminSetup() {
         const resetUrl = `${window.location.origin}/panel/setup?reset=true`;
         
         alert(`Reset Bilgileri:\n\nReset URL: ${resetUrl}\n\nKurulumu sıfırlamak için bu URL'yi kullanın ve Google Authenticator kodunuzu girin.\n\nBu bilgiyi güvenli bir yerde saklayın!`);
+    };
+
+    const addGoogleEmail = () => {
+        if (newGoogleEmail && /\S+@\S+\.\S+/.test(newGoogleEmail)) {
+            if (!formData.googleEmails.includes(newGoogleEmail)) {
+                setFormData({
+                    ...formData,
+                    googleEmails: [...formData.googleEmails, newGoogleEmail]
+                });
+                setNewGoogleEmail('');
+            } else {
+                alert('Bu email zaten ekli.');
+            }
+        } else {
+            alert('Geçerli bir email adresi girin.');
+        }
+    };
+
+    const removeGoogleEmail = (email: string) => {
+        setFormData({
+            ...formData,
+            googleEmails: formData.googleEmails.filter(e => e !== email)
+        });
     };
 
     // TOTP Setup ekranı
@@ -520,6 +552,53 @@ export default function AdminSetup() {
                                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                                 placeholder="KartAvantaj"
                             />
+                        </div>
+
+                        {/* Google Auth Email'leri */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Google Auth Email'leri (Opsiyonel)
+                            </label>
+                            <div className="space-y-2">
+                                <div className="flex gap-2">
+                                    <input
+                                        type="email"
+                                        value={newGoogleEmail}
+                                        onChange={(e) => setNewGoogleEmail(e.target.value)}
+                                        className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                        placeholder="admin@gmail.com"
+                                        onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addGoogleEmail())}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={addGoogleEmail}
+                                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                    >
+                                        Ekle
+                                    </button>
+                                </div>
+                                
+                                {formData.googleEmails.length > 0 && (
+                                    <div className="space-y-1">
+                                        {formData.googleEmails.map((email, index) => (
+                                            <div key={index} className="flex items-center justify-between bg-blue-50 px-3 py-2 rounded-lg">
+                                                <span className="text-sm text-blue-800">{email}</span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeGoogleEmail(email)}
+                                                    className="text-red-500 hover:text-red-700 text-sm"
+                                                >
+                                                    Kaldır
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                                
+                                <p className="text-xs text-gray-500">
+                                    Bu email'ler Google ile admin paneline giriş yapabilir
+                                </p>
+                            </div>
                         </div>
 
                         <button

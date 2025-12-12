@@ -121,6 +121,23 @@ export const authService = {
         return data;
     },
 
+    // Admin Google Auth (panel için)
+    signInWithGoogleAdmin: async () => {
+        const client = createSupabaseClient();
+        if (!client) throw new Error("Supabase bağlantısı eksik. Lütfen 'Entegrasyonlar' sayfasından anahtarları giriniz.");
+        const { data, error } = await client.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                redirectTo: `${window.location.origin}/panel`,
+            }
+        });
+        if (error) {
+            console.error("Admin Google Login Error:", error);
+            throw error;
+        }
+        return data;
+    },
+
     // Password Reset (Email)
     resetPasswordForEmail: async (email: string) => {
         const client = createSupabaseClient();
