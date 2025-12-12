@@ -55,7 +55,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/panel",
-    element: <Navigate to="/panel/login" replace />,
+    element: <AdminLogin />,
   },
   {
     path: "/panel/setup",

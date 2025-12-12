@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, Settings, Smartphone, UserPlus } from 'lucide-react';
+import { Lock, Smartphone, UserPlus } from 'lucide-react';
 import TOTPService from '../../services/totpService';
 import SecurityService from '../../services/securityService';
 import AdminRegisterModal from '../../components/AdminRegisterModal';
@@ -23,13 +23,8 @@ export default function AdminLogin() {
             return;
         }
 
-        // Kurulum kontrolü (şifreli)
-        const setupComplete = SecurityService.getSecureItem('admin_setup_complete');
-        if (setupComplete !== 'true') {
-            navigate('/panel/setup');
-        } else {
-            setIsSetupComplete(true);
-        }
+        // Direkt giriş ekranını göster
+        setIsSetupComplete(true);
         setLoading(false);
     }, [navigate]);
 
@@ -123,9 +118,7 @@ export default function AdminLogin() {
         setErrors({});
     };
 
-    const handleGoToSetup = () => {
-        navigate('/panel/setup');
-    };
+
 
     if (loading) {
         return (
@@ -205,16 +198,7 @@ export default function AdminLogin() {
 
     // Ana Giriş Ekranı
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center relative">
-            {/* Yeni Admin Ekle Butonu */}
-            <button
-                onClick={() => setShowRegisterModal(true)}
-                className="absolute top-6 right-6 bg-white text-blue-600 px-4 py-2 rounded-lg font-medium hover:bg-blue-50 transition-colors shadow-md border border-blue-200 flex items-center gap-2"
-            >
-                <UserPlus size={18} />
-                Yeni Admin Ekle
-            </button>
-
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
             <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
                 <div className="flex flex-col items-center mb-8">
                     <div className="bg-blue-100 p-3 rounded-full mb-3">
@@ -267,15 +251,25 @@ export default function AdminLogin() {
                     </button>
                 </form>
 
-                <div className="mt-6 text-center space-y-2">
+                <div className="mt-6 text-center space-y-3">
+                    <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                            <div className="w-full border-t border-gray-300"></div>
+                        </div>
+                        <div className="relative flex justify-center text-sm">
+                            <span className="px-2 bg-white text-gray-500">veya</span>
+                        </div>
+                    </div>
+                    
                     <button
-                        onClick={handleGoToSetup}
-                        className="flex items-center justify-center gap-2 w-full text-sm text-gray-500 hover:text-gray-800 py-2"
+                        onClick={() => setShowRegisterModal(true)}
+                        className="w-full bg-gray-100 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
                     >
-                        <Settings size={16} />
-                        Kurulum Ayarları
+                        <UserPlus size={18} />
+                        Yeni Kayıt
                     </button>
-                    <a href="/" className="block text-sm text-gray-500 hover:text-gray-800">Ana Sayfaya Dön</a>
+                    
+                    <a href="/" className="block text-sm text-gray-500 hover:text-gray-800 mt-4">Ana Sayfaya Dön</a>
                 </div>
             </div>
 
