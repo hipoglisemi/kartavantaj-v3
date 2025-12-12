@@ -595,9 +595,16 @@ export default function AdminSetup() {
                                     </div>
                                 )}
                                 
-                                <p className="text-xs text-gray-500">
-                                    Bu email'ler Google ile admin paneline giriş yapabilir
-                                </p>
+                                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-2">
+                                    <p className="text-xs text-blue-700 mb-1">
+                                        <strong>Google Auth Bilgileri:</strong>
+                                    </p>
+                                    <ul className="text-xs text-blue-600 space-y-1">
+                                        <li>• Bu email'ler Google ile admin paneline giriş yapabilir</li>
+                                        <li>• Supabase'de Google OAuth yapılandırması gereklidir</li>
+                                        <li>• Yetkisiz email'ler otomatik olarak reddedilir</li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
 
