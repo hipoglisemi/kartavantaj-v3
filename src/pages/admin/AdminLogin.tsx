@@ -123,7 +123,22 @@ export default function AdminLogin() {
             if (password === adminCredentials.password) {
                 SecurityService.clearFailedAttempts('admin_login');
                 SecurityService.logSecurityEvent('LOGIN_CREDENTIALS_SUCCESS', { email });
-                setShowTwoFactor(true);
+                
+                // 2FA secret'ı var mı kontrol et
+                const hasTotp = TOTPService.getAdminSecret(email);
+                if (hasTotp) {
+                    setShowTwoFactor(true);
+                } else {
+                    // 2FA kurulumu yok, direkt giriş yap ama 2FA kurulumu gerekli olarak işaretle
+                    SecurityService.createAdminSession();
+                    localStorage.setItem('isAdmin', 'true');
+                    localStorage.setItem('admin_email', email);
+                    localStorage.setItem('needs_2fa_setup', 'true'); // 2FA kurulumu gerekli
+                    SecurityService.setSecureItem('admin_email', email);
+                    SecurityService.setSecureItem('admin_last_login', new Date().toISOString());
+                    SecurityService.logSecurityEvent('ADMIN_LOGIN_SUCCESS_NO_2FA', { email });
+                    navigate('/panel/dashboard');
+                }
             } else {
                 SecurityService.recordFailedAttempt('admin_login');
                 SecurityService.logSecurityEvent('LOGIN_CREDENTIALS_FAILED', { email });

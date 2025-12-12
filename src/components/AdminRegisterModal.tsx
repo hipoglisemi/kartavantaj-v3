@@ -74,26 +74,8 @@ export default function AdminRegisterModal({ isOpen, onClose }: AdminRegisterMod
 
     const handleNext = async () => {
         if (step === 1 && validateStep1()) {
-            setLoading(true);
-            try {
-                // TOTP secret oluştur
-                const secret = TOTPService.generateSecret();
-                setTotpSecret(secret);
-
-                // QR Code oluştur
-                const qrImage = await TOTPService.generateQRCodeImage(secret, formData.email, 'KartAvantaj Admin');
-                setQrCodeImage(qrImage);
-
-                // Mevcut token
-                const token = TOTPService.generateToken(secret);
-                setCurrentToken(token);
-
-                setStep(2);
-            } catch (error) {
-                setErrors({ general: 'TOTP kurulumu başarısız oldu' });
-            } finally {
-                setLoading(false);
-            }
+            // Direkt kayıt tamamla, 2FA kurulumu yok
+            handleComplete();
         }
     };
 
@@ -137,8 +119,7 @@ export default function AdminRegisterModal({ isOpen, onClose }: AdminRegisterMod
             // 3. Credentials kaydet
             saveAdminCredentials(formData.email, formData.password, formData.name);
 
-            // 4. TOTP secret kaydet
-            TOTPService.saveAdminSecret(formData.email, totpSecret);
+            // 4. TOTP secret kaydetme - ilk girişte yapılacak
 
             // 5. localStorage'a admin email'i kaydet (giriş için)
             localStorage.setItem('admin_email', formData.email);
@@ -273,7 +254,7 @@ export default function AdminRegisterModal({ isOpen, onClose }: AdminRegisterMod
                                     disabled={loading}
                                     className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50"
                                 >
-                                    {loading ? 'Hazırlanıyor...' : 'Devam Et'}
+                                    {loading ? 'Kaydediliyor...' : 'Kayıt Ol'}
                                 </button>
                             </div>
                         </div>

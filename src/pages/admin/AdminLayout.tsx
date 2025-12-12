@@ -4,6 +4,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Settings, Database, LogOut, UploadCloud, ShieldAlert, Home, Search, Bot, Users, Image, Activity, Mail, CloudUpload, Loader2, Bell } from 'lucide-react';
 import { campaignService } from '../../services/campaignService';
 import { settingsService } from '../../services/settingsService';
+import Setup2FAModal from '../../components/Setup2FAModal';
 
 function PublishButton() {
     const [isDirty, setIsDirty] = useState(false);
@@ -56,6 +57,15 @@ function PublishButton() {
 export default function AdminLayout() {
     const navigate = useNavigate();
     const location = useLocation();
+    const [show2FASetup, setShow2FASetup] = useState(false);
+
+    // 2FA kurulum kontrolü
+    useEffect(() => {
+        const needs2FA = localStorage.getItem('needs_2fa_setup');
+        if (needs2FA === 'true') {
+            setShow2FASetup(true);
+        }
+    }, []);
 
     // Body'ye arka plan rengi ekle
     useEffect(() => {
@@ -209,6 +219,13 @@ export default function AdminLayout() {
                     </footer>
                 </main>
             </div>
+
+            {/* 2FA Setup Modal */}
+            <Setup2FAModal 
+                isOpen={show2FASetup}
+                onComplete={() => setShow2FASetup(false)}
+                adminEmail={localStorage.getItem('admin_email') || ''}
+            />
         </div>
     );
 }

@@ -56,34 +56,47 @@ export default function AdminMembers() {
 
 
 
-    // 2FA Setup Functions (Gerçek TOTP)
-    const handle2FASetup = async (email: string) => {
+    // 2FA Görüntüleme/Kurulum Functions
+    const handle2FASetup = async (email: string, forceNew: boolean = false) => {
         try {
-            // Gerçek TOTP secret oluştur
-            const secret = TOTPService.generateSecret();
-            
-            // Admin için secret'ı kaydet
-            TOTPService.saveAdminSecret(email, secret);
-            
-            // Mevcut token'ı oluştur (gösterim amaçlı)
-            const token = TOTPService.generateToken(secret);
-            
             setSelectedAdminEmail(email);
-            setGeneratedSecret(secret);
-            setCurrentToken(token);
-            setShow2FASetup(true);
             
-            // QR Code'u ayrı olarak oluştur
-            try {
-                const qrImage = await TOTPService.generateQRCodeImage(secret, email, 'KartAvantaj Admin');
-                setQrCodeImage(qrImage);
-            } catch (qrError) {
-                error('QR Code oluşturulamadı, manuel secret kullanın');
-                setQrCodeImage('');
+            // Mevcut secret'ı kontrol et
+            const existingSecret = TOTPService.getAdminSecret(email);
+            
+            if (existingSecret && !forceNew) {
+                // Mevcut secret varsa sadece göster (yeni secret oluşturma)
+                setGeneratedSecret(existingSecret);
+                const token = TOTPService.generateToken(existingSecret);
+                setCurrentToken(token);
+                setShow2FASetup(true);
+                setQrCodeImage(''); // QR kod gösterme, sadece mevcut durumu göster
+            } else {
+                // Yeni secret oluştur
+                const secret = TOTPService.generateSecret();
+                
+                // Admin için secret'ı kaydet
+                TOTPService.saveAdminSecret(email, secret);
+                
+                // Mevcut token'ı oluştur
+                const token = TOTPService.generateToken(secret);
+                
+                setGeneratedSecret(secret);
+                setCurrentToken(token);
+                setShow2FASetup(true);
+                
+                // QR Code oluştur (yeni kurulum için)
+                try {
+                    const qrImage = await TOTPService.generateQRCodeImage(secret, email, 'KartAvantaj Admin');
+                    setQrCodeImage(qrImage);
+                } catch (qrError) {
+                    error('QR Code oluşturulamadı, manuel secret kullanın');
+                    setQrCodeImage('');
+                }
             }
         } catch (err) {
             console.error('2FA setup error:', err);
-            error('2FA kurulumu başlatılamadı: ' + (err instanceof Error ? err.message : 'Bilinmeyen hata'));
+            error('2FA işlemi başlatılamadı: ' + (err instanceof Error ? err.message : 'Bilinmeyen hata'));
         }
     };
 
@@ -506,50 +519,48 @@ export default function AdminMembers() {
                                 <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                                     <Smartphone className="text-blue-600" size={32} />
                                 </div>
-                                <h2 className="text-2xl font-bold text-gray-800 mb-2">2FA Kurulumu</h2>
+                                <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                                    {qrCodeImage ? '2FA Kurulumu' : '2FA Durumu'}
+                                </h2>
                                 <p className="text-gray-600">
-                                    <strong>{selectedAdminEmail}</strong> için Google Authenticator kurulumu
+                                    <strong>{selectedAdminEmail}</strong> için Google Authenticator 
+                                    {qrCodeImage ? ' kurulumu' : ' mevcut durumu'}
                                 </p>
                             </div>
 
                             <div className="space-y-6">
-                                {/* QR Code Alanı */}
-                                <div className="bg-gray-50 rounded-xl p-6 text-center">
-                                    <div className="w-48 h-48 bg-white border-2 border-gray-200 rounded-xl mx-auto mb-4 flex items-center justify-center overflow-hidden">
-                                        {qrCodeImage ? (
+                                {/* QR Code Alanı - Sadece yeni kurulum için */}
+                                {qrCodeImage && (
+                                    <div className="bg-gray-50 rounded-xl p-6 text-center">
+                                        <div className="w-48 h-48 bg-white border-2 border-gray-200 rounded-xl mx-auto mb-4 flex items-center justify-center overflow-hidden">
                                             <img 
                                                 src={qrCodeImage} 
                                                 alt="QR Code" 
                                                 className="w-full h-full object-contain"
                                             />
-                                        ) : (
-                                            <>
-                                                <QrCode size={64} className="text-gray-400" />
-                                                <div className="absolute text-xs text-gray-500 mt-20">Yükleniyor...</div>
-                                            </>
-                                        )}
-                                    </div>
-                                    <p className="text-sm text-gray-600 mb-4">
-                                        Google Authenticator uygulamasıyla QR kodu tarayın
-                                    </p>
-                                    
-                                    {/* Manuel Secret */}
-                                    <div className="bg-white border border-gray-200 rounded-lg p-3">
-                                        <p className="text-xs text-gray-500 mb-1">Manuel giriş için secret:</p>
-                                        <div className="flex items-center gap-2">
-                                            <code className="flex-1 text-xs font-mono bg-gray-100 px-2 py-1 rounded break-all">
-                                                {generatedSecret}
-                                            </code>
-                                            <button
-                                                onClick={() => copyToClipboard(generatedSecret)}
-                                                className="p-1 text-gray-500 hover:text-gray-700"
-                                                title="Kopyala"
-                                            >
-                                                <Copy size={16} />
-                                            </button>
+                                        </div>
+                                        <p className="text-sm text-gray-600 mb-4">
+                                            Google Authenticator uygulamasıyla QR kodu tarayın
+                                        </p>
+                                        
+                                        {/* Manuel Secret */}
+                                        <div className="bg-white border border-gray-200 rounded-lg p-3">
+                                            <p className="text-xs text-gray-500 mb-1">Manuel giriş için secret:</p>
+                                            <div className="flex items-center gap-2">
+                                                <code className="flex-1 text-xs font-mono bg-gray-100 px-2 py-1 rounded break-all">
+                                                    {generatedSecret}
+                                                </code>
+                                                <button
+                                                    onClick={() => copyToClipboard(generatedSecret)}
+                                                    className="p-1 text-gray-500 hover:text-gray-700"
+                                                    title="Kopyala"
+                                                >
+                                                    <Copy size={16} />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                )}
 
                                 {/* Mevcut Token */}
                                 <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
@@ -614,31 +625,44 @@ export default function AdminMembers() {
                                 </div>
 
                                 {/* Butonlar */}
-                                <div className="flex gap-3">
-                                    <button
-                                        onClick={close2FASetup}
-                                        className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
-                                    >
-                                        Kapat
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            const message = `🔐 Google Authenticator Kurulum - ${selectedAdminEmail}\n\n` +
-                                                           `Secret Key: ${generatedSecret}\n\n` +
-                                                           `Kurulum Adımları:\n` +
-                                                           `1. Google Authenticator uygulamasını indirin\n` +
-                                                           `2. QR kodu tarayın veya secret key'i manuel girin\n` +
-                                                           `3. Uygulamada görünen 6 haneli kodu admin paneline girin\n\n` +
-                                                           `Mevcut Test Kodu: ${currentToken}\n` +
-                                                           `(Bu kod 30 saniyede bir değişir)\n\n` +
-                                                           `Fallback Test Kodu: 123456`;
-                                            
-                                            copyToClipboard(message);
-                                        }}
-                                        className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors"
-                                    >
-                                        Kurulum Bilgilerini Kopyala
-                                    </button>
+                                <div className="space-y-3">
+                                    {/* Yeni 2FA Kodu Al butonu - sadece mevcut kurulum varsa göster */}
+                                    {!qrCodeImage && (
+                                        <button
+                                            onClick={() => handle2FASetup(selectedAdminEmail, true)}
+                                            className="w-full bg-orange-600 text-white py-3 rounded-xl font-semibold hover:bg-orange-700 transition-colors"
+                                        >
+                                            🔄 Yeni 2FA Kodu Al
+                                        </button>
+                                    )}
+                                    
+                                    <div className="flex gap-3">
+                                        <button
+                                            onClick={close2FASetup}
+                                            className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+                                        >
+                                            Kapat
+                                        </button>
+                                        {qrCodeImage && (
+                                            <button
+                                                onClick={() => {
+                                                    const message = `🔐 Google Authenticator Kurulum - ${selectedAdminEmail}\n\n` +
+                                                                   `Secret Key: ${generatedSecret}\n\n` +
+                                                                   `Kurulum Adımları:\n` +
+                                                                   `1. Google Authenticator uygulamasını indirin\n` +
+                                                                   `2. QR kodu tarayın veya secret key'i manuel girin\n` +
+                                                                   `3. Uygulamada görünen 6 haneli kodu admin paneline girin\n\n` +
+                                                                   `Mevcut Kod: ${currentToken}\n` +
+                                                                   `(Bu kod 30 saniyede bir değişir)`;
+                                                    
+                                                    copyToClipboard(message);
+                                                }}
+                                                className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors"
+                                            >
+                                                Kurulum Bilgilerini Kopyala
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
