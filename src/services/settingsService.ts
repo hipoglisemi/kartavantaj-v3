@@ -175,7 +175,7 @@ export const settingsService = {
             if (error) {
                 // If table empty, try to insert defaults (only if we have permission/it's new)
                 if (error.code === 'PGRST116') { // Row not found
-                    console.log("No remote settings found, using defaults.");
+
                 }
                 return null;
             }

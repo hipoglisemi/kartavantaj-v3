@@ -87,10 +87,7 @@ export const campaignParser = {
                 // Remove excessive whitespace to save tokens
                 const cleanText = bodyText.replace(/\s+/g, ' ').substring(0, 20000);
 
-                console.log("🤖 Gemini AI Analizi Başlıyor...");
                 const aiData = await this.parseWithGemini(cleanText, apiKey);
-
-                console.log("✨ AI Sonuçları:", aiData);
 
                 // Merge AI data ON TOP of basic data (AI is smarter)
                 // However, keep Image from basic data if AI didn't find one better (AI usually doesn't extract images well from text)
@@ -255,7 +252,7 @@ export const campaignParser = {
             const rules = await this.fetchRules();
             if (rules.length > 0) {
                 userRules = `\n\n!!! KULLANICI TARAFINDAN TANIMLANAN ZORUNLU KURALLAR (USER DEFINED RULES) !!!\nBu kurallar diğer tüm kurallardan daha önceliklidir. Kesinlikle uymalısın:\n${rules.map((r, i) => `${i + 1}. ${r.rule_text} (${r.user_feedback})`).join('\n')}\n!!! KURALLAR BİTTİ !!!\n\n`;
-                console.log("🧠 AI Memory: Applied " + rules.length + " custom rules.");
+
             }
         } catch (e) {
             console.warn("Could not fetch AI rules", e);

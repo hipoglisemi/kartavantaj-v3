@@ -609,23 +609,9 @@ export default function AdminMembers() {
                                     </div>
                                 </div>
 
-                                {/* Genel Test Kodu */}
-                                <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-                                    <div className="flex items-start gap-3">
-                                        <CheckCircle className="text-green-600 mt-0.5" size={18} />
-                                        <div className="text-sm">
-                                            <p className="font-medium text-green-800 mb-1">Genel Test Kodu</p>
-                                            <p className="text-green-700 mb-2">
-                                                Tüm adminler için çalışan master kod:
-                                            </p>
-                                            <div className="bg-white rounded p-2 font-mono text-center">
-                                                <span className="font-bold text-green-800">123456</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
 
-                                {/* Uyarı */}
+
+                                {/* Güvenlik Uyarısı */}
                                 <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
                                     <div className="flex items-start gap-3">
                                         <Shield className="text-amber-600 mt-0.5" size={18} />
@@ -633,7 +619,7 @@ export default function AdminMembers() {
                                             <p className="font-medium text-amber-800 mb-1">Güvenlik Notu</p>
                                             <p className="text-amber-700">
                                                 Bu bilgileri güvenli bir şekilde ilgili kişiye iletin. 
-                                                Production ortamında gerçek TOTP kütüphanesi kullanılmalıdır.
+                                                2FA kodları 30 saniyede bir değişir ve sadece o anda geçerlidir.
                                             </p>
                                         </div>
                                     </div>

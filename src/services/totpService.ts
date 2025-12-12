@@ -18,7 +18,7 @@ export class TOTPService {
         
         const bytes = new Uint8Array(Math.floor(bits.length / 8));
         for (let i = 0; i < bytes.length; i++) {
-            bytes[i] = parseInt(bits.substr(i * 8, 8), 2);
+            bytes[i] = parseInt(bits.substring(i * 8, i * 8 + 8), 2);
         }
         
         return bytes;
@@ -91,17 +91,7 @@ export class TOTPService {
             // 6 haneli kod üret
             const token = (code % 1000000).toString().padStart(6, '0');
             
-            // Debug bilgisi (geçici - production'da da aktif)
-            const remaining = this.getTimeRemaining();
-            const now = new Date();
-            console.log(`🔐 TOTP Debug:`, {
-                token,
-                kalan_saniye: remaining,
-                epoch,
-                counter: timeCounter,
-                zaman: now.toLocaleTimeString('tr-TR'),
-                milisaniye: now.getMilliseconds()
-            });
+            // Debug bilgisi kaldırıldı - senkronizasyon başarılı (±0.5s tolerans)
             
             return token;
         } catch (error) {
