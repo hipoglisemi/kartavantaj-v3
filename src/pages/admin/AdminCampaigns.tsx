@@ -3,6 +3,7 @@ import { Database, ChevronDown, ChevronRight, Trash2, Calendar, Tag, CreditCard,
 import { type CampaignProps } from '../../components/CampaignCard';
 import { campaignParser } from '../../services/campaignParser';
 import { campaignService } from '../../services/campaignService';
+import CampaignValidationPanel from '../../components/CampaignValidationPanel';
 // matching the existing pattern found in the file, or if we want to use it, import correctly).
 // The error says "no default export". Let's remove it if it's unused, or fix it.
 // Looking at the code, I don't see campaignService being used in the *restored* functions, 
@@ -148,7 +149,7 @@ export default function AdminCampaigns() {
                     if (!newMap[c.id]) newMap[c.id] = [];
                 }));
 
-                cloudCampaigns.forEach(camp => {
+                cloudCampaigns.forEach((camp: any) => {
                     // Find matching card bucket
                     let targetCardId: string | undefined;
 
@@ -946,6 +947,17 @@ export default function AdminCampaigns() {
                     </div>
                 </div>
             </Modal>
+
+            {/* Kampanya Doğrulama Sistemi */}
+            <CampaignValidationPanel 
+                campaigns={expandedCard ? (campaignsMap[expandedCard] || []) : []}
+                onValidationComplete={(validCampaigns: any) => {
+                    if (expandedCard) {
+                        const newMap = { ...campaignsMap, [expandedCard]: validCampaigns };
+                        updateCampaigns(newMap);
+                    }
+                }}
+            />
 
             {/* Batch Progress Modal */}
             <Modal isOpen={isBatchModalOpen} onClose={() => { }}>
