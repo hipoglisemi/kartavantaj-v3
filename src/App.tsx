@@ -23,6 +23,7 @@ import AdminAnalytics from './pages/admin/AdminAnalytics';
 import AdminMembers from './pages/admin/AdminMembers';
 import AdminNewsletter from './pages/admin/AdminNewsletter';
 import EmailConfirmation from './pages/EmailConfirmation';
+import ProtectedRoute from './components/ProtectedRoute';
 
 import ProfileLayout from "./pages/profile/ProfileLayout";
 import { ProfileInfo, ProfileFavorites, ProfileSettings, ProfileWallet } from "./pages/profile/ProfilePages";
@@ -54,7 +55,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/panel",
-    element: <AdminLogin />,
+    element: <Navigate to="/panel/login" replace />,
   },
   {
     path: "/panel/setup",
@@ -66,112 +67,112 @@ const router = createBrowserRouter([
   },
   {
     path: "/panel/dashboard",
-    element: <AdminLayout />,
+    element: <ProtectedRoute requireAdmin={true}><AdminLayout /></ProtectedRoute>,
     children: [
       { index: true, element: <AdminDashboard /> },
     ]
   },
   {
     path: "/panel/analytics",
-    element: <AdminLayout />,
+    element: <ProtectedRoute requireAdmin={true}><AdminLayout /></ProtectedRoute>,
     children: [
       { index: true, element: <AdminAnalytics /> },
     ]
   },
   {
     path: "/panel/members",
-    element: <AdminLayout />,
+    element: <ProtectedRoute requireAdmin={true}><AdminLayout /></ProtectedRoute>,
     children: [
       { index: true, element: <AdminMembers /> },
     ]
   },
   {
     path: "/panel/newsletter",
-    element: <AdminLayout />,
+    element: <ProtectedRoute requireAdmin={true}><AdminLayout /></ProtectedRoute>,
     children: [
       { index: true, element: <AdminNewsletter /> },
     ]
   },
   {
     path: "/panel/campaigns",
-    element: <AdminLayout />,
+    element: <ProtectedRoute requireAdmin={true}><AdminLayout /></ProtectedRoute>,
     children: [
       { index: true, element: <AdminCampaigns /> },
     ]
   },
   {
     path: "/panel/bulk-upload",
-    element: <AdminLayout />,
+    element: <ProtectedRoute requireAdmin={true}><AdminLayout /></ProtectedRoute>,
     children: [
       { index: true, element: <AdminBulkUpload /> },
     ]
   },
   {
     path: "/panel/scrapers",
-    element: <AdminLayout />,
+    element: <ProtectedRoute requireAdmin={true}><AdminLayout /></ProtectedRoute>,
     children: [
       { index: true, element: <AdminScrapers /> },
     ]
   },
   {
     path: "/panel/integrations",
-    element: <AdminLayout />,
+    element: <ProtectedRoute requireAdmin={true}><AdminLayout /></ProtectedRoute>,
     children: [
       { index: true, element: <AdminIntegrations /> },
     ]
   },
   {
     path: "/panel/settings",
-    element: <AdminLayout />,
+    element: <ProtectedRoute requireAdmin={true}><AdminLayout /></ProtectedRoute>,
     children: [
       { index: true, element: <AdminSettings /> },
     ]
   },
   {
     path: "/panel/seo",
-    element: <AdminLayout />,
+    element: <ProtectedRoute requireAdmin={true}><AdminLayout /></ProtectedRoute>,
     children: [
       { index: true, element: <AdminSeo /> },
     ]
   },
   {
     path: "/panel/ai",
-    element: <AdminLayout />,
+    element: <ProtectedRoute requireAdmin={true}><AdminLayout /></ProtectedRoute>,
     children: [
       { index: true, element: <AdminAI /> },
     ]
   },
   {
     path: "/panel/logos",
-    element: <AdminLayout />,
+    element: <ProtectedRoute requireAdmin={true}><AdminLayout /></ProtectedRoute>,
     children: [
       { index: true, element: <AdminLogos /> },
     ]
   },
   {
     path: "/panel/design",
-    element: <AdminLayout />,
+    element: <ProtectedRoute requireAdmin={true}><AdminLayout /></ProtectedRoute>,
     children: [
       { index: true, element: <AdminDesign /> },
     ]
   },
   {
     path: "/panel/backup",
-    element: <AdminLayout />,
+    element: <ProtectedRoute requireAdmin={true}><AdminLayout /></ProtectedRoute>,
     children: [
       { index: true, element: <AdminBackup /> },
     ]
   },
   {
     path: "/panel/advanced",
-    element: <AdminLayout />,
+    element: <ProtectedRoute requireAdmin={true}><AdminLayout /></ProtectedRoute>,
     children: [
       { index: true, element: <div className="p-10">Gelişmiş ayarlar yakında...</div> },
     ]
   },
   {
     path: "/panel/audience",
-    element: <AdminLayout />,
+    element: <ProtectedRoute requireAdmin={true}><AdminLayout /></ProtectedRoute>,
     children: [
       { index: true, element: <div className="p-10">Kitle analizleri yakında...</div> },
     ]

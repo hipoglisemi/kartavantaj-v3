@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Shield, Lock, User, CheckCircle, AlertTriangle, Smartphone, QrCode, Copy } from 'lucide-react';
 import TOTPService from '../../services/totpService';
+import SecurityService from '../../services/securityService';
 
 export default function AdminSetup() {
     const navigate = useNavigate();
@@ -47,15 +48,18 @@ export default function AdminSetup() {
         }
 
         // Eğer zaten giriş yapmışsa dashboard'a yönlendir
-        const isAdmin = localStorage.getItem('isAdmin');
-        if (isAdmin === 'true') {
+        if (SecurityService.isValidAdminSession()) {
             navigate('/panel/dashboard');
             return;
         }
 
         // Eğer admin zaten kurulmuşsa, yetkisiz erişimi engelle
-        const hasAdmin = localStorage.getItem('admin_setup_complete');
-        if (hasAdmin === 'true') {
+        const hasAdmin = SecurityService.getSecureItem('admin_setup_complete');
+        if (hasAdmin === 'true' && resetParam !== 'true') {
+            SecurityService.logSecurityEvent('UNAUTHORIZED_SETUP_ACCESS', {
+                userAgent: navigator.userAgent.substring(0, 100),
+                url: window.location.pathname
+            });
             setIsSetupComplete(true);
         }
     }, [navigate, searchParams]);
@@ -99,30 +103,41 @@ export default function AdminSetup() {
     };
 
     const handleComplete = () => {
-        // Admin bilgilerini kaydet
-        localStorage.setItem('admin_username', formData.username);
-        localStorage.setItem('admin_password', formData.password);
-        localStorage.setItem('admin_email', formData.email);
-        localStorage.setItem('admin_setup_complete', 'true');
-        localStorage.setItem('admin_setup_date', new Date().toISOString());
-        
-        // Site ayarlarını kaydet
-        const siteSettings = {
-            siteName: formData.siteName,
-            adminEmail: formData.email,
-            setupDate: new Date().toISOString()
-        };
-        localStorage.setItem('site_settings', JSON.stringify(siteSettings));
+        try {
+            // Admin bilgilerini güvenli kaydet
+            SecurityService.setSecureItem('admin_username', formData.username);
+            SecurityService.setSecureItem('admin_password', formData.password);
+            SecurityService.setSecureItem('admin_email', formData.email);
+            SecurityService.setSecureItem('admin_setup_complete', 'true');
+            SecurityService.setSecureItem('admin_setup_date', new Date().toISOString());
+            
+            // Site ayarlarını kaydet
+            const siteSettings = {
+                siteName: formData.siteName,
+                adminEmail: formData.email,
+                setupDate: new Date().toISOString()
+            };
+            SecurityService.setSecureItem('site_settings', JSON.stringify(siteSettings));
 
-        // Google email'leri kaydet
-        if (formData.googleEmails.length > 0) {
-            localStorage.setItem('admin_google_emails', JSON.stringify(formData.googleEmails));
+            // Google email'leri kaydet
+            if (formData.googleEmails.length > 0) {
+                SecurityService.setSecureItem('admin_google_emails', JSON.stringify(formData.googleEmails));
+            }
+
+            // TOTP secret oluştur ve kaydet
+            generateTotpSecret();
+
+            // Güvenlik logu
+            SecurityService.logSecurityEvent('ADMIN_SETUP_COMPLETED', {
+                username: formData.username,
+                email: formData.email,
+                siteName: formData.siteName
+            });
+
+            setStep(4);
+        } catch (error) {
+            alert('Kurulum sırasında bir hata oluştu. Lütfen tekrar deneyin.');
         }
-
-        // TOTP secret oluştur ve kaydet
-        generateTotpSecret();
-
-        setStep(4);
     };
 
     const handleGoToLogin = () => {
@@ -135,8 +150,8 @@ export default function AdminSetup() {
         
         setTotpSecret(secret);
         
-        // Master admin TOTP secret'ı kaydet
-        localStorage.setItem('admin_totp_secret', secret);
+        // Master admin TOTP secret'ı güvenli kaydet
+        SecurityService.setSecureItem('admin_totp_secret', secret);
         
         console.log(`Master TOTP secret oluşturuldu: ${secret}`);
     };
@@ -174,15 +189,27 @@ export default function AdminSetup() {
     };
 
     const handleResetSetup = () => {
-        localStorage.removeItem('admin_setup_complete');
-        localStorage.removeItem('admin_username');
-        localStorage.removeItem('admin_password');
-        localStorage.removeItem('admin_email');
-        localStorage.removeItem('admin_setup_date');
-        localStorage.removeItem('site_settings');
-        localStorage.removeItem('isAdmin');
-        
-        setIsSetupComplete(false);
+        try {
+            // Güvenli verileri temizle
+            SecurityService.removeSecureItem('admin_setup_complete');
+            SecurityService.removeSecureItem('admin_username');
+            SecurityService.removeSecureItem('admin_password');
+            SecurityService.removeSecureItem('admin_email');
+            SecurityService.removeSecureItem('admin_setup_date');
+            SecurityService.removeSecureItem('site_settings');
+            SecurityService.removeSecureItem('admin_totp_secret');
+            SecurityService.destroyAdminSession();
+            
+            // Güvenlik logu
+            SecurityService.logSecurityEvent('ADMIN_SETUP_RESET', {
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent.substring(0, 100)
+            });
+            
+            setIsSetupComplete(false);
+        } catch (error) {
+            alert('Reset işlemi sırasında bir hata oluştu.');
+        }
         setShowTotpSetup(false);
         setShowCodeInput(false);
         setStep(1);
