@@ -351,7 +351,10 @@ export default function AdminLayout() {
 
                     {/* Footer */}
                     <footer className="mt-8 pt-6 border-t border-gray-200 text-center text-[10px] text-gray-400 flex-shrink-0 pb-6">
-                        <p>KartAvantaj Admin Paneli v2.1 • 2025</p>
+                        <p>KartAvantaj Admin Paneli v3.0 • 2025</p>
+                        <p className="text-[9px] text-gray-300 mt-1">
+                            ✨ Yeni: Gerçek Zamanlı Senkronizasyon • Akıllı Kampanya Doğrulama • Dropdown Menüler
+                        </p>
                     </footer>
                 </main>
             </div>
