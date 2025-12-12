@@ -169,7 +169,7 @@ export default function AdminLayout() {
                 </header>
 
                 {/* Scrollable Page Content */}
-                <main className="flex-1 overflow-y-scroll p-6 flex flex-col relative">
+                <main className="flex-1 overflow-y-scroll p-6 flex flex-col relative bg-gray-50">
                     <div className="flex-1 w-full max-w-5xl mx-auto">
                         <Outlet />
                     </div>
