@@ -1,3 +1,4 @@
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Home } from 'lucide-react';
 import OwlMascot from '../components/OwlMascot';
@@ -5,11 +6,20 @@ import OwlMascot from '../components/OwlMascot';
 export default function NotFound() {
     const navigate = useNavigate();
 
+    // Body'ye arka plan rengi ekle
+    React.useEffect(() => {
+        document.body.style.background = 'linear-gradient(135deg, #f9fafb 0%, #f3f4f6 50%, #e5e7eb 100%)';
+        document.body.style.minHeight = '100vh';
+        return () => {
+            document.body.style.background = '';
+            document.body.style.minHeight = '';
+        };
+    }, []);
+
     return (
-        <div className="min-h-screen w-full bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 flex items-center justify-center relative" style={{minHeight: '100vh'}}>
+        <div className="min-h-screen w-full flex items-center justify-center relative" style={{minHeight: '100vh', background: 'linear-gradient(135deg, #f9fafb 0%, #f3f4f6 50%, #e5e7eb 100%)'}}>
             {/* Arka Plan Maskotları */}
             <div className="absolute inset-0 pointer-events-none">
-                <OwlMascot size={400} opacity={0.06} className="absolute top-20 left-20 animate-pulse" />
                 <OwlMascot size={200} opacity={0.03} className="absolute bottom-20 left-1/4" />
                 <OwlMascot size={180} opacity={0.04} className="absolute top-10 right-10" />
             </div>

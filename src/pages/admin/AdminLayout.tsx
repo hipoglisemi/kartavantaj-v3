@@ -57,6 +57,16 @@ export default function AdminLayout() {
     const navigate = useNavigate();
     const location = useLocation();
 
+    // Body'ye arka plan rengi ekle
+    useEffect(() => {
+        document.body.style.backgroundColor = '#f9fafb';
+        document.body.style.minHeight = '100vh';
+        return () => {
+            document.body.style.backgroundColor = '';
+            document.body.style.minHeight = '';
+        };
+    }, []);
+
     // Yetki kontrolü kaldırıldı - sadece UI render edilir
 
     // Data Source Check
