@@ -72,7 +72,7 @@ export default function AdminMembers() {
                 setShow2FASetup(true);
                 setQrCodeImage(''); // QR kod gösterme, sadece mevcut durumu göster
             } else {
-                // Yeni secret oluştur
+                // Yeni secret oluştur (sadece forceNew=true olduğunda veya hiç secret yoksa)
                 const secret = TOTPService.generateSecret();
                 
                 // Admin için secret'ı kaydet
