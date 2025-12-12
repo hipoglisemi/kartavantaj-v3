@@ -94,23 +94,14 @@ export default function AdminMembers() {
     // 2FA Setup Functions (Gerçek TOTP)
     const handle2FASetup = async (email: string) => {
         try {
-            console.log('🚀 2FA setup başlatılıyor:', email);
-            
             // Gerçek TOTP secret oluştur
             const secret = TOTPService.generateSecret();
-            console.log('🔑 Secret oluşturuldu:', secret);
             
             // Admin için secret'ı kaydet
             TOTPService.saveAdminSecret(email, secret);
-            console.log('💾 Secret kaydedildi');
             
             // Mevcut token'ı oluştur (gösterim amaçlı)
-            console.log('🎯 Token oluşturma başlatılıyor...');
             const token = TOTPService.generateToken(secret);
-            console.log('🎯 Token oluşturuldu:', token);
-            
-            // Alert ile de gösterelim
-            alert(`Debug: Secret=${secret.substring(0,10)}..., Token=${token}`);
             
             setSelectedAdminEmail(email);
             setGeneratedSecret(secret);
@@ -119,13 +110,10 @@ export default function AdminMembers() {
             
             // QR Code'u ayrı olarak oluştur
             try {
-                console.log('QR Code oluşturuluyor...');
                 const qrImage = await TOTPService.generateQRCodeImage(secret, email, 'KartAvantaj Admin');
-                console.log('QR Code başarıyla oluşturuldu, boyut:', qrImage.length);
                 setQrCodeImage(qrImage);
             } catch (qrError) {
-                console.error('QR Code oluşturma hatası:', qrError);
-                error('QR Code oluşturulamadı, manuel secret kullanın: ' + (qrError instanceof Error ? qrError.message : 'Bilinmeyen hata'));
+                error('QR Code oluşturulamadı, manuel secret kullanın');
                 setQrCodeImage('');
             }
         } catch (err) {
@@ -146,12 +134,7 @@ export default function AdminMembers() {
                 
                 // Her saniye yeni token oluştur (TOTP kendi içinde 30 saniyeyi yönetir)
                 const newToken = TOTPService.generateToken(generatedSecret);
-                setCurrentToken(prevToken => {
-                    if (newToken !== prevToken) {
-                        console.log('Timer: Token güncellendi:', newToken);
-                    }
-                    return newToken;
-                });
+                setCurrentToken(newToken);
             }, 1000);
         }
         return () => {

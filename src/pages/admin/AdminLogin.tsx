@@ -33,16 +33,9 @@ export default function AdminLogin() {
 
     // 2FA kodu doğrulama (Gerçek TOTP)
     const verifyTwoFactorCode = (token: string) => {
-        console.log('2FA doğrulama başlatılıyor, token:', token);
-        
         // Gerçek TOTP doğrulaması
         const adminEmail = localStorage.getItem('admin_email');
-        console.log('Admin email:', adminEmail);
-        
-        const result = TOTPService.verifyAdminLogin(token, adminEmail || undefined);
-        console.log('TOTP doğrulama sonucu:', result);
-        
-        return result;
+        return TOTPService.verifyAdminLogin(token, adminEmail || undefined);
     };
 
     const handleLogin = (e: React.FormEvent) => {

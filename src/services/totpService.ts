@@ -31,10 +31,8 @@ export class TOTPService {
             for (let i = 0; i < 32; i++) {
                 secret += chars.charAt(Math.floor(Math.random() * chars.length));
             }
-            console.log('Generated secret:', secret);
             return secret;
         } catch (error) {
-            console.error('generateSecret error:', error);
             return 'JBSWY3DPEHPK3PXP'; // Fallback secret
         }
     }
@@ -58,18 +56,13 @@ export class TOTPService {
     // TOTP token üret
     static generateTOTP(secret: string, timeStep: number = 30): string {
         try {
-            console.log('🔑 generateTOTP çağrıldı');
-            console.log('📝 Secret:', secret);
-            
             if (!secret || secret.length < 16) {
-                console.error('❌ Geçersiz secret uzunluğu:', secret?.length);
                 return '123456';
             }
 
             // Zaman adımını hesapla (30 saniye)
             const epoch = Math.floor(Date.now() / 1000);
             const timeCounter = Math.floor(epoch / timeStep);
-            console.log('⏰ Time counter:', timeCounter);
 
             // Secret'ı decode et
             const key = this.base32Decode(secret);
@@ -94,11 +87,10 @@ export class TOTPService {
 
             // 6 haneli kod üret
             const token = (code % 1000000).toString().padStart(6, '0');
-            console.log('🎯 Üretilen token:', token);
             
             return token;
         } catch (error) {
-            console.error('💥 TOTP üretim hatası:', error);
+            console.error('TOTP üretim hatası');
             return '123456';
         }
     }
@@ -171,35 +163,25 @@ export class TOTPService {
 
     // Admin giriş doğrulaması
     static verifyAdminLogin(token: string, email?: string): boolean {
-        console.log('verifyAdminLogin çağrıldı:', { token, email });
-        
         // 1. Eğer email verilmişse, o admin'in secret'ını kontrol et
         if (email) {
             const adminSecret = this.getAdminSecret(email);
-            console.log('Admin secret bulundu:', !!adminSecret);
-            if (adminSecret) {
-                const result = this.verifyToken(token, adminSecret);
-                console.log('Admin secret doğrulama sonucu:', result);
-                if (result) return true;
+            if (adminSecret && this.verifyToken(token, adminSecret)) {
+                return true;
             }
         }
 
         // 2. Master admin secret'ını kontrol et
         const masterSecret = localStorage.getItem('admin_totp_secret');
-        console.log('Master secret bulundu:', !!masterSecret);
-        if (masterSecret) {
-            const result = this.verifyToken(token, masterSecret);
-            console.log('Master secret doğrulama sonucu:', result);
-            if (result) return true;
+        if (masterSecret && this.verifyToken(token, masterSecret)) {
+            return true;
         }
 
         // 3. Fallback: test kodu (geliştirme amaçlı)
         if (token === '123456') {
-            console.log('Test kodu kullanıldı');
             return true;
         }
 
-        console.log('Tüm doğrulama yöntemleri başarısız');
         return false;
     }
 }
