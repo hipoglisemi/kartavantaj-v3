@@ -25,6 +25,8 @@ import AdminNotifications from './pages/admin/AdminNotifications';
 import EmailConfirmation from './pages/EmailConfirmation';
 import ProtectedRoute from './components/ProtectedRoute';
 import NotFound from './pages/NotFound';
+import { settingsService } from './services/settingsService';
+import AdminService from './services/adminService';
 
 import ProfileLayout from "./pages/profile/ProfileLayout";
 import { ProfileInfo, ProfileFavorites, ProfileSettings, ProfileWallet } from "./pages/profile/ProfilePages";
@@ -219,31 +221,44 @@ function AppWrapper() {
 
   // Gerçek zamanlı senkronizasyon başlat
   React.useEffect(() => {
-    // Settings senkronizasyonu
-    const settingsService = require('./services/settingsService').settingsService;
-    
-    // Periyodik senkronizasyon başlat
-    settingsService.startPeriodicSync();
-    
-    // Realtime dinleme başlat
-    const settingsSubscription = settingsService.subscribeToChanges((newSettings: any) => {
-      console.log('🔄 Ayarlar güncellendi:', newSettings);
-    });
-
-    // Admin değişikliklerini dinle
-    const AdminService = require('./services/adminService').AdminService;
-    const adminSubscription = AdminService.subscribeToAdminChanges((admins: any[]) => {
-      console.log('🔄 Admin listesi güncellendi:', admins);
-    });
-
-    return () => {
-      if (settingsSubscription) {
-        settingsSubscription.unsubscribe();
+    try {
+      // Settings senkronizasyonu başlat
+      if (settingsService?.startPeriodicSync) {
+        settingsService.startPeriodicSync();
       }
-      if (adminSubscription) {
-        adminSubscription.unsubscribe();
+      
+      // Realtime dinleme başlat
+      let settingsSubscription: any = null;
+      let adminSubscription: any = null;
+      
+      if (settingsService?.subscribeToChanges) {
+        settingsSubscription = settingsService.subscribeToChanges((newSettings: any) => {
+          console.log('🔄 Ayarlar güncellendi:', newSettings);
+        });
       }
-    };
+
+      // Admin değişikliklerini dinle
+      if (AdminService?.subscribeToAdminChanges) {
+        adminSubscription = AdminService.subscribeToAdminChanges((admins: any[]) => {
+          console.log('🔄 Admin listesi güncellendi:', admins);
+        });
+      }
+
+      return () => {
+        try {
+          if (settingsSubscription?.unsubscribe) {
+            settingsSubscription.unsubscribe();
+          }
+          if (adminSubscription?.unsubscribe) {
+            adminSubscription.unsubscribe();
+          }
+        } catch (error) {
+          console.warn('Subscription cleanup hatası:', error);
+        }
+      };
+    } catch (error) {
+      console.warn('Senkronizasyon başlatılamadı:', error);
+    }
   }, []);
 
   return (
