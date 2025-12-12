@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Search, User, Shield, Mail, Calendar, Trash2, CheckCircle, Smartphone, QrCode, Copy, Clock } from 'lucide-react';
 import TOTPService from '../../services/totpService';
+import AdminRegisterModal from '../../components/AdminRegisterModal';
 
 import { useConfirmation } from '../../context/ConfirmationContext';
 import { useToast } from '../../context/ToastContext';
@@ -11,8 +12,22 @@ export default function AdminMembers() {
     const { success, error } = useToast();
     const settings = settingsService.useSettings();
 
+    // Master admin'i otomatik ekle (eğer yoksa)
+    useEffect(() => {
+        const masterAdminEmail = 'oguz.karaevli@gmail.com';
+        if (!settings.admins.includes(masterAdminEmail)) {
+            const updatedSettings = {
+                ...settings,
+                admins: [masterAdminEmail, ...settings.admins]
+            };
+            settingsService.saveDraftSettings(updatedSettings);
+            settingsService.publishSettings();
+        }
+    }, [settings]);
+
     const [activeTab, setActiveTab] = useState<'members' | 'team'>('members');
     const [searchTerm, setSearchTerm] = useState('');
+    const [showAddAdminModal, setShowAddAdminModal] = useState(false);
 
     // --- 2FA Setup Logic ---
     const [show2FASetup, setShow2FASetup] = useState(false);
@@ -113,6 +128,21 @@ export default function AdminMembers() {
     };
 
     const handleRemoveAdmin = async (email: string) => {
+        const currentAdminEmail = localStorage.getItem('admin_email');
+        const masterAdminEmail = 'oguz.karaevli@gmail.com';
+        
+        // Sadece master admin diğer adminleri silebilir
+        if (currentAdminEmail !== masterAdminEmail) {
+            error('Sadece master admin diğer yöneticileri kaldırabilir.');
+            return;
+        }
+        
+        // Master admin kendini silemez
+        if (email === masterAdminEmail) {
+            error('Master admin kendini kaldıramaz.');
+            return;
+        }
+        
         if (await confirm({
             title: 'Yöneticiyi Kaldır',
             message: `${email} yetkilerini almak istediğinize emin misiniz?`,
@@ -120,6 +150,7 @@ export default function AdminMembers() {
         })) {
             const updated = { ...settings, admins: settings.admins.filter(a => a !== email) };
             saveSettings(updated);
+            success(`${email} yönetici listesinden kaldırıldı.`);
         }
     };
 
@@ -280,30 +311,55 @@ export default function AdminMembers() {
                                 <Shield size={18} className="text-gray-500" />
                                 Yetkili Listesi
                             </h2>
-                            <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs font-bold">{settings.admins.length} Kişi</span>
+                            <div className="flex items-center gap-3">
+                                <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs font-bold">{settings.admins.length} Kişi</span>
+                                {localStorage.getItem('admin_email') === 'oguz.karaevli@gmail.com' && (
+                                    <button
+                                        onClick={() => setShowAddAdminModal(true)}
+                                        className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center gap-2"
+                                    >
+                                        <User size={16} />
+                                        Yeni Admin Ekle
+                                    </button>
+                                )}
+                            </div>
                         </div>
 
                         <div className="divide-y divide-gray-50">
                             {settings.admins.map((email) => {
                                 const currentAdminEmail = localStorage.getItem('admin_email');
+                                const masterAdminEmail = 'oguz.karaevli@gmail.com';
                                 const isCurrentAdmin = email === currentAdminEmail;
+                                const isMasterAdmin = email === masterAdminEmail;
+                                const canRemoveAdmin = currentAdminEmail === masterAdminEmail && email !== masterAdminEmail;
                                 
                                 return (
                                     <div key={email} className={`p-4 flex items-center justify-between transition-colors ${isCurrentAdmin ? 'bg-blue-50 hover:bg-blue-100' : 'hover:bg-gray-50'}`}>
                                         <div className="flex items-center gap-3">
-                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${isCurrentAdmin ? 'bg-blue-100 text-blue-600 ring-2 ring-blue-200' : 'bg-purple-100 text-purple-600'}`}>
+                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${
+                                                isMasterAdmin ? 'bg-gradient-to-br from-yellow-100 to-orange-100 text-orange-600 ring-2 ring-orange-200' :
+                                                isCurrentAdmin ? 'bg-blue-100 text-blue-600 ring-2 ring-blue-200' : 'bg-purple-100 text-purple-600'
+                                            }`}>
                                                 {email.charAt(0).toUpperCase()}
                                             </div>
                                             <div>
                                                 <div className="flex items-center gap-2">
                                                     <p className="text-sm font-bold text-gray-800">{email}</p>
-                                                    {isCurrentAdmin && (
+                                                    {isMasterAdmin && (
+                                                        <span className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-2 py-0.5 rounded-full text-[10px] font-bold">MASTER</span>
+                                                    )}
+                                                    {isCurrentAdmin && !isMasterAdmin && (
                                                         <span className="bg-blue-600 text-white px-2 py-0.5 rounded-full text-[10px] font-bold">SİZ</span>
                                                     )}
+                                                    {isCurrentAdmin && isMasterAdmin && (
+                                                        <span className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-2 py-0.5 rounded-full text-[10px] font-bold">SİZ (MASTER)</span>
+                                                    )}
                                                 </div>
-                                                <div className="flex items-center gap-1 text-xs text-green-600 font-medium">
+                                                <div className="flex items-center gap-1 text-xs font-medium">
                                                     <CheckCircle size={12} />
-                                                    Aktif Yönetici
+                                                    <span className={isMasterAdmin ? 'text-orange-600' : 'text-green-600'}>
+                                                        {isMasterAdmin ? 'Master Admin' : 'Aktif Yönetici'}
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
@@ -315,9 +371,20 @@ export default function AdminMembers() {
                                             >
                                                 <Smartphone size={18} />
                                             </button>
-                                            <button onClick={() => handleRemoveAdmin(email)} className="text-gray-400 hover:text-red-600 p-2 transition-colors" title="Yetkiyi Kaldır">
-                                                <Trash2 size={18} />
-                                            </button>
+                                            {canRemoveAdmin && (
+                                                <button 
+                                                    onClick={() => handleRemoveAdmin(email)} 
+                                                    className="text-gray-400 hover:text-red-600 p-2 transition-colors" 
+                                                    title="Yetkiyi Kaldır"
+                                                >
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            )}
+                                            {!canRemoveAdmin && email !== masterAdminEmail && (
+                                                <div className="p-2 text-gray-300" title="Sadece Master Admin kaldırabilir">
+                                                    <Trash2 size={18} />
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 );
@@ -475,6 +542,12 @@ export default function AdminMembers() {
                     </div>
                 </div>
             )}
+
+            {/* Admin Register Modal */}
+            <AdminRegisterModal 
+                isOpen={showAddAdminModal} 
+                onClose={() => setShowAddAdminModal(false)} 
+            />
         </div>
     );
 }

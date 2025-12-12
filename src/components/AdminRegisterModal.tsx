@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { X, User, Smartphone, QrCode, Copy, CheckCircle } from 'lucide-react';
 import SecurityService from '../services/securityService';
 import TOTPService from '../services/totpService';
+import { settingsService } from '../services/settingsService';
 
 interface AdminRegisterModalProps {
     isOpen: boolean;
@@ -98,22 +99,45 @@ export default function AdminRegisterModal({ isOpen, onClose }: AdminRegisterMod
 
     const handleComplete = () => {
         try {
-            // Admin listesine ekle
-            const adminList = getAdminList();
-            adminList.push(formData.email);
-            saveAdminList(adminList);
+            // 1. settingsService'e admin ekle
+            const currentSettings = settingsService.getLocalSettings();
+            if (!currentSettings.admins.includes(formData.email)) {
+                const updatedSettings = {
+                    ...currentSettings,
+                    admins: [...currentSettings.admins, formData.email]
+                };
+                settingsService.saveDraftSettings(updatedSettings);
+                
+                // Auto-publish to cloud
+                settingsService.publishSettings().then(success => {
+                    if (success) {
+                        console.log('New admin added to cloud settings');
+                    }
+                });
+            }
 
-            // Credentials kaydet
+            // 2. Eski sistem için de kaydet (backward compatibility)
+            const adminList = getAdminList();
+            if (!adminList.includes(formData.email)) {
+                adminList.push(formData.email);
+                saveAdminList(adminList);
+            }
+
+            // 3. Credentials kaydet
             saveAdminCredentials(formData.email, formData.password, formData.name);
 
-            // TOTP secret kaydet
+            // 4. TOTP secret kaydet
             TOTPService.saveAdminSecret(formData.email, totpSecret);
 
-            // Güvenlik logu
+            // 5. localStorage'a admin email'i kaydet (giriş için)
+            localStorage.setItem('admin_email', formData.email);
+            localStorage.setItem('admin_name', formData.name);
+
+            // 6. Güvenlik logu
             SecurityService.logSecurityEvent('NEW_ADMIN_CREATED', {
                 email: formData.email,
                 name: formData.name,
-                createdBy: SecurityService.getSecureItem('admin_email') || 'system'
+                createdBy: localStorage.getItem('admin_email') || 'system'
             });
 
             setStep(3);
