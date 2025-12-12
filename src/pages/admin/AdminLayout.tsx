@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Settings, Database, LogOut, UploadCloud, ShieldAlert, Home, Search, Bot, Users, Image, Activity, Mail, CloudUpload, Loader2 } from 'lucide-react';
+import { LayoutDashboard, Settings, Database, LogOut, UploadCloud, ShieldAlert, Home, Search, Bot, Users, Image, Activity, Mail, CloudUpload, Loader2, Bell } from 'lucide-react';
 import { campaignService } from '../../services/campaignService';
 import { settingsService } from '../../services/settingsService';
 
@@ -79,8 +79,15 @@ export default function AdminLayout() {
         navigate('/panel/login');
     };
 
+    // Pending admin sayısını hesapla
+    const settings = settingsService.useSettings();
+    const pendingAdmins = settings.admins.filter(admin => 
+        typeof admin === 'object' && admin.status === 'pending'
+    ).length;
+
     const navItems = [
         { name: 'Dashboard', path: '/panel/dashboard', icon: LayoutDashboard },
+        { name: 'Bildirimler', path: '/panel/notifications', icon: Bell, badge: pendingAdmins > 0 ? pendingAdmins : undefined },
         { name: 'Trafik Analizi', path: '/panel/analytics', icon: Activity },
         { name: 'Kampanyalar', path: '/panel/campaigns', icon: UploadCloud },
         { name: 'Toplu Yükleme', path: '/panel/bulk-upload', icon: Database },
@@ -115,13 +122,20 @@ export default function AdminLayout() {
                             <button
                                 key={item.path}
                                 onClick={() => navigate(item.path)}
-                                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all ${isActive
+                                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-[13px] font-medium transition-all ${isActive
                                     ? 'bg-purple-50 text-purple-700'
                                     : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
                                     }`}
                             >
-                                <item.icon size={16} />
-                                {item.name}
+                                <div className="flex items-center gap-3">
+                                    <item.icon size={16} />
+                                    {item.name}
+                                </div>
+                                {item.badge && (
+                                    <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                                        {item.badge}
+                                    </span>
+                                )}
                             </button>
                         );
                     })}

@@ -54,7 +54,14 @@ export interface SiteSettings {
         offsetY: number;
     };
     // New Fields for Cloud-First Admin
-    admins: string[];
+    admins: Array<{
+        email: string;
+        name: string;
+        status: 'active' | 'pending' | 'rejected';
+        createdAt: string;
+        approvedBy?: string;
+        approvedAt?: string;
+    }>;
     newsletter: {
         apiKey: string;
         subscribers: Array<{ email: string; date: string; status: 'Subscribed' | 'Unsubscribed' }>;

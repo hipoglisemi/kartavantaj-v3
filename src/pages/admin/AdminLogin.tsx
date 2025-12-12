@@ -5,6 +5,7 @@ import TOTPService from '../../services/totpService';
 import SecurityService from '../../services/securityService';
 import AdminRegisterModal from '../../components/AdminRegisterModal';
 import OwlMascot from '../../components/OwlMascot';
+import { settingsService } from '../../services/settingsService';
 
 export default function AdminLogin() {
     const [email, setEmail] = useState('');
@@ -39,6 +40,21 @@ export default function AdminLogin() {
         }
     };
 
+    // Admin status kontrolü
+    const checkAdminStatus = (email: string): 'active' | 'pending' | 'not_found' => {
+        const settings = settingsService.getLocalSettings();
+        const admin = settings.admins.find(admin => 
+            typeof admin === 'string' ? admin === email : admin.email === email
+        );
+        
+        if (!admin) return 'not_found';
+        if (typeof admin === 'string') return 'active'; // Eski format, aktif kabul et
+        
+        // Rejected adminleri not_found olarak döndür
+        if (admin.status === 'rejected') return 'not_found';
+        return admin.status;
+    };
+
     // 2FA kodu doğrulama (Güvenli TOTP)
     const verifyTwoFactorCode = (token: string) => {
         try {
@@ -61,13 +77,29 @@ export default function AdminLogin() {
                 return;
             }
 
+            // Admin status kontrolü
+            const adminStatus = checkAdminStatus(email);
+            
+            if (adminStatus === 'not_found') {
+                SecurityService.recordFailedAttempt('admin_login');
+                SecurityService.logSecurityEvent('LOGIN_EMAIL_NOT_FOUND', { email });
+                setErrors({ login: 'Bu email adresi admin listesinde bulunamadı!' });
+                return;
+            }
+            
+            if (adminStatus === 'pending') {
+                SecurityService.logSecurityEvent('LOGIN_PENDING_ADMIN', { email });
+                setErrors({ login: 'Hesabınız henüz onaylanmamış. Master admin onayını bekleyin.' });
+                return;
+            }
+
             // Admin credentials kontrol et
             const adminCredentials = getAdminCredentials(email);
 
             if (!adminCredentials) {
                 SecurityService.recordFailedAttempt('admin_login');
-                SecurityService.logSecurityEvent('LOGIN_EMAIL_NOT_FOUND', { email });
-                setErrors({ login: 'Bu email adresi admin listesinde bulunamadı!' });
+                SecurityService.logSecurityEvent('LOGIN_CREDENTIALS_NOT_FOUND', { email });
+                setErrors({ login: 'Giriş bilgileri bulunamadı. Lütfen yeniden kayıt olun.' });
                 return;
             }
 

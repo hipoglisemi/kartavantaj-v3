@@ -99,19 +99,30 @@ export default function AdminRegisterModal({ isOpen, onClose }: AdminRegisterMod
 
     const handleComplete = () => {
         try {
-            // 1. settingsService'e admin ekle
+            // 1. settingsService'e pending admin ekle
             const currentSettings = settingsService.getLocalSettings();
-            if (!currentSettings.admins.includes(formData.email)) {
+            const adminExists = currentSettings.admins.some(admin => 
+                typeof admin === 'string' ? admin === formData.email : admin.email === formData.email
+            );
+            
+            if (!adminExists) {
+                const newAdmin = {
+                    email: formData.email,
+                    name: formData.name,
+                    status: 'pending' as const,
+                    createdAt: new Date().toISOString()
+                };
+                
                 const updatedSettings = {
                     ...currentSettings,
-                    admins: [...currentSettings.admins, formData.email]
+                    admins: [...currentSettings.admins, newAdmin]
                 };
                 settingsService.saveDraftSettings(updatedSettings);
                 
                 // Auto-publish to cloud
                 settingsService.publishSettings().then(success => {
                     if (success) {
-                        console.log('New admin added to cloud settings');
+                        console.log('New pending admin added to cloud settings');
                     }
                 });
             }

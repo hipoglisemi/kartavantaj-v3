@@ -21,6 +21,7 @@ import AdminIntegrations from "./pages/admin/AdminIntegrations";
 import AdminAnalytics from './pages/admin/AdminAnalytics';
 import AdminMembers from './pages/admin/AdminMembers';
 import AdminNewsletter from './pages/admin/AdminNewsletter';
+import AdminNotifications from './pages/admin/AdminNotifications';
 import EmailConfirmation from './pages/EmailConfirmation';
 import ProtectedRoute from './components/ProtectedRoute';
 import NotFound from './pages/NotFound';
@@ -67,6 +68,13 @@ const router = createBrowserRouter([
     element: <ProtectedRoute requireAdmin={true}><AdminLayout /></ProtectedRoute>,
     children: [
       { index: true, element: <AdminDashboard /> },
+    ]
+  },
+  {
+    path: "/panel/notifications",
+    element: <ProtectedRoute requireAdmin={true}><AdminLayout /></ProtectedRoute>,
+    children: [
+      { index: true, element: <AdminNotifications /> },
     ]
   },
   {

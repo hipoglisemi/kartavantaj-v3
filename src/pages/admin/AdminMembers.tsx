@@ -15,10 +15,23 @@ export default function AdminMembers() {
     // Master admin'i otomatik ekle (eğer yoksa)
     useEffect(() => {
         const masterAdminEmail = 'admin@kartavantaj.com';
-        if (!settings.admins.includes(masterAdminEmail)) {
+        const masterAdminExists = settings.admins.some(admin => 
+            typeof admin === 'string' ? admin === masterAdminEmail : admin.email === masterAdminEmail
+        );
+        
+        if (!masterAdminExists) {
+            const masterAdmin = {
+                email: masterAdminEmail,
+                name: 'Master Admin',
+                status: 'active' as const,
+                createdAt: new Date().toISOString(),
+                approvedBy: 'system',
+                approvedAt: new Date().toISOString()
+            };
+            
             const updatedSettings = {
                 ...settings,
-                admins: [masterAdminEmail, ...settings.admins]
+                admins: [masterAdmin, ...settings.admins]
             };
             settingsService.saveDraftSettings(updatedSettings);
             settingsService.publishSettings();
@@ -127,6 +140,55 @@ export default function AdminMembers() {
         });
     };
 
+    const handleApproveAdmin = async (email: string) => {
+        const currentAdminEmail = localStorage.getItem('admin_email');
+        const masterAdminEmail = 'admin@kartavantaj.com';
+        
+        if (currentAdminEmail !== masterAdminEmail) {
+            error('Sadece master admin yönetici onayı verebilir.');
+            return;
+        }
+        
+        const updatedAdmins = settings.admins.map(admin => {
+            const adminEmail = typeof admin === 'string' ? admin : admin.email;
+            if (adminEmail === email) {
+                return typeof admin === 'string' 
+                    ? { email: admin, name: 'Admin', status: 'active' as const, createdAt: new Date().toISOString(), approvedBy: masterAdminEmail, approvedAt: new Date().toISOString() }
+                    : { ...admin, status: 'active' as const, approvedBy: masterAdminEmail, approvedAt: new Date().toISOString() };
+            }
+            return admin;
+        });
+        
+        const updated = { ...settings, admins: updatedAdmins };
+        saveSettings(updated);
+        success(`${email} admin olarak onaylandı.`);
+    };
+
+    const handleRejectAdmin = async (email: string) => {
+        const currentAdminEmail = localStorage.getItem('admin_email');
+        const masterAdminEmail = 'admin@kartavantaj.com';
+        
+        if (currentAdminEmail !== masterAdminEmail) {
+            error('Sadece master admin yönetici reddedebilir.');
+            return;
+        }
+        
+        if (await confirm({
+            title: 'Admin Başvurusunu Reddet',
+            message: `${email} admin başvurusunu reddetmek istediğinize emin misiniz?`,
+            type: 'warning'
+        })) {
+            const updatedAdmins = settings.admins.filter(admin => {
+                const adminEmail = typeof admin === 'string' ? admin : admin.email;
+                return adminEmail !== email;
+            });
+            
+            const updated = { ...settings, admins: updatedAdmins };
+            saveSettings(updated);
+            success(`${email} admin başvurusu reddedildi.`);
+        }
+    };
+
     const handleRemoveAdmin = async (email: string) => {
         const currentAdminEmail = localStorage.getItem('admin_email');
         const masterAdminEmail = 'admin@kartavantaj.com';
@@ -148,7 +210,11 @@ export default function AdminMembers() {
             message: `${email} yetkilerini almak istediğinize emin misiniz?`,
             type: 'warning'
         })) {
-            const updated = { ...settings, admins: settings.admins.filter(a => a !== email) };
+            const updatedAdmins = settings.admins.filter(admin => {
+                const adminEmail = typeof admin === 'string' ? admin : admin.email;
+                return adminEmail !== email;
+            });
+            const updated = { ...settings, admins: updatedAdmins };
             saveSettings(updated);
             success(`${email} yönetici listesinden kaldırıldı.`);
         }
@@ -326,29 +392,40 @@ export default function AdminMembers() {
                         </div>
 
                         <div className="divide-y divide-gray-50">
-                            {settings.admins.map((email) => {
+                            {settings.admins.map((adminData) => {
+                                const admin = typeof adminData === 'string' 
+                                    ? { email: adminData, name: 'Admin', status: 'active' as const, createdAt: new Date().toISOString() }
+                                    : adminData;
+                                
                                 const currentAdminEmail = localStorage.getItem('admin_email');
                                 const masterAdminEmail = 'admin@kartavantaj.com';
-                                const isCurrentAdmin = email === currentAdminEmail;
-                                const isMasterAdmin = email === masterAdminEmail;
-                                const canRemoveAdmin = currentAdminEmail === masterAdminEmail && email !== masterAdminEmail;
+                                const isCurrentAdmin = admin.email === currentAdminEmail;
+                                const isMasterAdmin = admin.email === masterAdminEmail;
+                                const canRemoveAdmin = currentAdminEmail === masterAdminEmail && admin.email !== masterAdminEmail;
                                 
                                 return (
-                                    <div key={email} className={`p-4 flex items-center justify-between transition-colors ${isCurrentAdmin ? 'bg-blue-50 hover:bg-blue-100' : 'hover:bg-gray-50'}`}>
+                                    <div key={admin.email} className={`p-4 flex items-center justify-between transition-colors ${
+                                        admin.status === 'pending' ? 'bg-yellow-50 hover:bg-yellow-100' :
+                                        isCurrentAdmin ? 'bg-blue-50 hover:bg-blue-100' : 'hover:bg-gray-50'
+                                    }`}>
                                         <div className="flex items-center gap-3">
                                             <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${
+                                                admin.status === 'pending' ? 'bg-yellow-100 text-yellow-600 ring-2 ring-yellow-200' :
                                                 isMasterAdmin ? 'bg-gradient-to-br from-yellow-100 to-orange-100 text-orange-600 ring-2 ring-orange-200' :
                                                 isCurrentAdmin ? 'bg-blue-100 text-blue-600 ring-2 ring-blue-200' : 'bg-purple-100 text-purple-600'
                                             }`}>
-                                                {email.charAt(0).toUpperCase()}
+                                                {admin.email.charAt(0).toUpperCase()}
                                             </div>
                                             <div>
                                                 <div className="flex items-center gap-2">
-                                                    <p className="text-sm font-bold text-gray-800">{email}</p>
-                                                    {isMasterAdmin && (
+                                                    <p className="text-sm font-bold text-gray-800">{admin.email}</p>
+                                                    {admin.status === 'pending' && (
+                                                        <span className="bg-yellow-500 text-white px-2 py-0.5 rounded-full text-[10px] font-bold">ONAY BEKLİYOR</span>
+                                                    )}
+                                                    {isMasterAdmin && admin.status === 'active' && (
                                                         <span className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-2 py-0.5 rounded-full text-[10px] font-bold">MASTER</span>
                                                     )}
-                                                    {isCurrentAdmin && !isMasterAdmin && (
+                                                    {isCurrentAdmin && !isMasterAdmin && admin.status === 'active' && (
                                                         <span className="bg-blue-600 text-white px-2 py-0.5 rounded-full text-[10px] font-bold">SİZ</span>
                                                     )}
                                                     {isCurrentAdmin && isMasterAdmin && (
@@ -357,33 +434,59 @@ export default function AdminMembers() {
                                                 </div>
                                                 <div className="flex items-center gap-1 text-xs font-medium">
                                                     <CheckCircle size={12} />
-                                                    <span className={isMasterAdmin ? 'text-orange-600' : 'text-green-600'}>
-                                                        {isMasterAdmin ? 'Master Admin' : 'Aktif Yönetici'}
+                                                    <span className={
+                                                        admin.status === 'pending' ? 'text-yellow-600' :
+                                                        isMasterAdmin ? 'text-orange-600' : 'text-green-600'
+                                                    }>
+                                                        {admin.status === 'pending' ? 'Onay Bekliyor' :
+                                                         isMasterAdmin ? 'Master Admin' : 'Aktif Yönetici'}
                                                     </span>
                                                 </div>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <button 
-                                                onClick={() => handle2FASetup(email)} 
-                                                className="text-gray-400 hover:text-blue-600 p-2 transition-colors" 
-                                                title="2FA Kodu Ver"
-                                            >
-                                                <Smartphone size={18} />
-                                            </button>
-                                            {canRemoveAdmin && (
-                                                <button 
-                                                    onClick={() => handleRemoveAdmin(email)} 
-                                                    className="text-gray-400 hover:text-red-600 p-2 transition-colors" 
-                                                    title="Yetkiyi Kaldır"
-                                                >
-                                                    <Trash2 size={18} />
-                                                </button>
+                                            {admin.status === 'pending' && currentAdminEmail === masterAdminEmail && (
+                                                <>
+                                                    <button 
+                                                        onClick={() => handleApproveAdmin(admin.email)} 
+                                                        className="text-green-600 hover:text-green-700 p-2 transition-colors" 
+                                                        title="Onayla"
+                                                    >
+                                                        <CheckCircle size={18} />
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => handleRejectAdmin(admin.email)} 
+                                                        className="text-red-600 hover:text-red-700 p-2 transition-colors" 
+                                                        title="Reddet"
+                                                    >
+                                                        <Trash2 size={18} />
+                                                    </button>
+                                                </>
                                             )}
-                                            {!canRemoveAdmin && email !== masterAdminEmail && (
-                                                <div className="p-2 text-gray-300" title="Sadece Master Admin kaldırabilir">
-                                                    <Trash2 size={18} />
-                                                </div>
+                                            {admin.status === 'active' && (
+                                                <>
+                                                    <button 
+                                                        onClick={() => handle2FASetup(admin.email)} 
+                                                        className="text-gray-400 hover:text-blue-600 p-2 transition-colors" 
+                                                        title="2FA Kodu Ver"
+                                                    >
+                                                        <Smartphone size={18} />
+                                                    </button>
+                                                    {canRemoveAdmin && (
+                                                        <button 
+                                                            onClick={() => handleRemoveAdmin(admin.email)} 
+                                                            className="text-gray-400 hover:text-red-600 p-2 transition-colors" 
+                                                            title="Yetkiyi Kaldır"
+                                                        >
+                                                            <Trash2 size={18} />
+                                                        </button>
+                                                    )}
+                                                    {!canRemoveAdmin && admin.email !== masterAdminEmail && (
+                                                        <div className="p-2 text-gray-300" title="Sadece Master Admin kaldırabilir">
+                                                            <Trash2 size={18} />
+                                                        </div>
+                                                    )}
+                                                </>
                                             )}
                                         </div>
                                     </div>
