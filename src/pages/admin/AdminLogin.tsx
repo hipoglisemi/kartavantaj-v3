@@ -102,9 +102,25 @@ export default function AdminLogin() {
             }
             
             if (adminStatus === 'pending') {
-                SecurityService.logSecurityEvent('LOGIN_PENDING_ADMIN', { email });
-                setErrors({ login: 'Hesabınız henüz onaylanmamış. Master admin onayını bekleyin.' });
-                return;
+                // Master admin kendini otomatik onaylayabilir
+                if (email === 'admin@kartavantaj.com') {
+                    // Master admin'i otomatik aktif yap
+                    const settings = settingsService.getLocalSettings();
+                    const updatedAdmins = settings.admins.map(admin => {
+                        if (typeof admin === 'object' && admin.email === email) {
+                            return { ...admin, status: 'active' as const, approvedBy: 'system', approvedAt: new Date().toISOString() };
+                        }
+                        return admin;
+                    });
+                    const updatedSettings = { ...settings, admins: updatedAdmins };
+                    settingsService.saveDraftSettings(updatedSettings);
+                    settingsService.publishSettings();
+                    SecurityService.logSecurityEvent('MASTER_ADMIN_AUTO_APPROVED', { email });
+                } else {
+                    SecurityService.logSecurityEvent('LOGIN_PENDING_ADMIN', { email });
+                    setErrors({ login: 'Hesabınız henüz onaylanmamış. Master admin onayını bekleyin.' });
+                    return;
+                }
             }
 
             // Admin credentials kontrol et
