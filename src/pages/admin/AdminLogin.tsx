@@ -23,15 +23,7 @@ export default function AdminLogin() {
             return;
         }
 
-        // Admin listesi var mı kontrol et
-        const adminList = SecurityService.getSecureItem('admin_list');
-        if (!adminList || JSON.parse(adminList || '[]').length === 0) {
-            // Hiç admin yok, setup'a yönlendir
-            navigate('/panel/setup');
-            return;
-        }
-
-        // Admin var, giriş ekranını göster
+        // Direkt giriş ekranını göster
         setIsSetupComplete(true);
         setLoading(false);
     }, [navigate]);

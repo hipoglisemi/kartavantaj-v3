@@ -6,7 +6,6 @@ import {
 } from "react-router-dom";
 import HomePage from "./pages/Home";
 import AdminLogin from "./pages/admin/AdminLogin";
-import AdminSetup from "./pages/admin/AdminSetup";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminSettings from './pages/admin/AdminSettings';
@@ -57,10 +56,7 @@ const router = createBrowserRouter([
     path: "/panel",
     element: <AdminLogin />,
   },
-  {
-    path: "/panel/setup",
-    element: <AdminSetup />,
-  },
+
   {
     path: "/panel/login",
     element: <AdminLogin />,
@@ -181,10 +177,7 @@ const router = createBrowserRouter([
     path: "/admin/login",
     element: <Navigate to="/panel/login" replace />,
   },
-  {
-    path: "/admin/setup", 
-    element: <Navigate to="/panel/setup" replace />,
-  },
+
   {
     path: "/admin/*",
     element: <Navigate to="/panel/dashboard" replace />,
