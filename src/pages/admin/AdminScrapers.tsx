@@ -247,7 +247,7 @@ export default function AdminScrapers() {
 import json
 
 print("Python başlatılıyor...")
-data = {"title": "Test Kampanyası", "discount": 100}
+data = {"title": "Kampanya Başlığı", "discount": "Indirim Oranı"}
 print(json.dumps(data))
 print("Bitti")
 `;

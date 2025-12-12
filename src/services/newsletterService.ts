@@ -7,11 +7,7 @@ export interface Subscriber {
 
 const STORAGE_KEY = 'newsletter_subscribers';
 
-const initialSubscribers: Subscriber[] = [
-    { id: 1, email: 'caner@test.com', date: '02.05.2024', source: 'Footer' },
-    { id: 2, email: 'merve@test.com', date: '02.05.2024', source: 'Pop-up' },
-    { id: 3, email: 'selim@test.com', date: '01.05.2024', source: 'Kampanya Detay' },
-];
+const initialSubscribers: Subscriber[] = [];
 
 export const newsletterService = {
     getSubscribers: (): Subscriber[] => {

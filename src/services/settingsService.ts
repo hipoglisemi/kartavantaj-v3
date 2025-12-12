@@ -123,17 +123,12 @@ const defaultSettings: SiteSettings = {
         offsetY: 0
     },
     // Defaults for new fields
-    admins: ['admin@kartavantaj.com'],
+    admins: [],
     newsletter: {
         apiKey: '',
-        subscribers: [
-            { email: 'muser1@gmail.com', date: '2024-03-01', status: 'Subscribed' }
-        ]
+        subscribers: []
     },
-    demoUsers: [
-        { id: 1, name: 'Ahmet Yılmaz', email: 'ahmet@example.com', role: 'Admin', joined: '2023-10-12', status: 'Active' },
-        { id: 2, name: 'Ayşe Demir', email: 'ayse@example.com', role: 'Editor', joined: '2023-11-05', status: 'Active' }
-    ]
+    demoUsers: []
 };
 
 import { supabase } from './authService';

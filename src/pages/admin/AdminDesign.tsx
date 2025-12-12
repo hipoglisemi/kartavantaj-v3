@@ -418,7 +418,7 @@ export default function AdminDesign() {
                             <label className="block text-sm font-medium text-gray-700 mb-1">Görsel URL</label>
                             <input
                                 type="text"
-                                placeholder="https://example.com/ad.jpg"
+                                placeholder="https://cdn.kartavantaj.com/ads/reklam.jpg"
                                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-green-500 focus:border-green-500"
                                 value={settings.ads.sidebarAdImage}
                                 onChange={(e) => handleChange('ads', 'sidebarAdImage', e.target.value)}

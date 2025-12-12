@@ -11,12 +11,7 @@ const trafficData = [
     { name: 'Paz', visitors: 2200, users: 110 },
 ];
 
-const recentMembers = [
-    { id: 1, name: 'Ahmet Yılmaz', email: 'ahmet@example.com', date: '01.05.2024', status: 'Aktif' },
-    { id: 2, name: 'Ayşe Demir', email: 'ayse@example.com', date: '01.05.2024', status: 'Onay Bekliyor' },
-    { id: 3, name: 'Mehmet Kaya', email: 'mehmet@example.com', date: '30.04.2024', status: 'Aktif' },
-    { id: 4, name: 'Zeynep Çelik', email: 'zeynep@example.com', date: '29.04.2024', status: 'Pasif' },
-];
+const recentMembers: any[] = [];
 
 import { useEffect, useState } from 'react';
 import { newsletterService, type Subscriber } from '../../services/newsletterService';

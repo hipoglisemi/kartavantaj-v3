@@ -346,13 +346,22 @@ export default function AdminBulkUpload() {
 
     const downloadSampleJson = () => {
         const sample = [
-            { "id": 101, "title": "Ornek Kampanya", "description": "Aciklama", "validUntil": "2025-12-31" }
+            { 
+                "id": 1001, 
+                "title": "Kampanya Başlığı", 
+                "description": "Kampanya açıklaması buraya yazılır", 
+                "validUntil": "2025-12-31",
+                "bank": "Banka Adı",
+                "category": "Kategori",
+                "image": "https://example.com/image.jpg",
+                "url": "https://example.com/kampanya"
+            }
         ];
         const blob = new Blob([JSON.stringify(sample, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'sample.json';
+        a.download = 'kampanya-sablonu.json';
         a.click();
     };
 

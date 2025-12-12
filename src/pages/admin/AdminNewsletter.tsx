@@ -66,10 +66,11 @@ export default function AdminNewsletter() {
             return;
         }
         setIsSending(true);
+        // Gerçek API entegrasyonu burada yapılacak
         setTimeout(() => {
             setIsSending(false);
-            success("Test bülteni gönderildi! (Simülasyon)");
-        }, 2000);
+            success("Test bülteni hazırlandı!");
+        }, 1000);
     };
 
     return (

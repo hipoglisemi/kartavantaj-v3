@@ -173,7 +173,7 @@ export default function AdminRegisterModal({ isOpen, onClose }: AdminRegisterMod
                                     className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
                                         errors.name ? 'border-red-300 bg-red-50' : 'border-gray-200'
                                     }`}
-                                    placeholder="Ahmet Yılmaz"
+                                    placeholder="Ad Soyad"
                                 />
                                 {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
                             </div>

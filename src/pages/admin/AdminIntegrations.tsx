@@ -110,7 +110,7 @@ export default function AdminIntegrations() {
                             <button
                                 disabled={!configs.supabase.connected}
                                 className="flex-1 border border-gray-200 hover:bg-gray-50 text-gray-700 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
-                                onClick={() => alert('Veritabanı senkronizasyonu başlatıldı... (Demo)')}
+                                onClick={() => window.location.reload()}
                             >
                                 <RefreshCw size={16} /> Eşitle
                             </button>
