@@ -15,6 +15,12 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // Buffer polyfill for browser
+      if (typeof global === 'undefined') {
+        var global = globalThis;
+      }
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

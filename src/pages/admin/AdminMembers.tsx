@@ -94,19 +94,23 @@ export default function AdminMembers() {
     // 2FA Setup Functions (Gerçek TOTP)
     const handle2FASetup = async (email: string) => {
         try {
-            console.log('2FA setup başlatılıyor:', email);
+            console.log('🚀 2FA setup başlatılıyor:', email);
             
             // Gerçek TOTP secret oluştur
             const secret = TOTPService.generateSecret();
-            console.log('Secret oluşturuldu:', secret);
+            console.log('🔑 Secret oluşturuldu:', secret);
             
             // Admin için secret'ı kaydet
             TOTPService.saveAdminSecret(email, secret);
-            console.log('Secret kaydedildi');
+            console.log('💾 Secret kaydedildi');
             
             // Mevcut token'ı oluştur (gösterim amaçlı)
+            console.log('🎯 Token oluşturma başlatılıyor...');
             const token = TOTPService.generateToken(secret);
-            console.log('Token oluşturuldu:', token);
+            console.log('🎯 Token oluşturuldu:', token);
+            
+            // Alert ile de gösterelim
+            alert(`Debug: Secret=${secret.substring(0,10)}..., Token=${token}`);
             
             setSelectedAdminEmail(email);
             setGeneratedSecret(secret);
