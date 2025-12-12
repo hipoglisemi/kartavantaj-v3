@@ -102,11 +102,12 @@ export default function AdminMembers() {
 
 
 
-    // Timer effect - Daha sık güncelleme (100ms)
+    // Timer effect - Senkronize güncelleme
     useEffect(() => {
         let interval: NodeJS.Timeout;
+        let syncTimeout: NodeJS.Timeout;
+        
         if (show2FASetup && generatedSecret) {
-            // İlk güncelleme hemen yap
             const updateToken = () => {
                 const remaining = TOTPService.getTimeRemaining();
                 setTimeRemaining(remaining);
@@ -115,13 +116,22 @@ export default function AdminMembers() {
                 setCurrentToken(newToken);
             };
             
-            updateToken(); // İlk çalıştırma
+            // İlk güncelleme hemen yap
+            updateToken();
             
-            // Her 500ms güncelle (optimal performans)
-            interval = setInterval(updateToken, 500);
+            // Bir sonraki tam saniyeye kadar bekle, sonra senkronize başla
+            const now = Date.now();
+            const msToNextSecond = 1000 - (now % 1000);
+            
+            syncTimeout = setTimeout(() => {
+                updateToken(); // Tam saniyede güncelle
+                interval = setInterval(updateToken, 1000); // Her saniye güncelle
+            }, msToNextSecond);
         }
+        
         return () => {
             if (interval) clearInterval(interval);
+            if (syncTimeout) clearTimeout(syncTimeout);
         };
     }, [show2FASetup, generatedSecret]);
 

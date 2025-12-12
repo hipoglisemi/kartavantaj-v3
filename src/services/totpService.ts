@@ -91,6 +91,12 @@ export class TOTPService {
             // 6 haneli kod üret
             const token = (code % 1000000).toString().padStart(6, '0');
             
+            // Debug bilgisi (geçici)
+            if (window.location.hostname === 'localhost') {
+                const remaining = this.getTimeRemaining();
+                console.log(`TOTP: ${token}, Kalan: ${remaining}s, Epoch: ${epoch}, Counter: ${timeCounter}`);
+            }
+            
             return token;
         } catch (error) {
             ConsoleProtection.safeError('TOTP üretim hatası');
@@ -143,14 +149,15 @@ export class TOTPService {
         return this.generateTOTP(secret);
     }
 
-    // Token'ın geçerlilik süresini kontrol et (Google Authenticator uyumlu)
+    // Token'ın geçerlilik süresini kontrol et (hassas senkronizasyon)
     static getTimeRemaining(): number {
         const now = Date.now();
         const epoch = Math.floor(now / 1000);
         const timeInWindow = epoch % 30;
         const remaining = 30 - timeInWindow;
         
-        return remaining;
+        // Eğer 0 saniye kaldıysa, 30 göster (yeni döngü)
+        return remaining === 0 ? 30 : remaining;
     }
 
     // Admin için TOTP secret'ı kaydet (şifreli)
