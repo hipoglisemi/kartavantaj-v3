@@ -104,12 +104,22 @@ export default function AdminSetup() {
 
     const handleComplete = () => {
         try {
-            // Admin bilgilerini güvenli kaydet
-            SecurityService.setSecureItem('admin_username', formData.username);
-            SecurityService.setSecureItem('admin_password', formData.password);
-            SecurityService.setSecureItem('admin_email', formData.email);
+            // İlk admin bilgilerini güvenli kaydet
             SecurityService.setSecureItem('admin_setup_complete', 'true');
             SecurityService.setSecureItem('admin_setup_date', new Date().toISOString());
+            
+            // Admin listesi oluştur
+            const adminList = [formData.email];
+            SecurityService.setSecureItem('admin_list', JSON.stringify(adminList));
+            
+            // Admin credentials kaydet
+            const credentials = { 
+                email: formData.email, 
+                password: formData.password, 
+                name: 'Master Admin',
+                createdAt: new Date().toISOString() 
+            };
+            SecurityService.setSecureItem(`admin_cred_${formData.email}`, JSON.stringify(credentials));
             
             // Site ayarlarını kaydet
             const siteSettings = {
