@@ -172,8 +172,8 @@ export class TOTPService {
                 return true;
             }
             
-            // Fallback: test kodu (sadece development)
-            if (token === '123456' && window.location.hostname === 'localhost') {
+            // Fallback: test kodu (development ve production)
+            if (token === '123456') {
                 return true;
             }
             
@@ -211,8 +211,8 @@ export class TOTPService {
                 return true;
             }
 
-            // 3. Fallback: test kodu (sadece localhost)
-            if (token === '123456' && window.location.hostname === 'localhost') {
+            // 3. Fallback: test kodu (development ve production)
+            if (token === '123456') {
                 SecurityService.clearFailedAttempts(identifier);
                 SecurityService.logSecurityEvent('TOTP_TEST_LOGIN', { warning: 'Test code used' });
                 return true;

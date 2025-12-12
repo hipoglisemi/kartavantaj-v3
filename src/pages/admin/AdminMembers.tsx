@@ -14,7 +14,7 @@ export default function AdminMembers() {
 
     // Master admin'i otomatik ekle (eğer yoksa)
     useEffect(() => {
-        const masterAdminEmail = 'oguz.karaevli@gmail.com';
+        const masterAdminEmail = 'bilgi@kartavantaj.com';
         if (!settings.admins.includes(masterAdminEmail)) {
             const updatedSettings = {
                 ...settings,
@@ -129,7 +129,7 @@ export default function AdminMembers() {
 
     const handleRemoveAdmin = async (email: string) => {
         const currentAdminEmail = localStorage.getItem('admin_email');
-        const masterAdminEmail = 'oguz.karaevli@gmail.com';
+        const masterAdminEmail = 'bilgi@kartavantaj.com';
         
         // Sadece master admin diğer adminleri silebilir
         if (currentAdminEmail !== masterAdminEmail) {
@@ -313,7 +313,7 @@ export default function AdminMembers() {
                             </h2>
                             <div className="flex items-center gap-3">
                                 <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs font-bold">{settings.admins.length} Kişi</span>
-                                {localStorage.getItem('admin_email') === 'oguz.karaevli@gmail.com' && (
+                                {localStorage.getItem('admin_email') === 'bilgi@kartavantaj.com' && (
                                     <button
                                         onClick={() => setShowAddAdminModal(true)}
                                         className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center gap-2"
@@ -328,7 +328,7 @@ export default function AdminMembers() {
                         <div className="divide-y divide-gray-50">
                             {settings.admins.map((email) => {
                                 const currentAdminEmail = localStorage.getItem('admin_email');
-                                const masterAdminEmail = 'oguz.karaevli@gmail.com';
+                                const masterAdminEmail = 'bilgi@kartavantaj.com';
                                 const isCurrentAdmin = email === currentAdminEmail;
                                 const isMasterAdmin = email === masterAdminEmail;
                                 const canRemoveAdmin = currentAdminEmail === masterAdminEmail && email !== masterAdminEmail;
