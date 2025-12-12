@@ -102,18 +102,23 @@ export default function AdminMembers() {
 
 
 
-    // Timer effect
+    // Timer effect - Daha sık güncelleme (100ms)
     useEffect(() => {
         let interval: NodeJS.Timeout;
         if (show2FASetup && generatedSecret) {
-            interval = setInterval(() => {
+            // İlk güncelleme hemen yap
+            const updateToken = () => {
                 const remaining = TOTPService.getTimeRemaining();
                 setTimeRemaining(remaining);
                 
-                // Her saniye yeni token oluştur (TOTP kendi içinde 30 saniyeyi yönetir)
                 const newToken = TOTPService.generateToken(generatedSecret);
                 setCurrentToken(newToken);
-            }, 1000);
+            };
+            
+            updateToken(); // İlk çalıştırma
+            
+            // Her 100ms güncelle (daha responsive)
+            interval = setInterval(updateToken, 100);
         }
         return () => {
             if (interval) clearInterval(interval);

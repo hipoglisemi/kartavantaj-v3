@@ -144,11 +144,17 @@ export class TOTPService {
         return this.generateTOTP(secret);
     }
 
-    // Token'ın geçerlilik süresini kontrol et
+    // Token'ın geçerlilik süresini kontrol et (daha hassas)
     static getTimeRemaining(): number {
-        const epoch = Math.round(new Date().getTime() / 1000.0);
+        const now = Date.now();
+        const epoch = Math.floor(now / 1000);
         const countDown = 30 - (epoch % 30);
-        return countDown;
+        
+        // Milisaniye hassasiyeti için kalan süreyi hesapla
+        const msRemaining = 1000 - (now % 1000);
+        const totalMs = (countDown - 1) * 1000 + msRemaining;
+        
+        return Math.ceil(totalMs / 1000);
     }
 
     // Admin için TOTP secret'ı kaydet (şifreli)
