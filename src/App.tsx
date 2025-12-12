@@ -170,20 +170,7 @@ const router = createBrowserRouter([
       { index: true, element: <AdminBackup /> },
     ]
   },
-  {
-    path: "/panel/advanced",
-    element: <ProtectedRoute requireAdmin={true}><AdminLayout /></ProtectedRoute>,
-    children: [
-      { index: true, element: <div className="p-10">Gelişmiş ayarlar yakında...</div> },
-    ]
-  },
-  {
-    path: "/panel/audience",
-    element: <ProtectedRoute requireAdmin={true}><AdminLayout /></ProtectedRoute>,
-    children: [
-      { index: true, element: <div className="p-10">Kitle analizleri yakında...</div> },
-    ]
-  },
+
   {
     path: "/admin/login",
     element: <Navigate to="/panel/login" replace />,

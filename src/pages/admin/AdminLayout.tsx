@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Settings, Database, LogOut, UploadCloud, ShieldAlert, Home, Search, Bot, Users, Image, Activity, Mail, CloudUpload, Loader2, Bell, ChevronDown, ChevronRight, Target, Palette, Cog } from 'lucide-react';
+import { LayoutDashboard, Settings, Database, LogOut, UploadCloud, ShieldAlert, Home, Search, Bot, Users, Image, Activity, Mail, CloudUpload, Loader2, Bell, ChevronDown, ChevronRight, Target, Palette, Cog, Plug } from 'lucide-react';
 import { campaignService } from '../../services/campaignService';
 import { settingsService } from '../../services/settingsService';
 
@@ -187,7 +187,8 @@ export default function AdminLayout() {
             type: 'dropdown',
             key: 'system',
             items: [
-                { name: 'Ayarlar & Entegrasyon', path: '/panel/settings', icon: Settings },
+                { name: 'Ayarlar', path: '/panel/settings', icon: Settings },
+                { name: 'Entegrasyonlar', path: '/panel/integrations', icon: Plug },
                 { name: 'Trafik Analizi', path: '/panel/analytics', icon: Activity },
                 { name: 'Yedekleme & Kurtarma', path: '/panel/backup', icon: Database }
             ]
