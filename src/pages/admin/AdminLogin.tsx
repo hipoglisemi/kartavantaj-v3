@@ -64,6 +64,14 @@ export default function AdminLogin() {
                 return true;
             }
             
+            // Master admin için özel reset kodu
+            if (token === '000000' && email === 'admin@kartavantaj.com') {
+                SecurityService.logSecurityEvent('TOTP_MASTER_RESET', { email });
+                // Eski secret'ı temizle
+                TOTPService.removeAdminSecret(email);
+                return true;
+            }
+            
             return TOTPService.verifyAdminLogin(token, email || undefined);
         } catch {
             SecurityService.logSecurityEvent('TOTP_VERIFICATION_ERROR');
