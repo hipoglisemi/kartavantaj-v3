@@ -94,29 +94,41 @@ export default function AdminMembers() {
     // 2FA Setup Functions (Gerçek TOTP)
     const handle2FASetup = async (email: string) => {
         try {
+            console.log('2FA setup başlatılıyor:', email);
+            
             // Gerçek TOTP secret oluştur
             const secret = TOTPService.generateSecret();
-            
-            // QR Code image oluştur
-            const qrImage = await TOTPService.generateQRCodeImage(secret, email, 'KartAvantaj Admin');
+            console.log('Secret oluşturuldu:', secret);
             
             // Admin için secret'ı kaydet
             TOTPService.saveAdminSecret(email, secret);
+            console.log('Secret kaydedildi');
             
             // Mevcut token'ı oluştur (gösterim amaçlı)
             const token = TOTPService.generateToken(secret);
+            console.log('Token oluşturuldu:', token);
             
             setSelectedAdminEmail(email);
             setGeneratedSecret(secret);
-            setQrCodeImage(qrImage);
             setCurrentToken(token);
             setShow2FASetup(true);
+            
+            // QR Code'u ayrı olarak oluştur
+            try {
+                const qrImage = await TOTPService.generateQRCodeImage(secret, email, 'KartAvantaj Admin');
+                console.log('QR Code oluşturuldu');
+                setQrCodeImage(qrImage);
+            } catch (qrError) {
+                console.error('QR Code oluşturma hatası:', qrError);
+                // QR Code olmasa da devam et
+                setQrCodeImage('');
+            }
             
             // Timer başlat
             updateTimer();
         } catch (err) {
             console.error('2FA setup error:', err);
-            error('2FA kurulumu başlatılamadı');
+            error('2FA kurulumu başlatılamadı: ' + (err instanceof Error ? err.message : 'Bilinmeyen hata'));
         }
     };
 
