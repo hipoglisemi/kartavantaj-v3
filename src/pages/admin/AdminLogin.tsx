@@ -147,7 +147,8 @@ export default function AdminLogin() {
                 // Güvenli session oluştur
                 SecurityService.createAdminSession();
                 localStorage.setItem('isAdmin', 'true');
-                SecurityService.setSecureItem('admin_email', email);
+                localStorage.setItem('admin_email', email); // Normal localStorage'a kaydet
+                SecurityService.setSecureItem('admin_email', email); // Güvenli storage'a da kaydet
                 SecurityService.setSecureItem('admin_last_login', new Date().toISOString());
                 SecurityService.logSecurityEvent('ADMIN_LOGIN_SUCCESS', { email });
                 navigate('/panel/dashboard');
