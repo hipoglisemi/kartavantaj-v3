@@ -4,6 +4,7 @@ import { Lock, Smartphone, UserPlus } from 'lucide-react';
 import TOTPService from '../../services/totpService';
 import SecurityService from '../../services/securityService';
 import AdminRegisterModal from '../../components/AdminRegisterModal';
+import OwlMascot from '../../components/OwlMascot';
 
 export default function AdminLogin() {
     const [email, setEmail] = useState('');
@@ -138,8 +139,14 @@ export default function AdminLogin() {
     // 2FA Ekranı
     if (showTwoFactor) {
         return (
-            <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-                <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
+            <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center relative overflow-hidden">
+                {/* Arka Plan Maskotları */}
+                <div className="absolute inset-0 pointer-events-none">
+                    <OwlMascot size={280} opacity={0.04} className="absolute top-16 right-16" />
+                    <OwlMascot size={220} opacity={0.03} className="absolute bottom-24 left-24" />
+                </div>
+                
+                <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md relative z-10">
                     <div className="flex flex-col items-center mb-8">
                         <div className="bg-blue-100 p-3 rounded-full mb-3">
                             <Smartphone className="text-blue-600" size={32} />
@@ -198,8 +205,16 @@ export default function AdminLogin() {
 
     // Ana Giriş Ekranı
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-            <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center relative overflow-hidden">
+            {/* Arka Plan Maskotları */}
+            <div className="absolute inset-0 pointer-events-none">
+                <OwlMascot size={300} opacity={0.05} className="absolute top-10 left-10" />
+                <OwlMascot size={250} opacity={0.03} className="absolute bottom-20 right-20" />
+                <OwlMascot size={200} opacity={0.04} className="absolute top-1/2 left-1/4 transform -translate-y-1/2" />
+                <OwlMascot size={180} opacity={0.03} className="absolute bottom-10 left-1/3" />
+            </div>
+            
+            <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md relative z-10">
                 <div className="flex flex-col items-center mb-8">
                     <div className="bg-blue-100 p-3 rounded-full mb-3">
                         <Lock className="text-blue-600" size={32} />

@@ -23,6 +23,7 @@ import AdminMembers from './pages/admin/AdminMembers';
 import AdminNewsletter from './pages/admin/AdminNewsletter';
 import EmailConfirmation from './pages/EmailConfirmation';
 import ProtectedRoute from './components/ProtectedRoute';
+import NotFound from './pages/NotFound';
 
 import ProfileLayout from "./pages/profile/ProfileLayout";
 import { ProfileInfo, ProfileFavorites, ProfileSettings, ProfileWallet } from "./pages/profile/ProfilePages";
@@ -184,7 +185,7 @@ const router = createBrowserRouter([
   },
   {
     path: "*",
-    element: <div className="flex h-screen items-center justify-center">Sayfa bulunamadı (404)</div>
+    element: <NotFound />
   }
 ]);
 
