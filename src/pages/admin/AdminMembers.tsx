@@ -137,10 +137,12 @@ export default function AdminMembers() {
         const remaining = TOTPService.getTimeRemaining();
         setTimeRemaining(remaining);
         
-        if (remaining === 30) {
-            // Yeni token oluştur
+        if (remaining === 30 || remaining === 29) {
+            // Yeni token oluştur (30 saniyede bir)
             if (generatedSecret) {
+                console.log('Timer: Yeni token oluşturuluyor...');
                 const newToken = TOTPService.generateToken(generatedSecret);
+                console.log('Timer: Yeni token:', newToken);
                 setCurrentToken(newToken);
             }
         }
