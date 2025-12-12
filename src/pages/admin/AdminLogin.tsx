@@ -58,20 +58,6 @@ export default function AdminLogin() {
     // 2FA kodu doğrulama (Güvenli TOTP)
     const verifyTwoFactorCode = (token: string) => {
         try {
-            // Önce test kodunu kontrol et
-            if (token === '123456') {
-                SecurityService.logSecurityEvent('TOTP_TEST_LOGIN_DIRECT', { email });
-                return true;
-            }
-            
-            // Master admin için özel reset kodu
-            if (token === '000000' && email === 'admin@kartavantaj.com') {
-                SecurityService.logSecurityEvent('TOTP_MASTER_RESET', { email });
-                // Eski secret'ı temizle
-                TOTPService.removeAdminSecret(email);
-                return true;
-            }
-            
             return TOTPService.verifyAdminLogin(token, email || undefined);
         } catch {
             SecurityService.logSecurityEvent('TOTP_VERIFICATION_ERROR');

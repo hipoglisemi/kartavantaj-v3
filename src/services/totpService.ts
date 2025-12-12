@@ -55,34 +55,34 @@ export class TOTPService {
         }
     }
 
-    // TOTP token üret (Google Authenticator uyumlu)
+    // TOTP token üret (Google Authenticator tam uyumlu)
     static generateTOTP(secret: string, timeStep: number = 30): string {
         try {
             if (!secret || secret.length < 16) {
-                return '123456';
+                throw new Error('Invalid secret');
             }
 
-            // Zaman adımını hesapla (30 saniye) - UTC zaman kullan
-            const epoch = Math.floor(Date.now() / 1000);
+            // Zaman adımını hesapla - UTC zaman, server senkronizasyonu
+            const now = Date.now();
+            const epoch = Math.floor(now / 1000);
             const timeCounter = Math.floor(epoch / timeStep);
 
             // Secret'ı decode et
             const key = this.base32Decode(secret);
             
-            // Time counter'ı 8 byte'a çevir (Big Endian)
+            // Time counter'ı 8 byte'a çevir (Big Endian - RFC 6238)
             const timeBytes = new ArrayBuffer(8);
             const timeView = new DataView(timeBytes);
-            // Üst 4 byte sıfır, alt 4 byte time counter
-            timeView.setUint32(0, 0, false);
-            timeView.setUint32(4, timeCounter, false);
+            timeView.setUint32(0, 0, false); // Üst 32 bit
+            timeView.setUint32(4, timeCounter, false); // Alt 32 bit
 
-            // HMAC-SHA1 hesapla
+            // HMAC-SHA1 hesapla (RFC 4226)
             const shaObj = new jsSHA('SHA-1', 'ARRAYBUFFER');
             shaObj.setHMACKey(key, 'UINT8ARRAY');
             shaObj.update(timeBytes);
             const hmac = shaObj.getHMAC('UINT8ARRAY');
 
-            // Dynamic truncation (RFC 4226)
+            // Dynamic truncation (RFC 4226 Section 5.4)
             const offset = hmac[hmac.length - 1] & 0x0f;
             const code = ((hmac[offset] & 0x7f) << 24) |
                         ((hmac[offset + 1] & 0xff) << 16) |
@@ -92,32 +92,21 @@ export class TOTPService {
             // 6 haneli kod üret
             const token = (code % 1000000).toString().padStart(6, '0');
             
-            // Debug için log (sadece development)
-            if (window.location.hostname === 'localhost') {
-                console.log('TOTP Debug:', {
-                    secret: secret.substring(0, 8) + '...',
-                    epoch,
-                    timeCounter,
-                    token,
-                    timeRemaining: 30 - (epoch % 30)
-                });
-            }
-            
             return token;
         } catch (error) {
             ConsoleProtection.safeError('TOTP üretim hatası');
-            return '123456';
+            throw error;
         }
     }
 
-    // TOTP token doğrula (zaman toleransı ile)
+    // TOTP token doğrula (geniş zaman toleransı ile)
     static verifyToken(token: string, secret: string): boolean {
         try {
             const epoch = Math.floor(Date.now() / 1000);
             const currentWindow = Math.floor(epoch / 30);
             
-            // Mevcut, önceki ve sonraki zaman pencerelerini kontrol et
-            for (let i = -1; i <= 1; i++) {
+            // Daha geniş zaman penceresi: -2 ile +2 arası (5 pencere = 2.5 dakika tolerans)
+            for (let i = -2; i <= 2; i++) {
                 const timeCounter = currentWindow + i;
                 const timeBytes = new ArrayBuffer(8);
                 const timeView = new DataView(timeBytes);
@@ -212,10 +201,7 @@ export class TOTPService {
                 return true;
             }
             
-            // Fallback: test kodu (development ve production)
-            if (token === '123456') {
-                return true;
-            }
+
             
             return false;
         } catch {
@@ -251,12 +237,7 @@ export class TOTPService {
                 return true;
             }
 
-            // 3. Fallback: test kodu (development ve production)
-            if (token === '123456') {
-                SecurityService.clearFailedAttempts(identifier);
-                SecurityService.logSecurityEvent('TOTP_TEST_LOGIN', { warning: 'Test code used' });
-                return true;
-            }
+
 
             // Başarısız deneme kaydet
             SecurityService.recordFailedAttempt(identifier);
