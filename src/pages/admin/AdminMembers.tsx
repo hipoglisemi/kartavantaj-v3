@@ -117,8 +117,8 @@ export default function AdminMembers() {
             
             updateToken(); // İlk çalıştırma
             
-            // Her 100ms güncelle (daha responsive)
-            interval = setInterval(updateToken, 100);
+            // Her 500ms güncelle (optimal performans)
+            interval = setInterval(updateToken, 500);
         }
         return () => {
             if (interval) clearInterval(interval);

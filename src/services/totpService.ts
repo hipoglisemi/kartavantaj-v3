@@ -62,9 +62,8 @@ export class TOTPService {
                 throw new Error('Invalid secret');
             }
 
-            // Zaman adımını hesapla - UTC zaman, server senkronizasyonu
-            const now = Date.now();
-            const epoch = Math.floor(now / 1000);
+            // Zaman adımını hesapla - Google Authenticator standardı
+            const epoch = Math.floor(Date.now() / 1000);
             const timeCounter = Math.floor(epoch / timeStep);
 
             // Secret'ı decode et
@@ -144,17 +143,14 @@ export class TOTPService {
         return this.generateTOTP(secret);
     }
 
-    // Token'ın geçerlilik süresini kontrol et (daha hassas)
+    // Token'ın geçerlilik süresini kontrol et (Google Authenticator uyumlu)
     static getTimeRemaining(): number {
         const now = Date.now();
         const epoch = Math.floor(now / 1000);
-        const countDown = 30 - (epoch % 30);
+        const timeInWindow = epoch % 30;
+        const remaining = 30 - timeInWindow;
         
-        // Milisaniye hassasiyeti için kalan süreyi hesapla
-        const msRemaining = 1000 - (now % 1000);
-        const totalMs = (countDown - 1) * 1000 + msRemaining;
-        
-        return Math.ceil(totalMs / 1000);
+        return remaining;
     }
 
     // Admin için TOTP secret'ı kaydet (şifreli)
