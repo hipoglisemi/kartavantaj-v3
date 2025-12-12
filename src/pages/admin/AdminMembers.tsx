@@ -124,35 +124,31 @@ export default function AdminMembers() {
                 error('QR Code oluşturulamadı, manuel secret kullanın: ' + (qrError instanceof Error ? qrError.message : 'Bilinmeyen hata'));
                 setQrCodeImage('');
             }
-            
-            // Timer başlat
-            updateTimer();
         } catch (err) {
             console.error('2FA setup error:', err);
             error('2FA kurulumu başlatılamadı: ' + (err instanceof Error ? err.message : 'Bilinmeyen hata'));
         }
     };
 
-    // Timer güncelleme
-    const updateTimer = () => {
-        const remaining = TOTPService.getTimeRemaining();
-        setTimeRemaining(remaining);
-        
-        // Her saniye yeni token oluştur (TOTP kendi içinde 30 saniyeyi yönetir)
-        if (generatedSecret) {
-            const newToken = TOTPService.generateToken(generatedSecret);
-            if (newToken !== currentToken) {
-                console.log('Timer: Token güncellendi:', newToken);
-                setCurrentToken(newToken);
-            }
-        }
-    };
+
 
     // Timer effect
     useEffect(() => {
         let interval: NodeJS.Timeout;
-        if (show2FASetup) {
-            interval = setInterval(updateTimer, 1000);
+        if (show2FASetup && generatedSecret) {
+            interval = setInterval(() => {
+                const remaining = TOTPService.getTimeRemaining();
+                setTimeRemaining(remaining);
+                
+                // Her saniye yeni token oluştur (TOTP kendi içinde 30 saniyeyi yönetir)
+                const newToken = TOTPService.generateToken(generatedSecret);
+                setCurrentToken(prevToken => {
+                    if (newToken !== prevToken) {
+                        console.log('Timer: Token güncellendi:', newToken);
+                    }
+                    return newToken;
+                });
+            }, 1000);
         }
         return () => {
             if (interval) clearInterval(interval);

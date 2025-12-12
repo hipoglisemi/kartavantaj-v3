@@ -55,27 +55,36 @@ export class TOTPService {
     // Mevcut TOTP token oluştur (gerçek TOTP)
     static generateToken(secret: string): string {
         try {
-            console.log('Generating token for secret:', secret);
+            console.log('🔑 generateToken çağrıldı');
+            console.log('📝 Secret:', secret);
+            console.log('📏 Secret uzunluğu:', secret?.length);
             
             // Secret'ın geçerli olduğunu kontrol et
             if (!secret || secret.length < 16) {
-                console.error('Invalid secret length:', secret?.length);
+                console.error('❌ Geçersiz secret uzunluğu:', secret?.length);
                 return '123456'; // Fallback
             }
             
+            // Authenticator'ın mevcut zamanı
+            const currentTime = Math.floor(Date.now() / 1000);
+            console.log('⏰ Mevcut zaman (epoch):', currentTime);
+            
             const token = authenticator.generate(secret);
-            console.log('Generated token:', token);
+            console.log('🎯 Üretilen token:', token);
+            console.log('🔍 Token tipi:', typeof token);
+            console.log('📐 Token uzunluğu:', token?.length);
             
             // Token'ın 6 haneli olduğunu kontrol et
             if (token && token.length === 6 && /^\d{6}$/.test(token)) {
+                console.log('✅ Token geçerli, döndürülüyor:', token);
                 return token;
             } else {
-                console.error('Invalid token format:', token);
+                console.error('❌ Geçersiz token formatı:', token);
                 return '123456'; // Fallback
             }
         } catch (error) {
-            console.error('Token generation error:', error);
-            console.error('Secret that failed:', secret);
+            console.error('💥 Token üretim hatası:', error);
+            console.error('🔑 Hatalı secret:', secret);
             return '123456'; // Fallback
         }
     }
