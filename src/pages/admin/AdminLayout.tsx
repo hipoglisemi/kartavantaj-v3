@@ -86,9 +86,9 @@ export default function AdminLayout() {
     ];
 
     return (
-        <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
+        <div className="flex min-h-screen bg-gray-50 font-sans">
             {/* Sidebar (Left Navigation) */}
-            <aside className="w-64 bg-white border-r border-gray-200 flex-shrink-0 flex flex-col h-full z-20">
+            <aside className="w-64 bg-white border-r border-gray-200 flex-shrink-0 flex flex-col min-h-screen z-20">
                 {/* Logo Area */}
                 <div className="h-16 flex items-center px-6 border-b border-gray-100 shrink-0">
                     <div className="flex items-center gap-2 text-purple-900">
@@ -130,7 +130,7 @@ export default function AdminLayout() {
             </aside>
 
             {/* Main Content Wrapper (Right Side) */}
-            <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+            <div className="flex-1 flex flex-col min-w-0 min-h-screen bg-gray-50">
                 {/* Top Header */}
                 <header className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-6 flex-shrink-0">
                     {/* Left: Breadcrumb/Welcome */}
@@ -169,7 +169,7 @@ export default function AdminLayout() {
                 </header>
 
                 {/* Scrollable Page Content */}
-                <main className="flex-1 overflow-y-scroll p-6 flex flex-col relative bg-gray-50">
+                <main className="flex-1 p-6 flex flex-col relative bg-gray-50 min-h-0">
                     <div className="flex-1 w-full max-w-5xl mx-auto">
                         <Outlet />
                     </div>

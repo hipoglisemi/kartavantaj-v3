@@ -6,7 +6,7 @@ export default function NotFound() {
     const navigate = useNavigate();
 
     return (
-        <div className="h-screen w-full bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 flex items-center justify-center relative overflow-hidden">
+        <div className="min-h-screen w-full bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 flex items-center justify-center relative" style={{minHeight: '100vh'}}>
             {/* Arka Plan Maskotları */}
             <div className="absolute inset-0 pointer-events-none">
                 <OwlMascot size={400} opacity={0.06} className="absolute top-20 left-20 animate-pulse" />
