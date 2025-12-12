@@ -449,23 +449,21 @@ export default function AdminMembers() {
                                                     </div>
                                                 </div>
                                             </div>
+                                            <div className="flex items-center gap-2">
+                                                <button 
+                                                    onClick={() => handle2FASetup(email)} 
+                                                    className="text-gray-400 hover:text-blue-600 p-2 transition-colors" 
+                                                    title="2FA Kodu Ver"
+                                                >
+                                                    <Smartphone size={18} />
+                                                </button>
+                                                <button onClick={() => handleRemoveAdmin(email)} className="text-gray-400 hover:text-red-600 p-2 transition-colors" title="Yetkiyi Kaldır">
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            </div>
                                         </div>
                                     );
                                 })}
-                                        <div className="flex items-center gap-2">
-                                            <button 
-                                                onClick={() => handle2FASetup(email)} 
-                                                className="text-gray-400 hover:text-blue-600 p-2 transition-colors" 
-                                                title="2FA Kodu Ver"
-                                            >
-                                                <Smartphone size={18} />
-                                            </button>
-                                            <button onClick={() => handleRemoveAdmin(email)} className="text-gray-400 hover:text-red-600 p-2 transition-colors" title="Yetkiyi Kaldır">
-                                                <Trash2 size={18} />
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
                             </div>
                         </div>
                     </div>
