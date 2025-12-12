@@ -176,12 +176,9 @@ export default function AdminLayout() {
                                     return adminEmail.charAt(0).toUpperCase();
                                 })()}
                             </div>
-                            <div className="flex flex-col">
-                                <span className="text-[9px] text-gray-600 leading-tight">
-                                    {localStorage.getItem('admin_email') || 'Admin'}
-                                </span>
-                                <span className="text-[10px] bg-red-800 text-red-200 px-2 py-0.5 rounded-full border border-red-700">v2.1.2</span>
-                            </div>
+                            <span className="text-[9px] text-gray-600 leading-tight">
+                                {localStorage.getItem('admin_email') || 'Admin'}
+                            </span>
                         </div>
                     </div>
                 </header>

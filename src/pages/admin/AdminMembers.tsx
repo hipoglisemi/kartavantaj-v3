@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, User, Shield, Mail, Calendar, Trash2, UserPlus, CheckCircle, Lock, Smartphone, QrCode, Copy, Clock } from 'lucide-react';
+import { Search, User, Shield, Mail, Calendar, Trash2, CheckCircle, Smartphone, QrCode, Copy, Clock } from 'lucide-react';
 import TOTPService from '../../services/totpService';
 
 import { useConfirmation } from '../../context/ConfirmationContext';
@@ -8,19 +8,11 @@ import { settingsService } from '../../services/settingsService';
 
 export default function AdminMembers() {
     const { confirm } = useConfirmation();
-    const { success, error, info } = useToast();
+    const { success, error } = useToast();
     const settings = settingsService.useSettings();
 
     const [activeTab, setActiveTab] = useState<'members' | 'team'>('members');
     const [searchTerm, setSearchTerm] = useState('');
-
-    // --- Team/Admin Logic ---
-    const [newAdminEmail, setNewAdminEmail] = useState('');
-
-    // --- Credential Update Logic ---
-    const [credentialUser, setCredentialUser] = useState('');
-    const [credentialCurrentPass, setCredentialCurrentPass] = useState('');
-    const [credentialNewPass, setCredentialNewPass] = useState('');
 
     // --- 2FA Setup Logic ---
     const [show2FASetup, setShow2FASetup] = useState(false);
@@ -34,62 +26,7 @@ export default function AdminMembers() {
     const [isAddingMember, setIsAddingMember] = useState(false);
     const [newMember, setNewMember] = useState({ name: '', email: '', role: 'User', status: 'Active' });
 
-    useEffect(() => {
-        // Load current admin username for display
-        setCredentialUser(localStorage.getItem('admin_username') || 'admin');
-    }, []);
 
-    const handleUpdateCredentials = async (e: React.FormEvent) => {
-        e.preventDefault();
-        const storedPass = localStorage.getItem('admin_password');
-
-        if (!storedPass) {
-            error("Hata: Admin kurulumu tamamlanmamış.");
-            return;
-        }
-
-        if (credentialCurrentPass !== storedPass) {
-            error("Hata: Mevcut şifre yanlış girildi.");
-            return;
-        }
-
-        if (credentialNewPass.length < 6) {
-            error("Hata: Yeni şifre en az 6 karakter olmalıdır.");
-            return;
-        }
-
-        if (credentialUser.length < 3) {
-            error("Hata: Kullanıcı adı en az 3 karakter olmalıdır.");
-            return;
-        }
-
-        localStorage.setItem('admin_username', credentialUser);
-        localStorage.setItem('admin_password', credentialNewPass);
-        localStorage.setItem('admin_last_update', new Date().toISOString());
-
-        success("Giriş bilgileri güncellendi! Bir sonraki girişte yeni bilgilerinizi kullanın.");
-        setCredentialCurrentPass('');
-        setCredentialNewPass('');
-    };
-
-    const handleShowResetInfo = () => {
-        const resetUrl = `${window.location.origin}/panel/setup?reset=true`;
-        
-        const message = `🔐 KURULUM SIFIRLAMA BİLGİLERİ\n\n` +
-                       `Reset URL: ${resetUrl}\n\n` +
-                       `📱 Kurulumu sıfırlamak için:\n` +
-                       `1. Yukarıdaki URL'yi kullanın\n` +
-                       `2. Google Authenticator kodunuzu girin\n\n` +
-                       `⚠️ Bu işlem tüm admin ayarlarını siler!\n` +
-                       `Bu bilgiyi güvenli bir yerde saklayın.`;
-        
-        if (navigator.clipboard) {
-            navigator.clipboard.writeText(resetUrl);
-            alert(message + '\n\n✅ Reset URL panoya kopyalandı!');
-        } else {
-            alert(message);
-        }
-    };
 
     // 2FA Setup Functions (Gerçek TOTP)
     const handle2FASetup = async (email: string) => {
@@ -173,17 +110,6 @@ export default function AdminMembers() {
             if (ok) success("Değişiklikler buluta kaydedildi.");
             else error("Kaydedilirken hata oluştu.");
         });
-    };
-
-    const handleAddAdmin = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (newAdminEmail && !settings.admins.includes(newAdminEmail)) {
-            const updated = { ...settings, admins: [...settings.admins, newAdminEmail] };
-            saveSettings(updated);
-            setNewAdminEmail('');
-        } else if (settings.admins.includes(newAdminEmail)) {
-            info("Bu e-posta zaten yönetici listesinde.");
-        }
     };
 
     const handleRemoveAdmin = async (email: string) => {
@@ -346,125 +272,56 @@ export default function AdminMembers() {
                     </div>
                 </>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {/* Left Column: Actions */}
-                    <div className="md:col-span-1 space-y-6">
-                        {/* --- UPDATE CREDENTIALS --- */}
-                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                            <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                                <Lock size={18} className="text-gray-500" />
-                                Giriş Bilgilerini Güncelle
-                            </h2>
-                            <form onSubmit={handleUpdateCredentials}>
-                                <div className="space-y-3">
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-500 mb-1">Kullanıcı Adı</label>
-                                        <input type="text" required value={credentialUser} onChange={e => setCredentialUser(e.target.value)} className="w-full border border-gray-200 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-purple-500 outline-none" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-500 mb-1">Mevcut Şifre</label>
-                                        <input type="password" required value={credentialCurrentPass} onChange={e => setCredentialCurrentPass(e.target.value)} className="w-full border border-gray-200 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-purple-500 outline-none" placeholder="Güvenlik için gerekli" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-500 mb-1">Yeni Şifre</label>
-                                        <input type="password" required value={credentialNewPass} onChange={e => setCredentialNewPass(e.target.value)} className="w-full border border-gray-200 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-purple-500 outline-none" placeholder="Yeni şifreniz" />
-                                    </div>
-                                    <button type="submit" className="w-full bg-gray-800 text-white py-2.5 rounded-lg text-sm font-bold hover:bg-gray-900 transition-colors">Bilgileri Güncelle</button>
-                                </div>
-                            </form>
-                        </div>
-
-                        {/* --- RESET BİLGİLERİ --- */}
-                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                            <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                                <Lock size={18} className="text-red-500" />
-                                Kurulum Sıfırlama
-                            </h2>
-                            <div className="space-y-3">
-                                <div className="bg-red-50 text-red-700 p-3 rounded-lg text-xs leading-relaxed">
-                                    <span className="font-bold block mb-1">⚠️ Dikkat:</span>
-                                    Reset anahtarı ile admin paneli tamamen sıfırlanabilir. Bu bilgileri güvenli tutun.
-                                </div>
-                                <button 
-                                    onClick={handleShowResetInfo}
-                                    className="w-full bg-red-600 text-white py-2.5 rounded-lg text-sm font-bold hover:bg-red-700 transition-colors"
-                                >
-                                    Reset Bilgilerini Göster
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* --- ADD ADMIN --- */}
-                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                            <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                                <UserPlus size={18} className="text-gray-500" />
-                                Yeni Yönetici Ekle
-                            </h2>
-                            <form onSubmit={handleAddAdmin}>
-                                <div className="mb-4">
-                                    <label className="block text-xs font-bold text-gray-500 mb-1">E-posta Adresi</label>
-                                    <input type="email" required value={newAdminEmail} onChange={e => setNewAdminEmail(e.target.value)} className="w-full border border-gray-200 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-purple-500 outline-none" placeholder="ornek@admin.com" />
-                                </div>
-                                <button type="submit" className="w-full bg-purple-600 text-white py-2.5 rounded-lg text-sm font-bold hover:bg-purple-700 transition-colors">Davet Et</button>
-                            </form>
-                            <div className="mt-4 bg-blue-50 text-blue-700 p-3 rounded-lg text-xs leading-relaxed">
-                                <span className="font-bold block mb-1">Bilgi:</span>
-                                Eklenen kişiler, admin paneline erişim yetkisine sahip olur. (Şu an için sadece listede görünürler).
-                            </div>
-                        </div>
-                    </div>
-
+                <div className="max-w-4xl mx-auto">
                     {/* --- ADMIN LIST --- */}
-                    <div className="md:col-span-2">
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                            <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-                                <h2 className="font-bold text-gray-800 flex items-center gap-2">
-                                    <Shield size={18} className="text-gray-500" />
-                                    Yetkili Listesi
-                                </h2>
-                                <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs font-bold">{settings.admins.length} Kişi</span>
-                            </div>
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+                            <h2 className="font-bold text-gray-800 flex items-center gap-2">
+                                <Shield size={18} className="text-gray-500" />
+                                Yetkili Listesi
+                            </h2>
+                            <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs font-bold">{settings.admins.length} Kişi</span>
+                        </div>
 
-                            <div className="divide-y divide-gray-50">
-                                {settings.admins.map((email) => {
-                                    const currentAdminEmail = localStorage.getItem('admin_email');
-                                    const isCurrentAdmin = email === currentAdminEmail;
-                                    
-                                    return (
-                                        <div key={email} className={`p-4 flex items-center justify-between transition-colors ${isCurrentAdmin ? 'bg-blue-50 hover:bg-blue-100' : 'hover:bg-gray-50'}`}>
-                                            <div className="flex items-center gap-3">
-                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${isCurrentAdmin ? 'bg-blue-100 text-blue-600 ring-2 ring-blue-200' : 'bg-purple-100 text-purple-600'}`}>
-                                                    {email.charAt(0).toUpperCase()}
-                                                </div>
-                                                <div>
-                                                    <div className="flex items-center gap-2">
-                                                        <p className="text-sm font-bold text-gray-800">{email}</p>
-                                                        {isCurrentAdmin && (
-                                                            <span className="bg-blue-600 text-white px-2 py-0.5 rounded-full text-[10px] font-bold">SİZ</span>
-                                                        )}
-                                                    </div>
-                                                    <div className="flex items-center gap-1 text-xs text-green-600 font-medium">
-                                                        <CheckCircle size={12} />
-                                                        Aktif Yönetici
-                                                    </div>
-                                                </div>
+                        <div className="divide-y divide-gray-50">
+                            {settings.admins.map((email) => {
+                                const currentAdminEmail = localStorage.getItem('admin_email');
+                                const isCurrentAdmin = email === currentAdminEmail;
+                                
+                                return (
+                                    <div key={email} className={`p-4 flex items-center justify-between transition-colors ${isCurrentAdmin ? 'bg-blue-50 hover:bg-blue-100' : 'hover:bg-gray-50'}`}>
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${isCurrentAdmin ? 'bg-blue-100 text-blue-600 ring-2 ring-blue-200' : 'bg-purple-100 text-purple-600'}`}>
+                                                {email.charAt(0).toUpperCase()}
                                             </div>
-                                            <div className="flex items-center gap-2">
-                                                <button 
-                                                    onClick={() => handle2FASetup(email)} 
-                                                    className="text-gray-400 hover:text-blue-600 p-2 transition-colors" 
-                                                    title="2FA Kodu Ver"
-                                                >
-                                                    <Smartphone size={18} />
-                                                </button>
-                                                <button onClick={() => handleRemoveAdmin(email)} className="text-gray-400 hover:text-red-600 p-2 transition-colors" title="Yetkiyi Kaldır">
-                                                    <Trash2 size={18} />
-                                                </button>
+                                            <div>
+                                                <div className="flex items-center gap-2">
+                                                    <p className="text-sm font-bold text-gray-800">{email}</p>
+                                                    {isCurrentAdmin && (
+                                                        <span className="bg-blue-600 text-white px-2 py-0.5 rounded-full text-[10px] font-bold">SİZ</span>
+                                                    )}
+                                                </div>
+                                                <div className="flex items-center gap-1 text-xs text-green-600 font-medium">
+                                                    <CheckCircle size={12} />
+                                                    Aktif Yönetici
+                                                </div>
                                             </div>
                                         </div>
-                                    );
-                                })}
-                            </div>
+                                        <div className="flex items-center gap-2">
+                                            <button 
+                                                onClick={() => handle2FASetup(email)} 
+                                                className="text-gray-400 hover:text-blue-600 p-2 transition-colors" 
+                                                title="2FA Kodu Ver"
+                                            >
+                                                <Smartphone size={18} />
+                                            </button>
+                                            <button onClick={() => handleRemoveAdmin(email)} className="text-gray-400 hover:text-red-600 p-2 transition-colors" title="Yetkiyi Kaldır">
+                                                <Trash2 size={18} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
                 </div>
@@ -575,7 +432,7 @@ export default function AdminMembers() {
                                 {/* Uyarı */}
                                 <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
                                     <div className="flex items-start gap-3">
-                                        <Lock className="text-amber-600 mt-0.5" size={18} />
+                                        <Shield className="text-amber-600 mt-0.5" size={18} />
                                         <div className="text-sm">
                                             <p className="font-medium text-amber-800 mb-1">Güvenlik Notu</p>
                                             <p className="text-amber-700">
