@@ -1,75 +1,54 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, Settings } from 'lucide-react';
-import { authService } from '../../services/authService';
+import { Lock, Settings, Smartphone } from 'lucide-react';
 
 export default function AdminLogin() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [twoFactorCode, setTwoFactorCode] = useState('');
+    const [showTwoFactor, setShowTwoFactor] = useState(false);
     const [isSetupComplete, setIsSetupComplete] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [errors, setErrors] = useState<Record<string, string>>({});
     const navigate = useNavigate();
 
     useEffect(() => {
-        // Google Auth callback kontrolü
-        const checkGoogleAuth = async () => {
-            try {
-                const user = await authService.getUser();
-                if (user) {
-                    // Google ile giriş yapmış kullanıcı var
-                    const adminEmails = getAdminEmails();
-                    
-                    if (adminEmails.includes(user.email || '')) {
-                        // Yetkili admin email'i
-                        localStorage.setItem('isAdmin', 'true');
-                        localStorage.setItem('admin_last_login', new Date().toISOString());
-                        localStorage.setItem('admin_google_user', JSON.stringify(user));
-                        navigate('/panel/dashboard');
-                        return;
-                    } else {
-                        // Yetkisiz email
-                        await authService.signOut();
-                        alert('Bu Google hesabı admin paneline erişim yetkisine sahip değil.');
-                    }
-                }
-            } catch (error) {
-                console.error('Google auth kontrol hatası:', error);
-            }
+        // Eğer zaten giriş yapmışsa dashboard'a yönlendir
+        const isAdmin = localStorage.getItem('isAdmin');
+        if (isAdmin === 'true') {
+            navigate('/panel/dashboard');
+            return;
+        }
 
-            // Kurulum kontrolü
-            const setupComplete = localStorage.getItem('admin_setup_complete');
-            if (setupComplete !== 'true') {
-                navigate('/panel/setup');
-            } else {
-                setIsSetupComplete(true);
-            }
-            setLoading(false);
-        };
-
-        checkGoogleAuth();
+        // Kurulum kontrolü
+        const setupComplete = localStorage.getItem('admin_setup_complete');
+        if (setupComplete !== 'true') {
+            navigate('/panel/setup');
+        } else {
+            setIsSetupComplete(true);
+        }
+        setLoading(false);
     }, [navigate]);
 
-    // Admin email listesini al
-    const getAdminEmails = () => {
-        const adminEmail = localStorage.getItem('admin_email');
-        const adminEmails = [adminEmail].filter(Boolean);
-        
-        // Ek admin email'leri varsa ekle
-        const extraAdmins = localStorage.getItem('admin_google_emails');
-        if (extraAdmins) {
-            try {
-                const parsed = JSON.parse(extraAdmins);
-                adminEmails.push(...parsed);
-            } catch (e) {
-                console.error('Admin emails parse hatası:', e);
-            }
+    // 2FA kodu doğrulama
+    const verifyTwoFactorCode = (token: string) => {
+        // Test kodu kontrolü
+        const testCode = localStorage.getItem('admin_test_code');
+        if (testCode && token === testCode) {
+            return true;
         }
         
-        return adminEmails;
+        // Geliştirme amaçlı master kod
+        if (token === '123456') {
+            return true;
+        }
+        
+        return false;
     };
 
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
+        setErrors({});
 
         const storedUser = localStorage.getItem('admin_username');
         const storedPass = localStorage.getItem('admin_password');
@@ -80,46 +59,41 @@ export default function AdminLogin() {
             return;
         }
 
+        // 1. Adım: Kullanıcı adı ve şifre kontrolü
         if (username === storedUser && password === storedPass) {
+            setShowTwoFactor(true);
+        } else {
+            setErrors({ login: 'Hatalı kullanıcı adı veya şifre!' });
+        }
+    };
+
+    const handleTwoFactorLogin = (e: React.FormEvent) => {
+        e.preventDefault();
+        setErrors({});
+
+        if (!twoFactorCode || twoFactorCode.length !== 6) {
+            setErrors({ twoFactor: '6 haneli doğrulama kodu gerekli' });
+            return;
+        }
+
+        // 2. Adım: 2FA kodu kontrolü
+        if (verifyTwoFactorCode(twoFactorCode)) {
             localStorage.setItem('isAdmin', 'true');
             localStorage.setItem('admin_last_login', new Date().toISOString());
             navigate('/panel/dashboard');
         } else {
-            alert('Hatalı kullanıcı adı veya şifre!');
+            setErrors({ twoFactor: 'Geçersiz doğrulama kodu' });
         }
+    };
+
+    const handleBackToLogin = () => {
+        setShowTwoFactor(false);
+        setTwoFactorCode('');
+        setErrors({});
     };
 
     const handleGoToSetup = () => {
         navigate('/panel/setup');
-    };
-
-    const handleGoogleLogin = async () => {
-        try {
-            setLoading(true);
-            const result = await authService.signInWithGoogleAdmin();
-            
-            if (result?.url) {
-                // Google OAuth redirect URL'si varsa yönlendir
-                window.location.href = result.url;
-            } else {
-                throw new Error('Google OAuth URL alınamadı');
-            }
-        } catch (error: any) {
-            console.error('Google giriş hatası:', error);
-            
-            // Daha detaylı hata mesajları
-            let errorMessage = 'Google girişi başlatılamadı';
-            if (error.message?.includes('Supabase')) {
-                errorMessage = 'Veritabanı bağlantısı eksik. Lütfen admin ayarlarını kontrol edin.';
-            } else if (error.message?.includes('OAuth')) {
-                errorMessage = 'Google OAuth yapılandırması eksik. Lütfen Supabase ayarlarını kontrol edin.';
-            } else {
-                errorMessage = error.message || 'Bilinmeyen hata oluştu';
-            }
-            
-            alert(errorMessage);
-            setLoading(false);
-        }
     };
 
     if (loading) {
@@ -137,6 +111,66 @@ export default function AdminLogin() {
         return null; // Navigate will handle redirect
     }
 
+    // 2FA Ekranı
+    if (showTwoFactor) {
+        return (
+            <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+                <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
+                    <div className="flex flex-col items-center mb-8">
+                        <div className="bg-blue-100 p-3 rounded-full mb-3">
+                            <Smartphone className="text-blue-600" size={32} />
+                        </div>
+                        <h2 className="text-2xl font-bold text-gray-900">2FA Doğrulama</h2>
+                        <p className="text-gray-600 text-center mt-2">Google Authenticator'dan 6 haneli kodu girin</p>
+                    </div>
+
+                    <form onSubmit={handleTwoFactorLogin} className="space-y-6">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Doğrulama Kodu</label>
+                            <input
+                                type="text"
+                                value={twoFactorCode}
+                                onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all font-mono text-center text-2xl tracking-widest ${
+                                    errors.twoFactor ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                                }`}
+                                placeholder="000000"
+                                maxLength={6}
+                                autoFocus
+                            />
+                            {errors.twoFactor && <p className="text-red-500 text-sm mt-1">{errors.twoFactor}</p>}
+                        </div>
+
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                            <p className="text-xs text-blue-700 text-center mb-1">
+                                <strong>Test Modu:</strong> Aşağıdaki kodu kullanabilirsiniz
+                            </p>
+                            <p className="text-center font-mono font-bold text-blue-800">123456</p>
+                        </div>
+
+                        <div className="flex gap-3">
+                            <button
+                                type="button"
+                                onClick={handleBackToLogin}
+                                className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
+                            >
+                                Geri
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={twoFactorCode.length !== 6}
+                                className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Giriş Yap
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        );
+    }
+
+    // Ana Giriş Ekranı
     return (
         <div className="min-h-screen bg-gray-100 flex items-center justify-center">
             <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
@@ -152,7 +186,9 @@ export default function AdminLogin() {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Kullanıcı Adı</label>
                         <input
                             type="text"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none"
+                            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none ${
+                                errors.login ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                            }`}
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                             placeholder="admin"
@@ -163,50 +199,24 @@ export default function AdminLogin() {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Şifre</label>
                         <input
                             type="password"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none"
+                            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none ${
+                                errors.login ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                            }`}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             placeholder="1234"
                         />
                     </div>
 
+                    {errors.login && <p className="text-red-500 text-sm">{errors.login}</p>}
+
                     <button
                         type="submit"
                         className="w-full bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors"
                     >
-                        Giriş Yap
+                        Devam Et
                     </button>
                 </form>
-
-                {/* Google Auth Bölümü */}
-                <div className="relative my-6">
-                    <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-gray-200"></div>
-                    </div>
-                    <div className="relative flex justify-center text-sm">
-                        <span className="px-2 bg-white text-gray-500">veya</span>
-                    </div>
-                </div>
-
-                <button
-                    onClick={handleGoogleLogin}
-                    disabled={loading}
-                    className="w-full bg-white border border-gray-300 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors flex items-center justify-center gap-3 group disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    {loading ? (
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-600"></div>
-                    ) : (
-                        <svg className="w-5 h-5" viewBox="0 0 24 24">
-                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
-                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
-                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
-                        </svg>
-                    )}
-                    <span className="group-hover:text-gray-900 transition-colors">
-                        {loading ? 'Google\'e yönlendiriliyor...' : 'Google ile Giriş Yap'}
-                    </span>
-                </button>
 
                 <div className="mt-6 text-center space-y-2">
                     <button
