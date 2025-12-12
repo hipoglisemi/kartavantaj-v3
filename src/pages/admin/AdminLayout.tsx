@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Settings, Database, LogOut, UploadCloud, ShieldAlert, Home, Search, Bot, Users, Image, Activity, Mail, CloudUpload, Loader2, Bell } from 'lucide-react';
+import { LayoutDashboard, Settings, Database, LogOut, UploadCloud, ShieldAlert, Home, Search, Bot, Users, Image, Activity, Mail, CloudUpload, Loader2, Bell, ChevronDown, ChevronRight, Target, Palette, Cog } from 'lucide-react';
 import { campaignService } from '../../services/campaignService';
 import { settingsService } from '../../services/settingsService';
 
@@ -85,21 +85,113 @@ export default function AdminLayout() {
         typeof admin === 'object' && admin.status === 'pending'
     ).length;
 
-    const navItems = [
-        { name: 'Dashboard', path: '/panel/dashboard', icon: LayoutDashboard },
-        { name: 'Bildirimler', path: '/panel/notifications', icon: Bell, badge: pendingAdmins > 0 ? pendingAdmins : undefined },
-        { name: 'Trafik Analizi', path: '/panel/analytics', icon: Activity },
-        { name: 'Kampanyalar', path: '/panel/campaigns', icon: UploadCloud },
-        { name: 'Toplu Yükleme', path: '/panel/bulk-upload', icon: Database },
-        { name: 'Üye Yönetimi', path: '/panel/members', icon: Users },
-        { name: 'Bülten Yönetimi', path: '/panel/newsletter', icon: Mail },
-        { name: 'Scraper Araçları', path: '/panel/scrapers', icon: Bot },
-        { name: 'AI Asistan', path: '/panel/ai', icon: Bot },
-        { name: 'SEO Paneli', path: '/panel/seo', icon: Search },
-        { name: 'Ayarlar & Entegrasyon', path: '/panel/settings', icon: Settings },
-        { name: 'Logolar', path: '/panel/logos', icon: Image },
-        { name: 'Yedekleme & Kurtarma', path: '/panel/backup', icon: Database },
-        { name: 'Site Tasarımı', path: '/panel/design', icon: LayoutDashboard },
+    // Mevcut sayfa adını al
+    const getCurrentPageName = () => {
+        // Dashboard
+        if (location.pathname === '/panel/dashboard') return 'Dashboard';
+        
+        // Dropdown menülerden ara
+        for (const menu of menuStructure) {
+            if (menu.type === 'dropdown' && menu.items) {
+                const foundItem = menu.items.find(item => item.path === location.pathname);
+                if (foundItem) return foundItem.name;
+            }
+        }
+        
+        return 'Panel';
+    };
+
+    // Dropdown state management
+    const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({
+        campaigns: false,
+        users: false,
+        design: false,
+        system: false
+    });
+
+    // Aktif sayfaya göre menüyü otomatik aç
+    useEffect(() => {
+        const currentPath = location.pathname;
+        
+        // Hangi menüde aktif sayfa var?
+        for (const menu of menuStructure) {
+            if (menu.type === 'dropdown' && menu.items) {
+                const hasActivePage = menu.items.some(item => item.path === currentPath);
+                if (hasActivePage) {
+                    setExpandedMenus(prev => ({
+                        ...prev,
+                        [menu.key!]: true
+                    }));
+                    break;
+                }
+            }
+        }
+    }, [location.pathname]);
+
+    const toggleMenu = (menuKey: string) => {
+        setExpandedMenus(prev => ({
+            ...prev,
+            [menuKey]: !prev[menuKey]
+        }));
+    };
+
+    // Check if any submenu item is active
+    const isMenuActive = (paths: string[]) => {
+        return paths.some(path => location.pathname === path);
+    };
+
+    const menuStructure = [
+        {
+            name: 'Dashboard',
+            path: '/panel/dashboard',
+            icon: LayoutDashboard,
+            type: 'single'
+        },
+        {
+            name: 'Kampanyalar',
+            icon: Target,
+            type: 'dropdown',
+            key: 'campaigns',
+            items: [
+                { name: 'Kampanya Yönetimi', path: '/panel/campaigns', icon: UploadCloud },
+                { name: 'Toplu Yükleme', path: '/panel/bulk-upload', icon: Database },
+                { name: 'AI Asistan', path: '/panel/ai', icon: Bot },
+                { name: 'Scraper Araçları', path: '/panel/scrapers', icon: Bot }
+            ]
+        },
+        {
+            name: 'Kullanıcılar',
+            icon: Users,
+            type: 'dropdown',
+            key: 'users',
+            items: [
+                { name: 'Üye Yönetimi', path: '/panel/members', icon: Users },
+                { name: 'Bildirimler', path: '/panel/notifications', icon: Bell, badge: pendingAdmins > 0 ? pendingAdmins : undefined },
+                { name: 'Bülten Yönetimi', path: '/panel/newsletter', icon: Mail }
+            ]
+        },
+        {
+            name: 'Tasarım & SEO',
+            icon: Palette,
+            type: 'dropdown',
+            key: 'design',
+            items: [
+                { name: 'Site Tasarımı', path: '/panel/design', icon: LayoutDashboard },
+                { name: 'Logolar', path: '/panel/logos', icon: Image },
+                { name: 'SEO Paneli', path: '/panel/seo', icon: Search }
+            ]
+        },
+        {
+            name: 'Sistem',
+            icon: Cog,
+            type: 'dropdown',
+            key: 'system',
+            items: [
+                { name: 'Ayarlar & Entegrasyon', path: '/panel/settings', icon: Settings },
+                { name: 'Trafik Analizi', path: '/panel/analytics', icon: Activity },
+                { name: 'Yedekleme & Kurtarma', path: '/panel/backup', icon: Database }
+            ]
+        }
     ];
 
     return (
@@ -116,27 +208,81 @@ export default function AdminLayout() {
 
                 {/* Navigation Links */}
                 <nav className="flex-1 overflow-y-auto py-6 px-3 space-y-1 min-h-0">
-                    {navItems.map((item) => {
-                        const isActive = location.pathname === item.path;
-                        return (
-                            <button
-                                key={item.path}
-                                onClick={() => navigate(item.path)}
-                                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-[13px] font-medium transition-all ${isActive
-                                    ? 'bg-purple-50 text-purple-700'
-                                    : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                    {menuStructure.map((menu) => {
+                        if (menu.type === 'single') {
+                            const isActive = location.pathname === menu.path;
+                            return (
+                                <button
+                                    key={menu.path}
+                                    onClick={() => navigate(menu.path!)}
+                                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all ${
+                                        isActive
+                                            ? 'bg-purple-50 text-purple-700'
+                                            : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
                                     }`}
-                            >
-                                <div className="flex items-center gap-3">
-                                    <item.icon size={16} />
-                                    {item.name}
-                                </div>
-                                {item.badge && (
-                                    <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
-                                        {item.badge}
-                                    </span>
+                                >
+                                    <menu.icon size={16} />
+                                    {menu.name}
+                                </button>
+                            );
+                        }
+
+                        // Dropdown menu
+                        const isExpanded = expandedMenus[menu.key!];
+                        const hasActiveItem = isMenuActive(menu.items!.map(item => item.path));
+                        
+                        return (
+                            <div key={menu.key} className="space-y-1">
+                                {/* Dropdown Header */}
+                                <button
+                                    onClick={() => toggleMenu(menu.key!)}
+                                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-[13px] font-medium transition-all ${
+                                        hasActiveItem
+                                            ? 'bg-purple-50 text-purple-700'
+                                            : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                                    }`}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <menu.icon size={16} />
+                                        {menu.name}
+                                    </div>
+                                    {isExpanded ? (
+                                        <ChevronDown size={14} className="transition-transform" />
+                                    ) : (
+                                        <ChevronRight size={14} className="transition-transform" />
+                                    )}
+                                </button>
+
+                                {/* Dropdown Items */}
+                                {isExpanded && (
+                                    <div className="ml-6 space-y-1 border-l border-gray-200 pl-3">
+                                        {menu.items!.map((item) => {
+                                            const isActive = location.pathname === item.path;
+                                            return (
+                                                <button
+                                                    key={item.path}
+                                                    onClick={() => navigate(item.path)}
+                                                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-[12px] font-medium transition-all ${
+                                                        isActive
+                                                            ? 'bg-purple-100 text-purple-700'
+                                                            : 'text-gray-400 hover:bg-gray-50 hover:text-gray-700'
+                                                    }`}
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        <item.icon size={14} />
+                                                        {item.name}
+                                                    </div>
+                                                    {item.badge && (
+                                                        <span className="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full min-w-[16px] text-center">
+                                                            {item.badge}
+                                                        </span>
+                                                    )}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
                                 )}
-                            </button>
+                            </div>
                         );
                     })}
                 </nav>
@@ -160,7 +306,7 @@ export default function AdminLayout() {
                     {/* Left: Breadcrumb/Welcome */}
                     <div className="flex items-center gap-4">
                         <h2 className="text-[15px] font-semibold text-gray-800">
-                            {navItems.find(n => n.path === location.pathname)?.name || 'Panel'}
+                            {getCurrentPageName()}
                         </h2>
                     </div>
 
