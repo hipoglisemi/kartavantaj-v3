@@ -114,8 +114,8 @@ export default function AdminMembers() {
             
             // Timer başlat
             updateTimer();
-        } catch (error) {
-            console.error('2FA setup error:', error);
+        } catch (err) {
+            console.error('2FA setup error:', err);
             error('2FA kurulumu başlatılamadı');
         }
     };

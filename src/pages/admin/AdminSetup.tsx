@@ -129,16 +129,6 @@ export default function AdminSetup() {
         navigate('/panel/login');
     };
 
-    // Basit test kodu sistemi (geliştirme amaçlı)
-    const generateSecret = () => {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-        let secret = '';
-        for (let i = 0; i < 32; i++) {
-            secret += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return secret;
-    };
-
     const generateTotpSecret = () => {
         // Gerçek TOTP secret oluştur
         const secret = TOTPService.generateSecret();
@@ -149,41 +139,6 @@ export default function AdminSetup() {
         localStorage.setItem('admin_totp_secret', secret);
         
         console.log(`Master TOTP secret oluşturuldu: ${secret}`);
-    };
-
-    // Test amaçlı sabit kod oluşturma
-    const generateTestCode = () => {
-        const adminEmail = localStorage.getItem('admin_email') || '';
-        const setupDate = localStorage.getItem('admin_setup_date') || '';
-        
-        // Email ve tarihten 6 haneli kod oluştur
-        const combined = adminEmail + setupDate;
-        let hash = 0;
-        for (let i = 0; i < combined.length; i++) {
-            const char = combined.charCodeAt(i);
-            hash = ((hash << 5) - hash) + char;
-            hash = hash & hash; // 32bit integer'a çevir
-        }
-        
-        // 6 haneli pozitif sayı yap
-        const code = Math.abs(hash).toString().padStart(6, '0').slice(0, 6);
-        return code;
-    };
-
-    // Test kodu doğrulama
-    const verifyTotpCode = (token: string) => {
-        // Test kodu kontrolü
-        const testCode = localStorage.getItem('admin_test_code');
-        if (testCode && token === testCode) {
-            return true;
-        }
-        
-        // Geliştirme amaçlı master kod
-        if (token === '123456') {
-            return true;
-        }
-        
-        return false;
     };
 
     const handleTotpVerification = () => {
