@@ -7,7 +7,7 @@ interface OwlMascotProps {
 export default function OwlMascot({ size = 200, opacity = 0.1, className = "" }: OwlMascotProps) {
     return (
         <img 
-            src="/Owlmascot.png"
+            src="/assets/OwlMascot.png"
             alt="Baykuş Maskot"
             width={size} 
             height={size} 

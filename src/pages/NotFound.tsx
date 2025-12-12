@@ -56,7 +56,7 @@ export default function NotFound() {
                 {/* Alt Bilgi */}
                 <div className="mt-12 text-center">
                     <p className="text-gray-500 text-sm">
-                        Hata kodu: 404 | KartAvantaj © 2025
+                                      KartAvantaj © 2025
                         <br />
                         Sorun devam ederse destek ekibimizle iletişime geçin.
                     </p>
