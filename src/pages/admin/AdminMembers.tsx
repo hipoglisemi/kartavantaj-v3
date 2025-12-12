@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Search, User, Shield, Mail, Calendar, Trash2, UserPlus, CheckCircle, Lock, Smartphone, QrCode, Copy } from 'lucide-react';
+import { Search, User, Shield, Mail, Calendar, Trash2, UserPlus, CheckCircle, Lock, Smartphone, QrCode, Copy, Clock } from 'lucide-react';
+import TOTPService from '../../services/totpService';
 
 import { useConfirmation } from '../../context/ConfirmationContext';
 import { useToast } from '../../context/ToastContext';
@@ -25,7 +26,9 @@ export default function AdminMembers() {
     const [show2FASetup, setShow2FASetup] = useState(false);
     const [selectedAdminEmail, setSelectedAdminEmail] = useState('');
     const [generatedSecret, setGeneratedSecret] = useState('');
-    const [generatedTestCode, setGeneratedTestCode] = useState('');
+    const [qrCodeImage, setQrCodeImage] = useState('');
+    const [currentToken, setCurrentToken] = useState('');
+    const [timeRemaining, setTimeRemaining] = useState(30);
 
     // Member Management State
     const [isAddingMember, setIsAddingMember] = useState(false);
@@ -88,37 +91,59 @@ export default function AdminMembers() {
         }
     };
 
-    // 2FA Setup Functions
-    const generateSecret = () => {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-        let secret = '';
-        for (let i = 0; i < 32; i++) {
-            secret += chars.charAt(Math.floor(Math.random() * chars.length));
+    // 2FA Setup Functions (Gerçek TOTP)
+    const handle2FASetup = async (email: string) => {
+        try {
+            // Gerçek TOTP secret oluştur
+            const secret = TOTPService.generateSecret();
+            
+            // QR Code image oluştur
+            const qrImage = await TOTPService.generateQRCodeImage(secret, email, 'KartAvantaj Admin');
+            
+            // Admin için secret'ı kaydet
+            TOTPService.saveAdminSecret(email, secret);
+            
+            // Mevcut token'ı oluştur (gösterim amaçlı)
+            const token = TOTPService.generateToken(secret);
+            
+            setSelectedAdminEmail(email);
+            setGeneratedSecret(secret);
+            setQrCodeImage(qrImage);
+            setCurrentToken(token);
+            setShow2FASetup(true);
+            
+            // Timer başlat
+            updateTimer();
+        } catch (error) {
+            console.error('2FA setup error:', error);
+            error('2FA kurulumu başlatılamadı');
         }
-        return secret;
     };
 
-    const generateTestCode = (email: string) => {
-        const combined = email + new Date().toISOString();
-        let hash = 0;
-        for (let i = 0; i < combined.length; i++) {
-            const char = combined.charCodeAt(i);
-            hash = ((hash << 5) - hash) + char;
-            hash = hash & hash;
-        }
-        const code = Math.abs(hash).toString().padStart(6, '0').slice(0, 6);
-        return code;
-    };
-
-    const handle2FASetup = (email: string) => {
-        const secret = generateSecret();
-        const testCode = generateTestCode(email);
+    // Timer güncelleme
+    const updateTimer = () => {
+        const remaining = TOTPService.getTimeRemaining();
+        setTimeRemaining(remaining);
         
-        setSelectedAdminEmail(email);
-        setGeneratedSecret(secret);
-        setGeneratedTestCode(testCode);
-        setShow2FASetup(true);
+        if (remaining === 30) {
+            // Yeni token oluştur
+            if (generatedSecret) {
+                const newToken = TOTPService.generateToken(generatedSecret);
+                setCurrentToken(newToken);
+            }
+        }
     };
+
+    // Timer effect
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
+        if (show2FASetup) {
+            interval = setInterval(updateTimer, 1000);
+        }
+        return () => {
+            if (interval) clearInterval(interval);
+        };
+    }, [show2FASetup, generatedSecret]);
 
     const copyToClipboard = (text: string) => {
         if (navigator.clipboard) {
@@ -139,7 +164,9 @@ export default function AdminMembers() {
         setShow2FASetup(false);
         setSelectedAdminEmail('');
         setGeneratedSecret('');
-        setGeneratedTestCode('');
+        setQrCodeImage('');
+        setCurrentToken('');
+        setTimeRemaining(30);
     };
 
     const saveSettings = (newSettings: any) => {
@@ -454,9 +481,19 @@ export default function AdminMembers() {
                             <div className="space-y-6">
                                 {/* QR Code Alanı */}
                                 <div className="bg-gray-50 rounded-xl p-6 text-center">
-                                    <div className="w-48 h-48 bg-white border-2 border-gray-200 rounded-xl mx-auto mb-4 flex items-center justify-center">
-                                        <QrCode size={64} className="text-gray-400" />
-                                        <div className="absolute text-xs text-gray-500 mt-20">QR Code</div>
+                                    <div className="w-48 h-48 bg-white border-2 border-gray-200 rounded-xl mx-auto mb-4 flex items-center justify-center overflow-hidden">
+                                        {qrCodeImage ? (
+                                            <img 
+                                                src={qrCodeImage} 
+                                                alt="QR Code" 
+                                                className="w-full h-full object-contain"
+                                            />
+                                        ) : (
+                                            <>
+                                                <QrCode size={64} className="text-gray-400" />
+                                                <div className="absolute text-xs text-gray-500 mt-20">Yükleniyor...</div>
+                                            </>
+                                        )}
                                     </div>
                                     <p className="text-sm text-gray-600 mb-4">
                                         Google Authenticator uygulamasıyla QR kodu tarayın
@@ -480,29 +517,33 @@ export default function AdminMembers() {
                                     </div>
                                 </div>
 
-                                {/* Test Kodu */}
+                                {/* Mevcut Token */}
                                 <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
                                     <div className="flex items-start gap-3">
                                         <Smartphone className="text-blue-600 mt-0.5" size={18} />
-                                        <div className="text-sm">
-                                            <p className="font-medium text-blue-800 mb-1">Test Kodu</p>
+                                        <div className="text-sm flex-1">
+                                            <p className="font-medium text-blue-800 mb-1">Mevcut TOTP Kodu</p>
                                             <p className="text-blue-700 mb-2">
-                                                Bu kişi için özel oluşturulan test kodu:
+                                                Google Authenticator'da şu anda görünen kod:
                                             </p>
                                             <div className="bg-white rounded p-3 font-mono text-center">
                                                 <div className="flex items-center justify-center gap-2">
-                                                    <span className="font-bold text-blue-800 text-lg">{generatedTestCode}</span>
+                                                    <span className="font-bold text-blue-800 text-xl">{currentToken}</span>
                                                     <button
-                                                        onClick={() => copyToClipboard(generatedTestCode)}
+                                                        onClick={() => copyToClipboard(currentToken)}
                                                         className="p-1 text-blue-600 hover:text-blue-800"
                                                         title="Kopyala"
                                                     >
                                                         <Copy size={16} />
                                                     </button>
                                                 </div>
+                                                <div className="flex items-center justify-center gap-1 mt-2 text-xs text-blue-600">
+                                                    <Clock size={12} />
+                                                    <span>{timeRemaining} saniye kaldı</span>
+                                                </div>
                                             </div>
                                             <p className="text-xs text-blue-600 mt-2">
-                                                Bu kodu kişiye verin, admin paneline giriş yaparken kullanabilir.
+                                                Bu kod 30 saniyede bir değişir. Test amaçlı kullanabilirsiniz.
                                             </p>
                                         </div>
                                     </div>
@@ -548,17 +589,21 @@ export default function AdminMembers() {
                                     </button>
                                     <button
                                         onClick={() => {
-                                            const message = `🔐 2FA Kurulum Bilgileri - ${selectedAdminEmail}\n\n` +
-                                                           `Secret: ${generatedSecret}\n\n` +
-                                                           `Özel Test Kodu: ${generatedTestCode}\n` +
-                                                           `Genel Test Kodu: 123456\n\n` +
-                                                           `Admin paneline giriş yaparken bu kodlardan birini kullanabilirsiniz.`;
+                                            const message = `🔐 Google Authenticator Kurulum - ${selectedAdminEmail}\n\n` +
+                                                           `Secret Key: ${generatedSecret}\n\n` +
+                                                           `Kurulum Adımları:\n` +
+                                                           `1. Google Authenticator uygulamasını indirin\n` +
+                                                           `2. QR kodu tarayın veya secret key'i manuel girin\n` +
+                                                           `3. Uygulamada görünen 6 haneli kodu admin paneline girin\n\n` +
+                                                           `Mevcut Test Kodu: ${currentToken}\n` +
+                                                           `(Bu kod 30 saniyede bir değişir)\n\n` +
+                                                           `Fallback Test Kodu: 123456`;
                                             
                                             copyToClipboard(message);
                                         }}
                                         className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors"
                                     >
-                                        Tümünü Kopyala
+                                        Kurulum Bilgilerini Kopyala
                                     </button>
                                 </div>
                             </div>

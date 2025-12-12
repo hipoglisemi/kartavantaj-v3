@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Shield, Lock, User, CheckCircle, AlertTriangle, Smartphone, QrCode, Copy } from 'lucide-react';
+import TOTPService from '../../services/totpService';
 
 export default function AdminSetup() {
     const navigate = useNavigate();
@@ -139,18 +140,15 @@ export default function AdminSetup() {
     };
 
     const generateTotpSecret = () => {
-        const secret = generateSecret();
+        // Gerçek TOTP secret oluştur
+        const secret = TOTPService.generateSecret();
         
         setTotpSecret(secret);
         
-        // TOTP secret'ı kaydet
+        // Master admin TOTP secret'ı kaydet
         localStorage.setItem('admin_totp_secret', secret);
         
-        // Test amaçlı sabit kod oluştur
-        const testCode = generateTestCode();
-        localStorage.setItem('admin_test_code', testCode);
-        
-        console.log(`Test kodu: ${testCode}`);
+        console.log(`Master TOTP secret oluşturuldu: ${secret}`);
     };
 
     // Test amaçlı sabit kod oluşturma
@@ -194,7 +192,8 @@ export default function AdminSetup() {
             return;
         }
 
-        if (!verifyTotpCode(verificationCode)) {
+        // Gerçek TOTP doğrulaması
+        if (!TOTPService.verifyMasterToken(verificationCode)) {
             setErrors({ verificationCode: 'Geçersiz doğrulama kodu' });
             return;
         }

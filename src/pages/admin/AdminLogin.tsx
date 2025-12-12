@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, Settings, Smartphone } from 'lucide-react';
+import TOTPService from '../../services/totpService';
 
 export default function AdminLogin() {
     const [username, setUsername] = useState('');
@@ -30,20 +31,11 @@ export default function AdminLogin() {
         setLoading(false);
     }, [navigate]);
 
-    // 2FA kodu doğrulama
+    // 2FA kodu doğrulama (Gerçek TOTP)
     const verifyTwoFactorCode = (token: string) => {
-        // Test kodu kontrolü
-        const testCode = localStorage.getItem('admin_test_code');
-        if (testCode && token === testCode) {
-            return true;
-        }
-        
-        // Geliştirme amaçlı master kod
-        if (token === '123456') {
-            return true;
-        }
-        
-        return false;
+        // Gerçek TOTP doğrulaması
+        const adminEmail = localStorage.getItem('admin_email');
+        return TOTPService.verifyAdminLogin(token, adminEmail || undefined);
     };
 
     const handleLogin = (e: React.FormEvent) => {
@@ -141,11 +133,13 @@ export default function AdminLogin() {
                             {errors.twoFactor && <p className="text-red-500 text-sm mt-1">{errors.twoFactor}</p>}
                         </div>
 
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                            <p className="text-xs text-blue-700 text-center mb-1">
-                                <strong>Test Modu:</strong> Aşağıdaki kodu kullanabilirsiniz
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                            <p className="text-xs text-green-700 text-center mb-1">
+                                <strong>Google Authenticator:</strong> Uygulamadan 6 haneli kodu girin
                             </p>
-                            <p className="text-center font-mono font-bold text-blue-800">123456</p>
+                            <p className="text-xs text-green-600 text-center">
+                                Kod 30 saniyede bir değişir
+                            </p>
                         </div>
 
                         <div className="flex gap-3">
