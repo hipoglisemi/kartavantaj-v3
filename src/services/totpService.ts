@@ -1,6 +1,7 @@
 import jsSHA from 'jssha';
 import QRCode from 'qrcode';
 import SecurityService from './securityService';
+import ConsoleProtection from '../utils/consoleProtection';
 
 export class TOTPService {
     // Base32 decode fonksiyonu
@@ -49,8 +50,8 @@ export class TOTPService {
             const otpauth = this.generateQRCodeURL(secret, email, issuer);
             return await QRCode.toDataURL(otpauth);
         } catch (error) {
-            console.error('QR Code generation error:', error);
-            throw new Error('QR Code oluşturulamadı: ' + (error instanceof Error ? error.message : 'Bilinmeyen hata'));
+            ConsoleProtection.safeError('QR Code generation error');
+            throw new Error('QR Code oluşturulamadı');
         }
     }
 
@@ -91,7 +92,7 @@ export class TOTPService {
             
             return token;
         } catch (error) {
-            console.error('TOTP üretim hatası');
+            ConsoleProtection.safeError('TOTP üretim hatası');
             return '123456';
         }
     }
@@ -104,7 +105,7 @@ export class TOTPService {
             
             return token === currentToken || token === prevToken;
         } catch (error) {
-            console.error('TOTP verification error:', error);
+            ConsoleProtection.safeError('TOTP verification error');
             return false;
         }
     }

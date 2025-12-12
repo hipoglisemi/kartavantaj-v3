@@ -116,26 +116,45 @@ export class SecurityService {
     // Güvenlik logları (production'da server'a gönderilmeli)
     static logSecurityEvent(event: string, details?: any): void {
         try {
+            // Hassas verileri temizle
+            const sanitizedDetails = details ? this.sanitizeLogData(details) : undefined;
+            
             const logEntry = {
                 timestamp: new Date().toISOString(),
                 event,
-                details: details ? JSON.stringify(details) : undefined,
-                userAgent: navigator.userAgent,
-                url: window.location.href
+                details: sanitizedDetails ? JSON.stringify(sanitizedDetails) : undefined,
+                userAgent: navigator.userAgent.substring(0, 100), // Kısalt
+                url: window.location.pathname // Sadece path
             };
             
             // Sadece kritik güvenlik olaylarını logla
-            if (event.includes('UNAUTHORIZED') || event.includes('FAILED')) {
+            if (event.includes('UNAUTHORIZED') || event.includes('FAILED') || event.includes('SUCCESS')) {
                 const logs = JSON.parse(localStorage.getItem('security_logs') || '[]');
                 logs.push(logEntry);
                 
-                // Son 100 log'u tut
-                if (logs.length > 100) logs.splice(0, logs.length - 100);
+                // Son 50 log'u tut (daha az yer kaplar)
+                if (logs.length > 50) logs.splice(0, logs.length - 50);
                 localStorage.setItem('security_logs', JSON.stringify(logs));
             }
         } catch {
             // Sessizce başarısız ol
         }
+    }
+    
+    // Log verilerini temizle
+    private static sanitizeLogData(data: any): any {
+        if (typeof data === 'object' && data !== null) {
+            const sanitized = { ...data };
+            Object.keys(sanitized).forEach(key => {
+                if (/password|secret|token|key|code/i.test(key)) {
+                    sanitized[key] = '***';
+                } else if (typeof sanitized[key] === 'string' && sanitized[key].length > 100) {
+                    sanitized[key] = sanitized[key].substring(0, 100) + '...';
+                }
+            });
+            return sanitized;
+        }
+        return data;
     }
     
     // Brute force koruması

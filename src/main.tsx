@@ -4,8 +4,7 @@ import './index.css'
 import App from './App.tsx'
 import ConsoleProtection from './utils/consoleProtection'
 
-// Güvenlik katmanlarını etkinleştir
-ConsoleProtection.enable();
+// Güvenlik uyarısı göster
 ConsoleProtection.showSecurityMessage();
 
 createRoot(document.getElementById('root')!).render(
