@@ -7,7 +7,7 @@ interface OwlMascotProps {
 export default function OwlMascot({ size = 200, opacity = 0.1, className = "" }: OwlMascotProps) {
     return (
         <img 
-            src="/Owlmascot.txt"
+            src="/Owlmascot.png"
             alt="Baykuş Maskot"
             width={size} 
             height={size} 
@@ -17,10 +17,7 @@ export default function OwlMascot({ size = 200, opacity = 0.1, className = "" }:
                 objectFit: 'contain',
                 filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.1))'
             }}
-            onError={(e) => {
-                // Fallback olarak mevcut logo kullan
-                e.currentTarget.src = "/assets/logo-clean.png";
-            }}
+
         />
     );
 }
