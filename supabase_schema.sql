@@ -44,9 +44,29 @@ create table public.banks (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
+-- 3. ADMIN MANAGEMENT TABLE
+-- Stores admin users and their credentials securely
+create table public.admin_users (
+  id uuid default uuid_generate_v4() primary key,
+  email text unique not null,
+  name text not null,
+  status text default 'pending' check (status in ('pending', 'active', 'rejected')),
+  totp_secret text, -- Encrypted TOTP secret
+  password_hash text, -- Hashed password
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  approved_at timestamp with time zone,
+  approved_by text,
+  last_login timestamp with time zone
+);
+
+-- Index for faster admin lookups
+create index admin_users_email_idx on public.admin_users (email);
+create index admin_users_status_idx on public.admin_users (status);
+
 -- Enable Row Level Security (RLS)
 alter table public.campaigns enable row level security;
 alter table public.banks enable row level security;
+alter table public.admin_users enable row level security;
 
 -- POLICIES (Simple Public Access for MVP)
 -- In a real app, you'd want authenticated-only writes.

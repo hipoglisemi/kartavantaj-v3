@@ -197,13 +197,16 @@ export const settingsService = {
         return null;
     },
 
-    // 3. Save Draft (Local Only)
+    // 3. Save Draft (Local + Auto Sync)
     saveDraftSettings: (newSettings: SiteSettings): void => {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(newSettings));
         // Mark as dirty (unsaved changes)
         localStorage.setItem('settings_needs_sync', 'true');
 
         window.dispatchEvent(new Event('site-settings-changed'));
+        
+        // Otomatik senkronizasyon (3 saniye gecikme ile)
+        settingsService.scheduleAutoSync();
     },
 
     // 4. Publish to Live (Remote)
@@ -284,5 +287,71 @@ export const settingsService = {
         }, []);
 
         return settings;
+    },
+
+    // Otomatik Senkronizasyon Sistemi
+    autoSyncTimeout: null as NodeJS.Timeout | null,
+    
+    scheduleAutoSync: function() {
+        // Önceki timeout'u iptal et
+        if (this.autoSyncTimeout) {
+            clearTimeout(this.autoSyncTimeout);
+        }
+        
+        // 3 saniye sonra otomatik sync
+        this.autoSyncTimeout = setTimeout(async () => {
+            if (this.hasUnsavedChanges()) {
+                console.log('🔄 Otomatik senkronizasyon başlatılıyor...');
+                const success = await this.publishSettings();
+                if (success) {
+                    console.log('✅ Veriler Supabase\'e kaydedildi');
+                } else {
+                    console.log('❌ Senkronizasyon başarısız');
+                }
+            }
+        }, 3000);
+    },
+
+    // Gerçek zamanlı dinleme (Supabase Realtime)
+    subscribeToChanges: function(callback: (settings: SiteSettings) => void) {
+        if (!supabase) return null;
+        
+        const subscription = supabase
+            .channel('site_settings_changes')
+            .on('postgres_changes', 
+                { event: '*', schema: 'public', table: 'site_settings' },
+                async (payload) => {
+                    console.log('🔔 Uzaktan değişiklik algılandı:', payload);
+                    
+                    // Uzaktan gelen veriyi al ve local'i güncelle
+                    const remoteSettings = await this.fetchRemoteSettings();
+                    if (remoteSettings) {
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(remoteSettings));
+                        localStorage.removeItem('settings_needs_sync');
+                        callback(remoteSettings);
+                        window.dispatchEvent(new Event('site-settings-changed'));
+                    }
+                }
+            )
+            .subscribe();
+            
+        return subscription;
+    },
+
+    // Periyodik senkronizasyon kontrolü
+    startPeriodicSync: function() {
+        // Her 30 saniyede bir kontrol et
+        setInterval(async () => {
+            const remoteSettings = await this.fetchRemoteSettings();
+            const localSettings = this.getLocalSettings();
+            
+            // Uzak ve yerel ayarları karşılaştır
+            if (remoteSettings && JSON.stringify(remoteSettings) !== JSON.stringify(localSettings)) {
+                console.log('🔄 Uzaktan güncellemeler algılandı, yerel ayarlar güncelleniyor...');
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(remoteSettings));
+                localStorage.removeItem('settings_needs_sync');
+                window.dispatchEvent(new Event('site-settings-changed'));
+            }
+        }, 30000); // 30 saniye
     }
 };

@@ -3,6 +3,7 @@ import { Search, User, Shield, Mail, Calendar, Trash2, CheckCircle, Smartphone, 
 import TOTPService from '../../services/totpService';
 import AdminRegisterModal from '../../components/AdminRegisterModal';
 import SecurityService from '../../services/securityService';
+// import AdminService from '../../services/adminService'; // Gelecekte kullanılacak
 import { useConfirmation } from '../../context/ConfirmationContext';
 import { useToast } from '../../context/ToastContext';
 import { settingsService } from '../../services/settingsService';
@@ -161,11 +162,8 @@ export default function AdminMembers() {
 
     const saveSettings = (newSettings: any) => {
         settingsService.saveDraftSettings(newSettings);
-        // Auto publish for seamless cloud experience
-        settingsService.publishSettings().then(ok => {
-            if (ok) success("Değişiklikler buluta kaydedildi.");
-            else error("Kaydedilirken hata oluştu.");
-        });
+        // Otomatik senkronizasyon artık saveDraftSettings içinde yapılıyor
+        success("Değişiklikler kaydedildi ve senkronize ediliyor...");
     };
 
     const handleApproveAdmin = async (email: string) => {

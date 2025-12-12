@@ -217,6 +217,35 @@ function AppWrapper() {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Gerçek zamanlı senkronizasyon başlat
+  React.useEffect(() => {
+    // Settings senkronizasyonu
+    const settingsService = require('./services/settingsService').settingsService;
+    
+    // Periyodik senkronizasyon başlat
+    settingsService.startPeriodicSync();
+    
+    // Realtime dinleme başlat
+    const settingsSubscription = settingsService.subscribeToChanges((newSettings: any) => {
+      console.log('🔄 Ayarlar güncellendi:', newSettings);
+    });
+
+    // Admin değişikliklerini dinle
+    const AdminService = require('./services/adminService').AdminService;
+    const adminSubscription = AdminService.subscribeToAdminChanges((admins: any[]) => {
+      console.log('🔄 Admin listesi güncellendi:', admins);
+    });
+
+    return () => {
+      if (settingsSubscription) {
+        settingsSubscription.unsubscribe();
+      }
+      if (adminSubscription) {
+        adminSubscription.unsubscribe();
+      }
+    };
+  }, []);
+
   return (
     <React.StrictMode>
       <ToastProvider>
