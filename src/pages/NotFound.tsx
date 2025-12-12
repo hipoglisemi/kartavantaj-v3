@@ -6,12 +6,10 @@ export default function NotFound() {
     const navigate = useNavigate();
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-gray-50 to-blue-100 flex items-center justify-center relative overflow-hidden">
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 flex items-center justify-center relative overflow-hidden">
             {/* Arka Plan Maskotları */}
             <div className="absolute inset-0 pointer-events-none">
                 <OwlMascot size={400} opacity={0.06} className="absolute top-20 left-20 animate-pulse" />
-                <OwlMascot size={300} opacity={0.04} className="absolute bottom-32 right-32 animate-bounce" />
-                <OwlMascot size={250} opacity={0.05} className="absolute top-1/3 right-1/4" />
                 <OwlMascot size={200} opacity={0.03} className="absolute bottom-20 left-1/4" />
                 <OwlMascot size={180} opacity={0.04} className="absolute top-10 right-10" />
             </div>
@@ -20,7 +18,7 @@ export default function NotFound() {
                 {/* Ana Maskot */}
                 <div className="mb-8 flex justify-center">
                     <div className="relative">
-                        <OwlMascot size={200} opacity={1} className="animate-bounce" />
+                        <OwlMascot size={200} opacity={1} />
                         <div className="absolute -top-4 -right-4 bg-red-500 text-white rounded-full w-12 h-12 flex items-center justify-center font-bold text-xl animate-pulse">
                             !
                         </div>
@@ -29,7 +27,7 @@ export default function NotFound() {
 
                 {/* 404 Başlığı */}
                 <div className="mb-6">
-                    <h1 className="text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-800 mb-4">
+                    <h1 className="text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-700 to-gray-900 mb-4">
                         404
                     </h1>
                     <h2 className="text-3xl font-bold text-gray-800 mb-2">
@@ -46,7 +44,7 @@ export default function NotFound() {
                 <div className="flex justify-center">
                     <button
                         onClick={() => navigate('/')}
-                        className="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                        className="bg-gray-700 text-white px-8 py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
                     >
                         <Home size={20} />
                         Ana Sayfaya Dön
