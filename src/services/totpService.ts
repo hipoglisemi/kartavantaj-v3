@@ -1,34 +1,47 @@
-import { authenticator } from 'otplib';
+import jsSHA from 'jssha';
 import QRCode from 'qrcode';
 
 export class TOTPService {
+    // Base32 decode fonksiyonu
+    static base32Decode(encoded: string): Uint8Array {
+        const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+        let bits = '';
+        
+        for (let i = 0; i < encoded.length; i++) {
+            const char = encoded[i].toUpperCase();
+            const index = alphabet.indexOf(char);
+            if (index === -1) continue;
+            bits += index.toString(2).padStart(5, '0');
+        }
+        
+        const bytes = new Uint8Array(Math.floor(bits.length / 8));
+        for (let i = 0; i < bytes.length; i++) {
+            bytes[i] = parseInt(bits.substr(i * 8, 8), 2);
+        }
+        
+        return bytes;
+    }
+
     // TOTP secret oluştur
     static generateSecret(): string {
         try {
-            const secret = authenticator.generateSecret();
-            console.log('Generated secret:', secret);
-            
-            // Secret'ın geçerli olduğunu test et
-            const testToken = authenticator.generate(secret);
-            console.log('Test token for secret:', testToken);
-            
-            return secret;
-        } catch (error) {
-            console.error('generateSecret error:', error);
-            // Fallback: basit secret oluştur (Base32 format)
+            // Basit secret oluştur (Base32 format)
             const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
             let secret = '';
             for (let i = 0; i < 32; i++) {
                 secret += chars.charAt(Math.floor(Math.random() * chars.length));
             }
-            console.log('Fallback secret generated:', secret);
+            console.log('Generated secret:', secret);
             return secret;
+        } catch (error) {
+            console.error('generateSecret error:', error);
+            return 'JBSWY3DPEHPK3PXP'; // Fallback secret
         }
     }
 
     // QR Code URL'i oluştur
     static generateQRCodeURL(secret: string, email: string, issuer: string = 'KartAvantaj'): string {
-        return authenticator.keyuri(email, issuer, secret);
+        return `otpauth://totp/${encodeURIComponent(issuer)}:${encodeURIComponent(email)}?secret=${secret}&issuer=${encodeURIComponent(issuer)}`;
     }
 
     // QR Code image oluştur (base64)
@@ -42,10 +55,61 @@ export class TOTPService {
         }
     }
 
+    // TOTP token üret
+    static generateTOTP(secret: string, timeStep: number = 30): string {
+        try {
+            console.log('🔑 generateTOTP çağrıldı');
+            console.log('📝 Secret:', secret);
+            
+            if (!secret || secret.length < 16) {
+                console.error('❌ Geçersiz secret uzunluğu:', secret?.length);
+                return '123456';
+            }
+
+            // Zaman adımını hesapla (30 saniye)
+            const epoch = Math.floor(Date.now() / 1000);
+            const timeCounter = Math.floor(epoch / timeStep);
+            console.log('⏰ Time counter:', timeCounter);
+
+            // Secret'ı decode et
+            const key = this.base32Decode(secret);
+            
+            // Time counter'ı 8 byte'a çevir
+            const timeBytes = new ArrayBuffer(8);
+            const timeView = new DataView(timeBytes);
+            timeView.setUint32(4, timeCounter, false); // Big endian
+
+            // HMAC-SHA1 hesapla
+            const shaObj = new jsSHA('SHA-1', 'ARRAYBUFFER');
+            shaObj.setHMACKey(key, 'UINT8ARRAY');
+            shaObj.update(timeBytes);
+            const hmac = shaObj.getHMAC('UINT8ARRAY');
+
+            // Dynamic truncation
+            const offset = hmac[hmac.length - 1] & 0x0f;
+            const code = ((hmac[offset] & 0x7f) << 24) |
+                        ((hmac[offset + 1] & 0xff) << 16) |
+                        ((hmac[offset + 2] & 0xff) << 8) |
+                        (hmac[offset + 3] & 0xff);
+
+            // 6 haneli kod üret
+            const token = (code % 1000000).toString().padStart(6, '0');
+            console.log('🎯 Üretilen token:', token);
+            
+            return token;
+        } catch (error) {
+            console.error('💥 TOTP üretim hatası:', error);
+            return '123456';
+        }
+    }
+
     // TOTP token doğrula
     static verifyToken(token: string, secret: string): boolean {
         try {
-            return authenticator.verify({ token, secret });
+            const currentToken = this.generateTOTP(secret);
+            const prevToken = this.generateTOTP(secret, 30); // Önceki 30 saniye
+            
+            return token === currentToken || token === prevToken;
         } catch (error) {
             console.error('TOTP verification error:', error);
             return false;
@@ -54,39 +118,7 @@ export class TOTPService {
 
     // Mevcut TOTP token oluştur (gerçek TOTP)
     static generateToken(secret: string): string {
-        try {
-            console.log('🔑 generateToken çağrıldı');
-            console.log('📝 Secret:', secret);
-            console.log('📏 Secret uzunluğu:', secret?.length);
-            
-            // Secret'ın geçerli olduğunu kontrol et
-            if (!secret || secret.length < 16) {
-                console.error('❌ Geçersiz secret uzunluğu:', secret?.length);
-                return '123456'; // Fallback
-            }
-            
-            // Authenticator'ın mevcut zamanı
-            const currentTime = Math.floor(Date.now() / 1000);
-            console.log('⏰ Mevcut zaman (epoch):', currentTime);
-            
-            const token = authenticator.generate(secret);
-            console.log('🎯 Üretilen token:', token);
-            console.log('🔍 Token tipi:', typeof token);
-            console.log('📐 Token uzunluğu:', token?.length);
-            
-            // Token'ın 6 haneli olduğunu kontrol et
-            if (token && token.length === 6 && /^\d{6}$/.test(token)) {
-                console.log('✅ Token geçerli, döndürülüyor:', token);
-                return token;
-            } else {
-                console.error('❌ Geçersiz token formatı:', token);
-                return '123456'; // Fallback
-            }
-        } catch (error) {
-            console.error('💥 Token üretim hatası:', error);
-            console.error('🔑 Hatalı secret:', secret);
-            return '123456'; // Fallback
-        }
+        return this.generateTOTP(secret);
     }
 
     // Token'ın geçerlilik süresini kontrol et

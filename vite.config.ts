@@ -6,17 +6,5 @@ export default defineConfig({
   plugins: [react()],
   define: {
     global: 'globalThis',
-  },
-  resolve: {
-    alias: {
-      crypto: 'crypto-browserify',
-      buffer: 'buffer',
-      stream: 'stream-browserify',
-      events: 'events',
-      util: 'util'
-    },
-  },
-  optimizeDeps: {
-    include: ['crypto-browserify', 'buffer', 'stream-browserify', 'events', 'util']
   }
 })
