@@ -426,20 +426,32 @@ export default function AdminMembers() {
                             </div>
 
                             <div className="divide-y divide-gray-50">
-                                {settings.admins.map((email) => (
-                                    <div key={email} className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center font-bold text-lg">
-                                                {email.charAt(0).toUpperCase()}
-                                            </div>
-                                            <div>
-                                                <p className="text-sm font-bold text-gray-800">{email}</p>
-                                                <div className="flex items-center gap-1 text-xs text-green-600 font-medium">
-                                                    <CheckCircle size={12} />
-                                                    Aktif Yönetici
+                                {settings.admins.map((email) => {
+                                    const currentAdminEmail = localStorage.getItem('admin_email');
+                                    const isCurrentAdmin = email === currentAdminEmail;
+                                    
+                                    return (
+                                        <div key={email} className={`p-4 flex items-center justify-between transition-colors ${isCurrentAdmin ? 'bg-blue-50 hover:bg-blue-100' : 'hover:bg-gray-50'}`}>
+                                            <div className="flex items-center gap-3">
+                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${isCurrentAdmin ? 'bg-blue-100 text-blue-600 ring-2 ring-blue-200' : 'bg-purple-100 text-purple-600'}`}>
+                                                    {email.charAt(0).toUpperCase()}
+                                                </div>
+                                                <div>
+                                                    <div className="flex items-center gap-2">
+                                                        <p className="text-sm font-bold text-gray-800">{email}</p>
+                                                        {isCurrentAdmin && (
+                                                            <span className="bg-blue-600 text-white px-2 py-0.5 rounded-full text-[10px] font-bold">SİZ</span>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex items-center gap-1 text-xs text-green-600 font-medium">
+                                                        <CheckCircle size={12} />
+                                                        Aktif Yönetici
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
+                                    );
+                                })}
                                         <div className="flex items-center gap-2">
                                             <button 
                                                 onClick={() => handle2FASetup(email)} 

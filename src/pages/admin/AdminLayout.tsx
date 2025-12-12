@@ -171,9 +171,17 @@ export default function AdminLayout() {
 
                         <div className="flex items-center gap-2">
                             <div className="w-7 h-7 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 font-bold text-[10px]">
-                                AD
+                                {(() => {
+                                    const adminEmail = localStorage.getItem('admin_email') || 'AD';
+                                    return adminEmail.charAt(0).toUpperCase();
+                                })()}
                             </div>
-                            <span className="text-[10px] bg-red-800 text-red-200 px-2 py-0.5 rounded-full border border-red-700">v2.1.2</span>
+                            <div className="flex flex-col">
+                                <span className="text-[9px] text-gray-600 leading-tight">
+                                    {localStorage.getItem('admin_email') || 'Admin'}
+                                </span>
+                                <span className="text-[10px] bg-red-800 text-red-200 px-2 py-0.5 rounded-full border border-red-700">v2.1.2</span>
+                            </div>
                         </div>
                     </div>
                 </header>
