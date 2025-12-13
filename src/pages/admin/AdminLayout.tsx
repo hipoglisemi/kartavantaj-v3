@@ -63,6 +63,7 @@ export default function AdminLayout() {
     
     // Versiyon numarası state'i
     const [currentVersion, setCurrentVersion] = useState('3.0.0');
+    const [isNewVersion, setIsNewVersion] = useState(false);
     
     // Versiyon güncellemelerini dinle
     useEffect(() => {
@@ -71,9 +72,15 @@ export default function AdminLayout() {
                 const versionHistory = JSON.parse(localStorage.getItem('app_version_history') || '{}');
                 const newVersion = versionHistory.current || '3.0.0';
                 
-                // Eğer versiyon değiştiyse, console'a log at
-                if (newVersion !== currentVersion) {
+                // Eğer versiyon değiştiyse, console'a log at ve "YENİ" badge'i göster
+                if (newVersion !== currentVersion && currentVersion !== '3.0.0') {
                     console.log(`🚀 Version updated: v${currentVersion} → v${newVersion}`);
+                    setIsNewVersion(true);
+                    
+                    // 10 saniye sonra badge'i gizle
+                    setTimeout(() => {
+                        setIsNewVersion(false);
+                    }, 10000);
                 }
                 
                 setCurrentVersion(newVersion);
@@ -392,9 +399,16 @@ export default function AdminLayout() {
 
                     {/* Footer */}
                     <footer className="mt-8 pt-6 border-t border-gray-200 text-center text-[10px] text-gray-400 flex-shrink-0 pb-6">
-                        <p>KartAvantaj Admin Paneli v{currentVersion} • 2025</p>
+                        <p className="flex items-center justify-center gap-2">
+                            <span>KartAvantaj Admin Paneli v{currentVersion} • 2025</span>
+                            {isNewVersion && (
+                                <span className="bg-gradient-to-r from-green-400 to-green-500 text-green-900 text-[8px] px-2 py-0.5 rounded-full font-bold animate-pulse shadow-lg border border-green-300">
+                                    YENİ
+                                </span>
+                            )}
+                        </p>
                         <p className="text-[9px] text-gray-300 mt-1">
-                            ✨ Yeni: Modern Buton Tasarımı • Otomatik Versiyon Yönetimi • 3D Gradyan Efektleri
+                            ✨ Yeni: GitHub Otomatik Versiyon • Gerçek Zamanlı Commit Takibi • Akıllı Badge Sistemi
                         </p>
                     </footer>
                 </main>

@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { versionService } from '../services/versionService';
+import { githubService } from '../services/githubService';
 
 // Git commit mesajlarını simüle eden sistem
 export function useAutoVersion() {
@@ -7,61 +8,57 @@ export function useAutoVersion() {
         // Sayfa yüklendiğinde son commit'i kontrol et
         checkForNewCommits();
         
-        // Her 30 saniyede bir kontrol et (development için)
-        const interval = setInterval(checkForNewCommits, 30000);
+        // Her 2 dakikada bir kontrol et (GitHub API rate limit için)
+        const interval = setInterval(checkForNewCommits, 2 * 60 * 1000);
         
         return () => clearInterval(interval);
     }, []);
 
     const checkForNewCommits = async () => {
         try {
-            // GitHub API'den son commit'i al (eğer GitHub token varsa)
-            const githubToken = localStorage.getItem('github_token');
-            if (!githubToken) return;
+            // GitHub bağlantısını kontrol et
+            const isConnected = await githubService.testConnection();
+            if (!isConnected) {
+                console.log('🔗 GitHub not connected, skipping commit check');
+                return;
+            }
 
-            // Simulated commit check - gerçek uygulamada GitHub API kullanılır
-            const lastCheckedCommit = localStorage.getItem('last_checked_commit');
-            const currentTime = Date.now();
-            const lastCheckTime = parseInt(localStorage.getItem('last_commit_check') || '0');
+            console.log('🔍 Checking for new GitHub commits...');
             
-            // 5 dakikada bir kontrol et
-            if (currentTime - lastCheckTime < 5 * 60 * 1000) return;
+            // Yeni commit'leri kontrol et
+            const newCommits = await githubService.checkForNewCommits();
             
-            localStorage.setItem('last_commit_check', currentTime.toString());
-            
-            // Simulated commit messages (gerçek uygulamada GitHub API'den gelir)
-            const simulatedCommits = [
-                '✨ Modern kampanya yönetimi butonları - 3D gradyan tasarım, tooltip açıklamaları ve animasyonlar',
-                '🐛 Dashboard white screen fix - require() usage replaced with ES6 imports',
-                '🎨 Admin panel menu reorganization - dropdown system with logical grouping',
-                '⚡ Performance improvements for campaign loading',
-                '🔒 Security enhancements for admin authentication'
-            ];
-            
-            // Random commit seç (demo için)
-            const randomCommit = simulatedCommits[Math.floor(Math.random() * simulatedCommits.length)];
-            
-            if (lastCheckedCommit !== randomCommit) {
-                localStorage.setItem('last_checked_commit', randomCommit);
+            if (newCommits.length === 0) {
+                console.log('📝 No new commits found');
+                return;
+            }
+
+            console.log(`📦 Found ${newCommits.length} new commits`);
+
+            // Her yeni commit için versiyon güncelle
+            for (const commit of newCommits.reverse()) { // Eski commit'lerden başla
+                const changes = githubService.parseCommitChanges(commit.commit.message);
+                const versionType = githubService.getVersionTypeFromCommit(commit.commit.message);
                 
-                // Otomatik versiyon güncelle
-                const newVersion = versionService.autoUpdateVersion(randomCommit);
-                
-                if (newVersion) {
-                    console.log(`🚀 Auto-updated to version ${newVersion}`);
+                if (changes.length > 0) {
+                    const newVersion = versionService.addVersion(changes, versionType);
+                    console.log(`🚀 Auto-updated to version ${newVersion} from commit: ${commit.sha.substring(0, 7)}`);
                     
-                    // Admin'e bildirim göster (opsiyonel)
+                    // Admin'e bildirim göster
                     if (localStorage.getItem('isAdmin') === 'true') {
-                        showVersionUpdateNotification(newVersion, randomCommit);
+                        showVersionUpdateNotification(newVersion, commit.commit.message, commit.html_url);
                     }
+                    
+                    // Kısa bekleme (çoklu commit'ler için)
+                    await new Promise(resolve => setTimeout(resolve, 1000));
                 }
             }
         } catch (error) {
-            console.warn('Auto version check failed:', error);
+            console.warn('GitHub commit check failed:', error);
         }
     };
 
-    const showVersionUpdateNotification = (version: string, commitMessage: string) => {
+    const showVersionUpdateNotification = (version: string, commitMessage: string, commitUrl?: string) => {
         // Toast notification göster
         const notification = document.createElement('div');
         notification.className = 'fixed top-4 right-4 bg-indigo-600 text-white px-6 py-4 rounded-xl shadow-2xl z-50 max-w-sm animate-in slide-in-from-right-2';
@@ -73,9 +70,15 @@ export function useAutoVersion() {
                     </svg>
                 </div>
                 <div class="flex-1">
-                    <div class="font-bold text-sm">Yeni Versiyon: v${version}</div>
-                    <div class="text-xs text-indigo-100 mt-1 opacity-90">${commitMessage.substring(0, 60)}...</div>
-                    <div class="text-xs text-indigo-200 mt-2">Otomatik güncellendi</div>
+                    <div class="font-bold text-sm flex items-center gap-2">
+                        Yeni Versiyon: v${version}
+                        <span class="bg-green-400 text-green-900 text-xs px-2 py-0.5 rounded-full font-bold animate-pulse">YENİ</span>
+                    </div>
+                    <div class="text-xs text-indigo-100 mt-1 opacity-90">${commitMessage.substring(0, 50)}...</div>
+                    <div class="flex items-center justify-between mt-2">
+                        <div class="text-xs text-indigo-200">GitHub'dan otomatik</div>
+                        ${commitUrl ? `<a href="${commitUrl}" target="_blank" class="text-xs text-white bg-white/20 px-2 py-1 rounded hover:bg-white/30 transition-colors">Commit'i Gör</a>` : ''}
+                    </div>
                 </div>
             </div>
         `;

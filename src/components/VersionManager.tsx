@@ -124,6 +124,48 @@ export default function VersionManager() {
                 <div className="flex gap-3">
                     <div className="group relative">
                         <button
+                            onClick={async () => {
+                                try {
+                                    const { githubService } = await import('../services/githubService');
+                                    const newCommits = await githubService.checkForNewCommits();
+                                    if (newCommits.length > 0) {
+                                        alert(`🚀 ${newCommits.length} yeni commit bulundu!\n\nOtomatik versiyon güncellemesi başlatılıyor...`);
+                                        
+                                        // Manuel commit işleme
+                                        for (const commit of newCommits.reverse()) {
+                                            const changes = githubService.parseCommitChanges(commit.commit.message);
+                                            const versionType = githubService.getVersionTypeFromCommit(commit.commit.message);
+                                            
+                                            if (changes.length > 0) {
+                                                versionService.addVersion(changes, versionType);
+                                            }
+                                        }
+                                        
+                                        loadVersionHistory();
+                                        window.dispatchEvent(new Event('version-updated'));
+                                    } else {
+                                        alert('📝 Yeni commit bulunamadı.');
+                                    }
+                                } catch (error) {
+                                    console.error('GitHub sync failed:', error);
+                                    loadVersionHistory(); // Normal yenileme yap
+                                }
+                            }}
+                            className="group relative bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 hover:from-purple-600 hover:via-purple-700 hover:to-purple-800 text-white px-4 py-2 rounded-2xl text-sm font-bold flex items-center gap-2 transition-all duration-500 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-[1.02] border border-purple-400/20"
+                        >
+                            <div className="bg-white/20 p-1 rounded-lg backdrop-blur-sm">
+                                <GitBranch size={14} />
+                            </div>
+                            <span>GitHub Sync</span>
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
+                        </button>
+                        <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100 bg-purple-500 text-white text-xs px-2 py-1 rounded-lg shadow-lg z-10 whitespace-nowrap">
+                            GitHub'dan yeni commit'leri kontrol et
+                        </div>
+                    </div>
+                    
+                    <div className="group relative">
+                        <button
                             onClick={loadVersionHistory}
                             className="group relative bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 hover:from-gray-200 hover:via-gray-300 hover:to-gray-400 text-gray-700 px-4 py-2 rounded-2xl text-sm font-bold flex items-center gap-2 transition-all duration-500 shadow-lg hover:shadow-xl transform hover:-translate-y-1 hover:scale-[1.02] border border-gray-300/50"
                         >

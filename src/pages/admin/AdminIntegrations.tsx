@@ -345,7 +345,7 @@ export default function AdminIntegrations() {
                                 onChange={(e) => handleChange('github', 'token', e.target.value)}
                             />
                         </div>
-                        <div className="pt-2">
+                        <div className="pt-2 space-y-3">
                             <div className="group relative">
                                 <button
                                     onClick={() => handleConnect('github')}
@@ -358,6 +358,33 @@ export default function AdminIntegrations() {
                                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
                                 </button>
                             </div>
+                            
+                            {configs?.github?.connected && (
+                                <div className="group relative">
+                                    <button
+                                        onClick={async () => {
+                                            try {
+                                                const { githubService } = await import('../../services/githubService');
+                                                const commits = await githubService.getLatestCommits(3);
+                                                if (commits.length > 0) {
+                                                    alert(`✅ GitHub Bağlantısı Başarılı!\n\nSon commit: ${commits[0].commit.message.substring(0, 50)}...\n\nOtomatik versiyon takibi aktif!`);
+                                                } else {
+                                                    alert('⚠️ Bağlantı başarılı ama commit bulunamadı.');
+                                                }
+                                            } catch (error) {
+                                                alert(`❌ GitHub Bağlantı Hatası:\n\n${error}`);
+                                            }
+                                        }}
+                                        className="w-full group relative bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 text-white py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-3 transition-all duration-500 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-[1.02] border border-blue-400/20"
+                                    >
+                                        <div className="bg-white/20 p-1.5 rounded-lg backdrop-blur-sm">
+                                            <RefreshCw size={16} />
+                                        </div>
+                                        <span>Test Bağlantı</span>
+                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
