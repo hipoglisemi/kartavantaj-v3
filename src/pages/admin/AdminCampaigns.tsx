@@ -64,7 +64,7 @@ export default function AdminCampaigns() {
 
                         if (now > expiryCheck) {
                             hasChanges = true;
-                            return { ...c, isArchived: true, isApproved: false };
+                            return { ...c, isArchived: true, isApproved: false }; // Keep false for archived
                         }
                     }
                     return c;
@@ -227,7 +227,7 @@ export default function AdminCampaigns() {
             cardName: activeCard?.name, // Kart adı
             category: 'Genel',
             validUntil: '2025-12-31',
-            isApproved: false
+            isApproved: true // Auto-approve new campaigns
         };
 
         const updatedList = [newCampaign, ...(campaignsMap[expandedCard] || [])];
@@ -652,7 +652,7 @@ export default function AdminCampaigns() {
                 category: parsedData.category || 'Genel',
                 validUntil: parsedData.validUntil || '2025-12-31',
                 valid_from: parsedData.valid_from,
-                isApproved: false,
+                isApproved: true, // Auto-approve imported campaigns
                 conditions: parsedData.conditions,
                 participation_points: parsedData.participation_points,
                 description: parsedData.description,
