@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Package, Plus, History, GitBranch, Calendar, Tag, Trash2, RefreshCw } from 'lucide-react';
-import { versionService, type VersionInfo, type VersionHistory } from '../services/versionService';
+import { versionService, type VersionHistory } from '../services/versionService';
 
 export default function VersionManager() {
     const [versionHistory, setVersionHistory] = useState<VersionHistory | null>(null);
@@ -262,7 +262,7 @@ export default function VersionManager() {
                 </h3>
                 
                 <div className="space-y-3 max-h-96 overflow-y-auto">
-                    {versionHistory.history.map((version, index) => (
+                    {versionHistory.history.map((version) => (
                         <div key={version.version} className="flex gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-indigo-200 transition-colors">
                             {/* Versiyon Bilgisi */}
                             <div className="flex-shrink-0">

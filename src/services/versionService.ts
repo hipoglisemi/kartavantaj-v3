@@ -108,8 +108,6 @@ class VersionService {
 
     // Otomatik versiyon güncelleme (commit mesajından)
     autoUpdateVersion(commitMessage: string): string | null {
-        const history = this.getVersionHistory();
-        
         // Commit mesajından değişiklikleri çıkar
         const changes = this.parseCommitMessage(commitMessage);
         if (changes.length === 0) return null;
