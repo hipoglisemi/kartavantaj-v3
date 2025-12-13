@@ -61,7 +61,7 @@ export function useAutoVersion() {
     const showVersionUpdateNotification = (version: string, commitMessage: string, commitUrl?: string) => {
         // Toast notification göster
         const notification = document.createElement('div');
-        notification.className = 'fixed top-4 right-4 bg-indigo-600 text-white px-6 py-4 rounded-xl shadow-2xl z-50 max-w-sm animate-in slide-in-from-right-2';
+        notification.className = 'fixed top-4 right-4 bg-emerald-600 text-white px-6 py-4 rounded-xl shadow-2xl z-50 max-w-sm animate-in slide-in-from-right-2';
         notification.innerHTML = `
             <div class="flex items-start gap-3">
                 <div class="bg-white/20 p-2 rounded-lg">
@@ -74,9 +74,9 @@ export function useAutoVersion() {
                         Yeni Versiyon: v${version}
                         <span class="bg-green-400 text-green-900 text-xs px-2 py-0.5 rounded-full font-bold animate-pulse">YENİ</span>
                     </div>
-                    <div class="text-xs text-indigo-100 mt-1 opacity-90">${commitMessage.substring(0, 50)}...</div>
+                    <div class="text-xs text-emerald-100 mt-1 opacity-90">${commitMessage.substring(0, 50)}...</div>
                     <div class="flex items-center justify-between mt-2">
-                        <div class="text-xs text-indigo-200">GitHub'dan otomatik</div>
+                        <div class="text-xs text-emerald-200">GitHub'dan otomatik</div>
                         ${commitUrl ? `<a href="${commitUrl}" target="_blank" class="text-xs text-white bg-white/20 px-2 py-1 rounded hover:bg-white/30 transition-colors">Commit'i Gör</a>` : ''}
                     </div>
                 </div>

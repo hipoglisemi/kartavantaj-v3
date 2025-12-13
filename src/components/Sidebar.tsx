@@ -3,10 +3,10 @@ import { useState } from 'react';
 import { settingsService } from '../services/settingsService';
 import { sortTurkish } from '../utils/turkishStringHelper';
 
-// Custom Purple Colors from Guide -> Updated to Matte Slate (Clean & Pastel)
-const BRAND_PURPLE = '#334155'; // Slate-700
-const BRAND_PURPLE_LIGHT = 'rgba(51, 65, 85, 0.08)'; // Slate-50 equivalent
-const BRAND_PURPLE_BORDER = 'rgba(51, 65, 85, 0.15)';
+// Brand Colors - Emerald Theme (No Purple)
+const BRAND_COLOR = '#059669'; // Emerald-600
+const BRAND_COLOR_LIGHT = 'rgba(5, 150, 105, 0.08)'; // Emerald-50 equivalent
+const BRAND_COLOR_BORDER = 'rgba(5, 150, 105, 0.15)';
 
 interface FilterSectionProps {
   title: string;
@@ -32,7 +32,7 @@ function FilterSection({ title, counts, selectedItems, placeholder, onToggle }: 
         className="flex items-center justify-between w-full mb-3 group"
       >
         <h3 className="font-bold text-gray-900 text-sm flex items-center justify-start gap-2 flex-1">
-          <span className="w-1.5 h-1.5 rounded-full group-hover:scale-125 transition-transform" style={{ backgroundColor: BRAND_PURPLE }}></span>
+          <span className="w-1.5 h-1.5 rounded-full group-hover:scale-125 transition-transform" style={{ backgroundColor: BRAND_COLOR }}></span>
           {title}
         </h3>
         <ChevronDown
@@ -54,7 +54,7 @@ function FilterSection({ title, counts, selectedItems, placeholder, onToggle }: 
               className="w-full bg-gray-50 border border-gray-200 py-1.5 pl-8 pr-2 rounded-md text-xs focus:outline-none focus:ring-1 transition-all placeholder:text-gray-400"
               style={{
                 borderColor: 'rgba(0,0,0,0.1)',
-                '--tw-ring-color': BRAND_PURPLE
+                '--tw-ring-color': BRAND_COLOR
               } as any}
             />
           </div>
@@ -67,15 +67,14 @@ function FilterSection({ title, counts, selectedItems, placeholder, onToggle }: 
                   <input
                     type="checkbox"
                     className="peer w-4 h-4 rounded border-gray-300 focus:ring-2 transition-all"
-                    style={{ color: BRAND_PURPLE, '--tw-ring-color': BRAND_PURPLE } as any}
+                    style={{ color: BRAND_COLOR, '--tw-ring-color': BRAND_COLOR } as any}
                     checked={selectedItems.includes(item)}
                     onChange={() => onToggle(item)}
                   />
-                  {/* Custom Checkbox Color override via style because Tailwind 'text-[color]' sometimes misses dynamic checks */}
                 </div>
                 <span className="group-hover/item:translate-x-0.5 transition-transform text-xs font-medium flex-1">
                   {item}
-                  <span className="font-normal ml-1 px-1.5 py-0.5 rounded-full text-[10px]" style={{ backgroundColor: BRAND_PURPLE_LIGHT, color: BRAND_PURPLE }}>
+                  <span className="font-normal ml-1 px-1.5 py-0.5 rounded-full text-[10px]" style={{ backgroundColor: BRAND_COLOR_LIGHT, color: BRAND_COLOR }}>
                     {counts[item]}
                   </span>
                 </span>
@@ -137,7 +136,7 @@ function NestedFilterSection({
         className="flex items-center justify-between w-full mb-3 group"
       >
         <h3 className="font-bold text-gray-900 text-sm flex items-center justify-start gap-2 flex-1">
-          <span className="w-1.5 h-1.5 rounded-full group-hover:scale-125 transition-transform" style={{ backgroundColor: BRAND_PURPLE }}></span>
+          <span className="w-1.5 h-1.5 rounded-full group-hover:scale-125 transition-transform" style={{ backgroundColor: BRAND_COLOR }}></span>
           {title}
         </h3>
         <ChevronDown
@@ -158,7 +157,7 @@ function NestedFilterSection({
               className="w-full bg-gray-50 border border-gray-200 py-1.5 pl-8 pr-2 rounded-md text-xs focus:outline-none focus:ring-1 transition-all placeholder:text-gray-400"
               style={{
                 borderColor: 'rgba(0,0,0,0.1)',
-                '--tw-ring-color': BRAND_PURPLE
+                '--tw-ring-color': BRAND_COLOR
               } as any}
             />
           </div>
@@ -170,19 +169,19 @@ function NestedFilterSection({
               const hasCards = Object.keys(bankInfo.cards).length > 0;
 
               return (
-                <div key={bank} className="border-b last:border-0 pb-1 mb-1" style={{ borderColor: BRAND_PURPLE_BORDER }}>
+                <div key={bank} className="border-b last:border-0 pb-1 mb-1" style={{ borderColor: BRAND_COLOR_BORDER }}>
                   {/* Bank Header (Accordion Trigger + Selection) */}
                   <div className="flex items-center justify-between py-1 group/bank hover:bg-gray-50 rounded px-1 transition-colors">
                     <label className="flex items-center gap-2 cursor-pointer flex-1">
                       <input
                         type="checkbox"
                         className="peer w-4 h-4 rounded border-gray-300 focus:ring-2 transition-all"
-                        style={{ color: BRAND_PURPLE, '--tw-ring-color': BRAND_PURPLE } as any}
+                        style={{ color: BRAND_COLOR, '--tw-ring-color': BRAND_COLOR } as any}
                         checked={selectedBanks.includes(bank)}
                         onChange={() => onBankToggle(bank)}
                       />
                       <span className="text-xs font-bold text-gray-700">{bank}</span>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ backgroundColor: BRAND_PURPLE_LIGHT, color: BRAND_PURPLE }}>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ backgroundColor: BRAND_COLOR_LIGHT, color: BRAND_COLOR }}>
                         {bankInfo.total}
                       </span>
                     </label>
@@ -198,13 +197,13 @@ function NestedFilterSection({
 
                   {/* Cards List (Accordion Body) */}
                   {hasCards && isBankExpanded && (
-                    <div className="pl-6 space-y-1 mt-1 border-l-2 ml-2" style={{ borderColor: BRAND_PURPLE_BORDER }}>
+                    <div className="pl-6 space-y-1 mt-1 border-l-2 ml-2" style={{ borderColor: BRAND_COLOR_BORDER }}>
                       {Object.entries(bankInfo.cards).map(([card, count]) => (
                         <label key={card} className="flex items-center gap-2 cursor-pointer group/card py-0.5">
                           <input
                             type="checkbox"
                             className="peer w-3.5 h-3.5 rounded border-gray-300 bg-gray-50 focus:ring-2"
-                            style={{ color: BRAND_PURPLE, '--tw-ring-color': BRAND_PURPLE } as any}
+                            style={{ color: BRAND_COLOR, '--tw-ring-color': BRAND_COLOR } as any}
                             checked={selectedCards.includes(card)}
                             onChange={() => onCardToggle(card)}
                           />

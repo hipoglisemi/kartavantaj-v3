@@ -222,7 +222,7 @@ export default function AdminCampaigns() {
             title: 'Yeni Kampanya',
             image: 'https://images.unsplash.com/photo-1556742049-0cfed4f7a07d?auto=format&fit=crop&q=80&w=800',
             badgeText: 'Fırsat',
-            badgeColor: 'purple',
+            badgeColor: 'green',
             bank: activeBank?.name || 'Diğer', // Gerçek banka adı
             cardName: activeCard?.name, // Kart adı
             category: 'Genel',
@@ -659,7 +659,7 @@ export default function AdminCampaigns() {
                 title: parsedData.title || 'Yeni Kampanya',
                 image: parsedData.image || 'https://images.unsplash.com/photo-1556742049-0cfed4f7a07d?auto=format&fit=crop&q=80&w=800',
                 badgeText: parsedData.badgeText || 'Fırsat',
-                badgeColor: parsedData.badgeColor || 'purple',
+                badgeColor: parsedData.badgeColor || 'green',
                 bank: activeBank?.name || parsedData.bank || 'Diğer', // Önce seçili banka, sonra parsed data
                 cardName: activeCard?.name, // Seçili kartın adı
                 category: parsedData.category || 'Genel',
@@ -918,7 +918,7 @@ export default function AdminCampaigns() {
     return (
         <div className="space-y-6 max-w-6xl mx-auto pb-10">
             {/* Header */}
-            <div className="bg-gradient-to-r from-blue-900 to-indigo-900 rounded-2xl p-8 text-white shadow-xl relative overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-900 to-blue-800 rounded-2xl p-8 text-white shadow-xl relative overflow-hidden">
                 <div className="relative z-10">
                     <h1 className="text-3xl font-bold mb-2 flex items-center gap-3">
                         <Database className="text-blue-400" size={32} />
@@ -947,18 +947,40 @@ export default function AdminCampaigns() {
                                 URL'den otomatik kampanya çeker ve AI ile analiz eder
                             </div>
                         </div>
+
+                        <div className="group relative">
+                            <button
+                                onClick={() => {
+                                    campaignService.testIdGeneration();
+                                    alert('🧪 ID sistemi test edildi! Console\'u kontrol edin.');
+                                }}
+                                className="w-full group relative bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 hover:from-emerald-600 hover:via-emerald-700 hover:to-emerald-800 text-white px-4 py-4 rounded-2xl text-sm font-bold flex items-center gap-3 transition-all duration-500 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-[1.02] border border-emerald-400/20"
+                            >
+                                <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
+                                    <Settings size={18} className="group-hover:rotate-180 transition-transform duration-500" />
+                                </div>
+                                <div className="text-left">
+                                    <div className="font-bold">ID Sistemi Test</div>
+                                    <div className="text-xs text-emerald-100 opacity-90">Benzersiz ID kontrolü</div>
+                                </div>
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
+                            </button>
+                            <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100 bg-emerald-500 text-white text-xs px-2 py-1 rounded-lg shadow-lg z-10 whitespace-nowrap">
+                                Kampanya ID sistemini test eder
+                            </div>
+                        </div>
                         
                         <div className="group relative">
                             <button
                                 onClick={handleCreateNew}
-                                className="w-full group relative bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 hover:from-purple-600 hover:via-purple-700 hover:to-purple-800 text-white px-4 py-4 rounded-2xl text-sm font-bold flex items-center gap-3 transition-all duration-500 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-[1.02] border border-purple-400/20"
+                                className="w-full group relative bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 hover:from-orange-600 hover:via-orange-700 hover:to-orange-800 text-white px-4 py-4 rounded-2xl text-sm font-bold flex items-center gap-3 transition-all duration-500 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-[1.02] border border-orange-400/20"
                             >
                                 <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
                                     <Plus size={18} className="group-hover:rotate-90 transition-transform duration-300" />
                                 </div>
                                 <div className="text-left">
                                     <div className="font-bold">Yeni Oluştur</div>
-                                    <div className="text-xs text-purple-100 opacity-90">Sıfırdan kampanya</div>
+                                    <div className="text-xs text-orange-100 opacity-90">Sıfırdan kampanya</div>
                                 </div>
                                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
                             </button>

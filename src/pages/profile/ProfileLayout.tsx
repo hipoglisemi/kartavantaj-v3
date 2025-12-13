@@ -32,7 +32,7 @@ export default function ProfileLayout() {
                                     key={item.path}
                                     to={item.path}
                                     className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${isActive
-                                        ? 'bg-purple-50 text-purple-700'
+                                        ? 'bg-emerald-50 text-emerald-700'
                                         : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
                                         }`}
                                 >

@@ -71,7 +71,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
                 {/* Modal Scroll To Top */}
                 <button
                     onClick={scrollToTop}
-                    className={`sticky bottom-4 left-full mr-4 mb-4 p-2 bg-purple-600/90 text-white rounded-full shadow-lg hover:bg-purple-700 transition-all duration-300 transform ${showScrollTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}
+                    className={`sticky bottom-4 left-full mr-4 mb-4 p-2 bg-emerald-600/90 text-white rounded-full shadow-lg hover:bg-emerald-700 transition-all duration-300 transform ${showScrollTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}
                     style={{ float: 'right', marginTop: '-3rem' }} // Trick to position it relative to sticky
                 >
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-up">

@@ -29,7 +29,32 @@ export const FALLBACK_LOGOS: Record<string, string> = {
     'crystal': '/assets/logos/crystal.png'
 };
 
+// ID Generator for campaigns
+let nextCampaignId = 1;
+
+// Initialize ID counter from existing campaigns
+const initializeIdCounter = () => {
+    try {
+        const existingCampaigns = campaignService.getAllCampaigns();
+        if (existingCampaigns.length > 0) {
+            const maxId = Math.max(...existingCampaigns.map(c => Number(c.id) || 0));
+            nextCampaignId = maxId + 1;
+        }
+    } catch (e) {
+        console.warn('Failed to initialize ID counter:', e);
+        nextCampaignId = Date.now(); // Fallback to timestamp
+    }
+};
+
+// Generate unique campaign ID
+const generateCampaignId = (): number => {
+    return nextCampaignId++;
+};
+
 export const campaignService = {
+    // Generate unique ID for new campaigns
+    generateId: generateCampaignId,
+    
     // Get ALL campaigns (Admin view - Deduplicated but includes Unapproved)
     getAllCampaigns: (): CampaignProps[] => {
         // 1. Get Legacy/Seeded Data
@@ -102,10 +127,19 @@ export const campaignService = {
         const combined = [...adminCampaigns, ...legacyCampaigns];
         const uniqueMap = new Map();
         combined.forEach(c => {
+            // Ensure every campaign has a unique ID
+            if (!c.id || c.id === 0) {
+                c.id = generateCampaignId();
+            }
             if (!uniqueMap.has(c.id)) {
                 uniqueMap.set(c.id, c);
             }
         });
+
+        // Initialize ID counter after loading campaigns
+        if (!nextCampaignId || nextCampaignId === 1) {
+            initializeIdCounter();
+        }
 
         return Array.from(uniqueMap.values()).sort((a, b) => Number(b.id) - Number(a.id));
     },
@@ -168,6 +202,25 @@ export const campaignService = {
         }
         // Fallback to local
         return campaignService.getCampaigns();
+    },
+
+    // Add a new campaign with unique ID
+    addCampaign: (campaign: Omit<CampaignProps, 'id'>): CampaignProps => {
+        const newCampaign: CampaignProps = {
+            ...campaign,
+            id: generateCampaignId(),
+            createdAt: new Date().toISOString(),
+            isApproved: false, // New campaigns need approval
+            views: 0
+        };
+
+        // Add to localStorage
+        const campaigns = campaignService.getCampaigns();
+        campaigns.unshift(newCampaign);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(campaigns));
+
+        console.log(`✅ Yeni kampanya oluşturuldu: ID ${newCampaign.id} - ${newCampaign.title}`);
+        return newCampaign;
     },
 
     // Update a single campaign
@@ -346,5 +399,50 @@ export const campaignService = {
             console.error(e);
             return false;
         }
+    },
+
+    // Test ID generation system
+    testIdGeneration: (): void => {
+        console.log('🧪 Kampanya ID Sistemi Test Ediliyor...');
+        
+        // Test kampanyası oluştur
+        const testCampaign = campaignService.addCampaign({
+            title: 'Test Kampanyası - Benzersiz ID',
+            description: 'Bu kampanya ID sistemini test etmek için oluşturuldu',
+            image: 'https://images.unsplash.com/photo-1556742049-0cfed4f7a07d?auto=format&fit=crop&q=80&w=800',
+            bank: 'Test Bankası',
+            cardName: 'Test Kartı',
+            category: 'Test',
+            validUntil: '2025-12-31',
+            badgeText: 'Test',
+            badgeColor: 'green'
+        });
+
+        console.log(`✅ Test kampanyası oluşturuldu:`, testCampaign);
+        console.log(`🆔 Atanan ID: ${testCampaign.id}`);
+        
+        // Bir tane daha oluştur
+        const testCampaign2 = campaignService.addCampaign({
+            title: 'İkinci Test Kampanyası',
+            description: 'ID artışını test etmek için',
+            image: 'https://images.unsplash.com/photo-1556742049-0cfed4f7a07d?auto=format&fit=crop&q=80&w=800',
+            bank: 'Test Bankası 2',
+            cardName: 'Test Kartı 2',
+            category: 'Test',
+            validUntil: '2025-12-31',
+            badgeText: 'Test',
+            badgeColor: 'blue'
+        });
+
+        console.log(`✅ İkinci test kampanyası oluşturuldu:`, testCampaign2);
+        console.log(`🆔 Atanan ID: ${testCampaign2.id}`);
+        
+        // Tüm kampanyaları listele
+        const allCampaigns = campaignService.getAllCampaigns();
+        console.log(`📊 Toplam kampanya sayısı: ${allCampaigns.length}`);
+        console.log(`🔢 Mevcut ID'ler:`, allCampaigns.map(c => c.id).sort((a, b) => a - b));
     }
 };
+
+// ID counter'ı başlat
+initializeIdCounter();

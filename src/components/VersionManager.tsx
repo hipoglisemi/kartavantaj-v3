@@ -110,13 +110,13 @@ export default function VersionManager() {
         <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                    <div className="p-3 bg-indigo-50 text-indigo-600 rounded-lg">
+                    <div className="p-3 bg-emerald-50 text-emerald-600 rounded-lg">
                         <Package size={24} />
                     </div>
                     <div>
                         <h2 className="text-xl font-bold text-gray-900">Versiyon Yönetimi</h2>
                         <p className="text-sm text-gray-500">
-                            Mevcut versiyon: <span className="font-mono font-bold text-indigo-600">v{versionHistory.current}</span>
+                            Mevcut versiyon: <span className="font-mono font-bold text-emerald-600">v{versionHistory.current}</span>
                         </p>
                     </div>
                 </div>
@@ -151,7 +151,7 @@ export default function VersionManager() {
                                     loadVersionHistory(); // Normal yenileme yap
                                 }
                             }}
-                            className="group relative bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 hover:from-purple-600 hover:via-purple-700 hover:to-purple-800 text-white px-4 py-2 rounded-2xl text-sm font-bold flex items-center gap-2 transition-all duration-500 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-[1.02] border border-purple-400/20"
+                            className="group relative bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 hover:from-emerald-600 hover:via-emerald-700 hover:to-emerald-800 text-white px-4 py-2 rounded-2xl text-sm font-bold flex items-center gap-2 transition-all duration-500 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-[1.02] border border-emerald-400/20"
                         >
                             <div className="bg-white/20 p-1 rounded-lg backdrop-blur-sm">
                                 <GitBranch size={14} />
@@ -159,7 +159,7 @@ export default function VersionManager() {
                             <span>GitHub Sync</span>
                             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
                         </button>
-                        <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100 bg-purple-500 text-white text-xs px-2 py-1 rounded-lg shadow-lg z-10 whitespace-nowrap">
+                        <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100 bg-emerald-500 text-white text-xs px-2 py-1 rounded-lg shadow-lg z-10 whitespace-nowrap">
                             GitHub'dan yeni commit'leri kontrol et
                         </div>
                     </div>
@@ -210,7 +210,7 @@ export default function VersionManager() {
                     <div className="group relative">
                         <button
                             onClick={() => setIsAddingVersion(!isAddingVersion)}
-                            className="group relative bg-gradient-to-br from-indigo-500 via-indigo-600 to-indigo-700 hover:from-indigo-600 hover:via-indigo-700 hover:to-indigo-800 text-white px-4 py-2 rounded-2xl text-sm font-bold flex items-center gap-2 transition-all duration-500 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-[1.02] border border-indigo-400/20"
+                            className="group relative bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 text-white px-4 py-2 rounded-2xl text-sm font-bold flex items-center gap-2 transition-all duration-500 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-[1.02] border border-blue-400/20"
                         >
                             <div className="bg-white/20 p-1 rounded-lg backdrop-blur-sm">
                                 <Plus size={14} />
@@ -218,7 +218,7 @@ export default function VersionManager() {
                             <span>Yeni Versiyon</span>
                             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
                         </button>
-                        <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100 bg-indigo-500 text-white text-xs px-2 py-1 rounded-lg shadow-lg z-10 whitespace-nowrap">
+                        <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100 bg-blue-500 text-white text-xs px-2 py-1 rounded-lg shadow-lg z-10 whitespace-nowrap">
                             Manuel versiyon ekle
                         </div>
                     </div>
@@ -227,8 +227,8 @@ export default function VersionManager() {
 
             {/* Yeni Versiyon Ekleme Formu */}
             {isAddingVersion && (
-                <div className="mb-6 p-4 bg-indigo-50 border border-indigo-200 rounded-xl animate-in slide-in-from-top-2">
-                    <h3 className="font-bold text-indigo-800 mb-4 flex items-center gap-2">
+                <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl animate-in slide-in-from-top-2">
+                    <h3 className="font-bold text-blue-800 mb-4 flex items-center gap-2">
                         <GitBranch size={16} />
                         Yeni Versiyon Oluştur
                     </h3>
@@ -236,7 +236,7 @@ export default function VersionManager() {
                     <div className="space-y-4">
                         {/* Versiyon Tipi */}
                         <div>
-                            <label className="block text-sm font-medium text-indigo-700 mb-2">Versiyon Tipi</label>
+                            <label className="block text-sm font-medium text-blue-700 mb-2">Versiyon Tipi</label>
                             <div className="flex gap-3">
                                 {[
                                     { value: 'patch', label: 'Patch (Hata düzeltme)', icon: '🔧', desc: 'x.x.+1' },
@@ -248,8 +248,8 @@ export default function VersionManager() {
                                         onClick={() => setNewVersionData(prev => ({ ...prev, type: type.value as any }))}
                                         className={`flex-1 p-3 rounded-lg border-2 transition-all text-left ${
                                             newVersionData.type === type.value
-                                                ? 'border-indigo-500 bg-indigo-100 text-indigo-800'
-                                                : 'border-gray-200 bg-white text-gray-600 hover:border-indigo-300'
+                                                ? 'border-blue-500 bg-blue-100 text-blue-800'
+                                                : 'border-gray-200 bg-white text-gray-600 hover:border-blue-300'
                                         }`}
                                     >
                                         <div className="flex items-center gap-2 mb-1">
@@ -264,7 +264,7 @@ export default function VersionManager() {
 
                         {/* Değişiklikler */}
                         <div>
-                            <label className="block text-sm font-medium text-indigo-700 mb-2">Değişiklikler</label>
+                            <label className="block text-sm font-medium text-blue-700 mb-2">Değişiklikler</label>
                             <div className="space-y-2">
                                 {newVersionData.changes.map((change, index) => (
                                     <div key={index} className="flex gap-2">
@@ -273,7 +273,7 @@ export default function VersionManager() {
                                             value={change}
                                             onChange={(e) => handleChangeText(index, e.target.value)}
                                             placeholder="Değişiklik açıklaması..."
-                                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                         />
                                         {newVersionData.changes.length > 1 && (
                                             <button
@@ -288,7 +288,7 @@ export default function VersionManager() {
                             </div>
                             <button
                                 onClick={handleAddChange}
-                                className="mt-2 text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1"
+                                className="mt-2 text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1"
                             >
                                 <Plus size={14} />
                                 Değişiklik Ekle
@@ -332,7 +332,7 @@ export default function VersionManager() {
                 
                 <div className="space-y-3 max-h-96 overflow-y-auto">
                     {versionHistory.history.map((version) => (
-                        <div key={version.version} className="flex gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-indigo-200 transition-colors">
+                        <div key={version.version} className="flex gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-blue-200 transition-colors">
                             {/* Versiyon Bilgisi */}
                             <div className="flex-shrink-0">
                                 <div className={`px-3 py-1 rounded-full text-xs font-bold border ${versionService.getVersionTypeColor(version.type)}`}>
@@ -350,7 +350,7 @@ export default function VersionManager() {
                                 <ul className="space-y-1">
                                     {version.changes.map((change, changeIndex) => (
                                         <li key={changeIndex} className="text-sm text-gray-700 flex items-start gap-2">
-                                            <span className="text-indigo-500 mt-1">•</span>
+                                            <span className="text-blue-500 mt-1">•</span>
                                             <span>{change}</span>
                                         </li>
                                     ))}

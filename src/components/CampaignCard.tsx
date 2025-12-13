@@ -36,9 +36,9 @@ const getBadgeStyle = (data: CampaignProps) => {
   }
 
   // 3. PUAN / CHIP-PARA
-  // Pastel Periwinkle - Değerli/Puan hissiyatı (Mor/Mavi)
+  // Pastel Emerald - Değerli/Puan hissiyatı (Yeşil)
   if (combinedText.includes('puan') || combinedText.includes('chip') || combinedText.includes('bonus') || combinedText.includes('para')) {
-    return 'bg-[#E0E7FF] text-[#3730A3]'; // indigo-100 bg, indigo-800 text
+    return 'bg-[#D1FAE5] text-[#065F46]'; // emerald-100 bg, emerald-800 text
   }
 
   // 4. İNDİRİM / % / KUPON / KOD / İADE
@@ -274,7 +274,7 @@ export default function CampaignCard({ data, isAdmin }: { data: CampaignProps, i
       {/* Sol Üst: Yeni/Bitmek Üzere Etiketleri (Şimdilik Kaldırdım) */}
       {/*
       <div className="absolute top-2 left-2 z-20">
-        <span className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-0 shadow-md backdrop-blur-sm text-xs px-2 py-0.5 rounded-full">
+        <span className="bg-gradient-to-r from-blue-500 to-emerald-600 text-white border-0 shadow-md backdrop-blur-sm text-xs px-2 py-0.5 rounded-full">
           Yeni
         </span>
       </div>
