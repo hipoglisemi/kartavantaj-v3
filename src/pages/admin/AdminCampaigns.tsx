@@ -4,6 +4,7 @@ import { type CampaignProps } from '../../components/CampaignCard';
 import { campaignParser } from '../../services/campaignParser';
 import { campaignService } from '../../services/campaignService';
 import CampaignValidationPanel from '../../components/CampaignValidationPanel';
+import { logActivity } from '../../services/activityService';
 // matching the existing pattern found in the file, or if we want to use it, import correctly).
 // The error says "no default export". Let's remove it if it's unused, or fix it.
 // Looking at the code, I don't see campaignService being used in the *restored* functions, 
@@ -257,9 +258,11 @@ export default function AdminCampaigns() {
             message: 'Bu kampanyayı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.',
             type: 'danger'
         })) {
+            const campaign = (campaignsMap[cardId] || []).find(c => c.id === campaignId);
             const updatedList = (campaignsMap[cardId] || []).filter(c => c.id !== campaignId);
             const newMap = { ...campaignsMap, [cardId]: updatedList };
             updateCampaigns(newMap);
+            logActivity.campaign('Campaign Deleted', `Campaign "${campaign?.title || campaignId}" deleted from ${cardId}`, 'warning');
         }
     };
 
@@ -272,6 +275,7 @@ export default function AdminCampaigns() {
             const updatedList = (campaignsMap[cardId] || []).map(c => ({ ...c, isApproved: true }));
             const newMap = { ...campaignsMap, [cardId]: updatedList };
             updateCampaigns(newMap);
+            logActivity.campaign('Bulk Publish', `All campaigns published for ${cardId}`, 'success');
         }
     };
 
@@ -281,8 +285,10 @@ export default function AdminCampaigns() {
             message: 'Bu karta ait TÜM kampanyalar SİLİNECEK! Bu işlem geri alınamaz. Emin misiniz?',
             type: 'danger'
         })) {
+            const campaignCount = (campaignsMap[cardId] || []).length;
             const newMap = { ...campaignsMap, [cardId]: [] };
             updateCampaigns(newMap);
+            logActivity.campaign('Bulk Delete', `All ${campaignCount} campaigns deleted from ${cardId}`, 'warning');
         }
     };
 

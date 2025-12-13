@@ -188,6 +188,8 @@ export default function AdminLayout() {
             key: 'system',
             items: [
                 { name: 'Entegrasyonlar', path: '/panel/integrations', icon: Plug },
+                { name: 'Güvenlik', path: '/panel/security', icon: ShieldAlert },
+                { name: 'Sistem Logları', path: '/panel/logs', icon: Activity },
                 { name: 'Trafik Analizi', path: '/panel/analytics', icon: Activity },
                 { name: 'Yedekleme & Kurtarma', path: '/panel/backup', icon: Database }
             ]

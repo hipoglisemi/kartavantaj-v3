@@ -7,6 +7,7 @@ import SecurityService from '../../services/securityService';
 import { useConfirmation } from '../../context/ConfirmationContext';
 import { useToast } from '../../context/ToastContext';
 import { settingsService } from '../../services/settingsService';
+import { logActivity } from '../../services/activityService';
 
 export default function AdminMembers() {
     const { confirm } = useConfirmation();
@@ -258,6 +259,7 @@ export default function AdminMembers() {
                 console.warn('Eski sistem verileri temizlenirken hata:', e);
             }
             
+            logActivity.user('Admin Removed', `Admin ${email} removed by ${currentAdminEmail}`, 'warning');
             success(`${email} yönetici listesinden kaldırıldı.`);
         }
     };

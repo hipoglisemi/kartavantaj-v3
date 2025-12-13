@@ -6,6 +6,8 @@ import SecurityService from '../../services/securityService';
 import AdminRegisterModal from '../../components/AdminRegisterModal';
 import OwlMascot from '../../components/OwlMascot';
 import { settingsService } from '../../services/settingsService';
+import { logActivity } from '../../services/activityService';
+import { sessionService } from '../../services/sessionService';
 
 export default function AdminLogin() {
     const [email, setEmail] = useState('');
@@ -74,6 +76,7 @@ export default function AdminLogin() {
             if (!SecurityService.checkBruteForce('admin_login')) {
                 setErrors({ login: 'Çok fazla başarısız deneme. 15 dakika sonra tekrar deneyin.' });
                 SecurityService.logSecurityEvent('LOGIN_BRUTE_FORCE_BLOCKED');
+                logActivity.auth('Login Blocked', `Brute force protection triggered for ${email}`, 'warning');
                 return;
             }
 
@@ -83,6 +86,7 @@ export default function AdminLogin() {
             if (adminStatus === 'not_found') {
                 SecurityService.recordFailedAttempt('admin_login');
                 SecurityService.logSecurityEvent('LOGIN_EMAIL_NOT_FOUND', { email });
+                logActivity.auth('Login Failed', `Email not found in admin list: ${email}`, 'warning');
                 setErrors({ login: 'Bu email adresi admin listesinde bulunamadı!' });
                 return;
             }
@@ -123,10 +127,12 @@ export default function AdminLogin() {
             if (password === adminCredentials.password) {
                 SecurityService.clearFailedAttempts('admin_login');
                 SecurityService.logSecurityEvent('LOGIN_CREDENTIALS_SUCCESS', { email });
+                logActivity.auth('Credentials Verified', `Password verification successful for ${email}`, 'success');
                 setShowTwoFactor(true);
             } else {
                 SecurityService.recordFailedAttempt('admin_login');
                 SecurityService.logSecurityEvent('LOGIN_CREDENTIALS_FAILED', { email });
+                logActivity.auth('Login Failed', `Invalid password for ${email}`, 'warning');
                 setErrors({ login: 'Hatalı email veya şifre!' });
             }
         } catch {
@@ -148,13 +154,16 @@ export default function AdminLogin() {
             if (verifyTwoFactorCode(twoFactorCode)) {
                 // Güvenli session oluştur
                 SecurityService.createAdminSession();
+                sessionService.createSession(email);
                 localStorage.setItem('isAdmin', 'true');
                 localStorage.setItem('admin_email', email); // Normal localStorage'a kaydet
                 SecurityService.setSecureItem('admin_email', email); // Güvenli storage'a da kaydet
                 SecurityService.setSecureItem('admin_last_login', new Date().toISOString());
                 SecurityService.logSecurityEvent('ADMIN_LOGIN_SUCCESS', { email });
+                logActivity.auth('Login Successful', `Admin login completed for ${email}`, 'success');
                 navigate('/panel/dashboard');
             } else {
+                logActivity.auth('2FA Failed', `Invalid 2FA code for ${email}`, 'warning');
                 setErrors({ twoFactor: 'Geçersiz doğrulama kodu' });
             }
         } catch {
