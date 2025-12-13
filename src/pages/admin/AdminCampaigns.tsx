@@ -822,9 +822,11 @@ export default function AdminCampaigns() {
                 
                 console.log(`✅ Delete operation completed. Rows affected: ${deletedCount}`);
                 
-                // Verify deletion with a small delay
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                // Verify deletion with longer delay for Supabase consistency
+                console.log('⏳ Waiting for Supabase to process deletion...');
+                await new Promise(resolve => setTimeout(resolve, 3000));
                 
+                console.log('🔍 Verifying deletion...');
                 const { count: remainingCount } = await supabase
                     .from('campaigns')
                     .select('*', { count: 'exact', head: true });
