@@ -471,7 +471,17 @@ export default function AdminCampaigns() {
         const supabaseUrl = localStorage.getItem('sb_url');
         const supabaseKey = localStorage.getItem('sb_key');
         
-        if (!supabaseUrl || !supabaseKey) return; // Skip if no config
+        if (localStorage.getItem('isAdmin') === 'true') {
+            console.log('🔄 Auto-sync triggered...');
+            console.log(`Config check - URL: ${supabaseUrl ? 'OK' : 'MISSING'}, Key: ${supabaseKey ? 'OK' : 'MISSING'}`);
+        }
+        
+        if (!supabaseUrl || !supabaseKey) {
+            if (localStorage.getItem('isAdmin') === 'true') {
+                console.warn('⚠️ Auto-sync skipped - Supabase config missing');
+            }
+            return;
+        }
         
         try {
             // Convert map to flat array for Supabase
@@ -482,20 +492,23 @@ export default function AdminCampaigns() {
                 });
             });
             
+            if (localStorage.getItem('isAdmin') === 'true') {
+                console.log(`📊 Preparing to sync ${allCampaigns.length} campaigns...`);
+            }
+            
             // Use the existing campaignService sync method (more reliable)
             const result = await campaignService.syncToSupabase(supabaseUrl, supabaseKey);
             
             if (localStorage.getItem('isAdmin') === 'true') {
                 if (result.success) {
-                    console.log(`🔄 Auto-synced ${result.count} campaigns to Supabase`);
+                    console.log(`✅ Auto-sync SUCCESS: ${result.count} campaigns synced to Supabase`);
                 } else {
-                    console.error('🚨 Auto-sync failed:', result.error);
+                    console.error('🚨 Auto-sync FAILED:', result.error);
                 }
             }
         } catch (error) {
-            // Silent fail - don't interrupt user experience
             if (localStorage.getItem('isAdmin') === 'true') {
-                console.error('Auto-sync failed:', error);
+                console.error('🚨 Auto-sync EXCEPTION:', error);
             }
         }
     };
