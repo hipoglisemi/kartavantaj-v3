@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Shield, Clock, Globe, AlertTriangle, Plus, Trash2, Save, Eye, EyeOff } from 'lucide-react';
+import { Shield, Clock, Globe, AlertTriangle, Plus, Trash2, Save } from 'lucide-react';
 import { sessionService, ipWhitelistService } from '../../services/sessionService';
 import { logActivity } from '../../services/activityService';
 import { useConfirmation } from '../../context/ConfirmationContext';
@@ -13,7 +13,7 @@ export default function AdminSecurity() {
     const [remainingTime, setRemainingTime] = useState(0);
     const [ipWhitelist, setIpWhitelist] = useState<string[]>([]);
     const [newIP, setNewIP] = useState('');
-    const [showFailedLogins, setShowFailedLogins] = useState(false);
+
     
     const [securitySettings, setSecuritySettings] = useState({
         sessionTimeout: 30, // dakika
@@ -84,10 +84,11 @@ export default function AdminSecurity() {
     };
 
     const handleRemoveIP = async (ip: string) => {
-        const confirmed = await confirm(
-            'IP Adresini Kaldır',
-            `${ip} adresini whitelist'ten kaldırmak istediğinizden emin misiniz?`
-        );
+        const confirmed = await confirm({
+            title: 'IP Adresini Kaldır',
+            message: `${ip} adresini whitelist'ten kaldırmak istediğinizden emin misiniz?`,
+            type: 'warning'
+        });
 
         if (confirmed) {
             ipWhitelistService.removeIP(ip);
@@ -97,10 +98,11 @@ export default function AdminSecurity() {
     };
 
     const handleClearWhitelist = async () => {
-        const confirmed = await confirm(
-            'Tüm IP Adreslerini Kaldır',
-            'Bu işlem tüm IP kısıtlamalarını kaldıracak. Devam etmek istiyor musunuz?'
-        );
+        const confirmed = await confirm({
+            title: 'Tüm IP Adreslerini Kaldır',
+            message: 'Bu işlem tüm IP kısıtlamalarını kaldıracak. Devam etmek istiyor musunuz?',
+            type: 'danger'
+        });
 
         if (confirmed) {
             ipWhitelistService.clearWhitelist();

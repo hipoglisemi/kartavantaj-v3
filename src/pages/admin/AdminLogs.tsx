@@ -67,10 +67,11 @@ export default function AdminLogs() {
     };
 
     const handleClearLogs = async () => {
-        const confirmed = await confirm(
-            'Tüm Logları Temizle',
-            'Bu işlem geri alınamaz. Tüm sistem logları silinecek. Devam etmek istiyor musunuz?'
-        );
+        const confirmed = await confirm({
+            title: 'Tüm Logları Temizle',
+            message: 'Bu işlem geri alınamaz. Tüm sistem logları silinecek. Devam etmek istiyor musunuz?',
+            type: 'danger'
+        });
 
         if (confirmed) {
             activityService.clearLogs();
