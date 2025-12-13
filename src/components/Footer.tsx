@@ -1,5 +1,5 @@
 import { Facebook, Twitter, Instagram, Linkedin, Youtube, Mail, MapPin, Play, Apple } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Modal from './Modal';
 import { settingsService } from '../services/settingsService';
 
@@ -7,6 +7,46 @@ export default function Footer() {
   const [activeDoc, setActiveDoc] = useState<string | null>(null);
   const settings = settingsService.useSettings();
   const currentYear = new Date().getFullYear();
+  
+  // Versiyon sistemi
+  const [currentVersion, setCurrentVersion] = useState('3.0.0');
+  const [isNewVersion, setIsNewVersion] = useState(false);
+  
+  // Versiyon güncellemelerini dinle
+  useEffect(() => {
+    const updateVersion = () => {
+      try {
+        const versionHistory = JSON.parse(localStorage.getItem('app_version_history') || '{}');
+        const newVersion = versionHistory.current || '3.0.0';
+        
+        // Eğer versiyon değiştiyse, "YENİ" badge'i göster
+        if (newVersion !== currentVersion && currentVersion !== '3.0.0') {
+          setIsNewVersion(true);
+          
+          // 15 saniye sonra badge'i gizle
+          setTimeout(() => {
+            setIsNewVersion(false);
+          }, 15000);
+        }
+        
+        setCurrentVersion(newVersion);
+      } catch {
+        setCurrentVersion('3.0.0');
+      }
+    };
+    
+    // İlk yükleme
+    updateVersion();
+    
+    // Versiyon güncellemelerini dinle
+    window.addEventListener('version-updated', updateVersion);
+    window.addEventListener('storage', updateVersion);
+    
+    return () => {
+      window.removeEventListener('version-updated', updateVersion);
+      window.removeEventListener('storage', updateVersion);
+    };
+  }, [currentVersion]);
 
   const handleOpen = (key: string) => {
     setActiveDoc(key);
@@ -144,7 +184,7 @@ export default function Footer() {
           </div>
 
           <div className="border-t border-white/10 pt-6 text-center text-xs text-gray-500">
-            <div className="flex items-center justify-center gap-4">
+            <div className="flex items-center justify-center gap-4 mb-2">
               <span>{settings.footer.copyright || `© ${currentYear} KartAvantaj. Tüm hakları saklıdır.`}</span>
               <span className="text-gray-600">•</span>
               <a 
@@ -154,6 +194,22 @@ export default function Footer() {
               >
                 Panel
               </a>
+            </div>
+            
+            {/* Versiyon Bilgisi */}
+            <div className="flex items-center justify-center gap-2 mt-3 pt-3 border-t border-white/5">
+              <span className="text-gray-600 text-[10px]">
+                KartAvantaj v{currentVersion}
+              </span>
+              {isNewVersion && (
+                <span className="bg-gradient-to-r from-emerald-400 to-emerald-500 text-emerald-900 text-[8px] px-2 py-0.5 rounded-full font-bold animate-pulse shadow-lg border border-emerald-300">
+                  YENİ
+                </span>
+              )}
+              <span className="text-gray-700 text-[10px]">•</span>
+              <span className="text-gray-600 text-[10px]">
+                Otomatik Güncelleme Sistemi
+              </span>
             </div>
           </div>
         </div>
