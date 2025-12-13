@@ -103,6 +103,9 @@ export default function AdminCampaigns() {
     // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedCampaign, setSelectedCampaign] = useState<CampaignProps | null>(null);
+    
+    // ID List Modal State
+    const [isIdListModalOpen, setIsIdListModalOpen] = useState(false);
 
     useEffect(() => {
         // Initial Load
@@ -950,11 +953,7 @@ export default function AdminCampaigns() {
 
                         <div className="group relative">
                             <button
-                                onClick={() => {
-                                    const allCampaigns = campaignService.getAllCampaigns();
-                                    const idList = allCampaigns.map(c => `ID:${c.id} - ${c.title}`).join('\n');
-                                    alert(`📋 Kampanya ID Listesi:\n\n${idList}`);
-                                }}
+                                onClick={() => setIsIdListModalOpen(true)}
                                 className="w-full group relative bg-gradient-to-br from-slate-500 via-slate-600 to-slate-700 hover:from-slate-600 hover:via-slate-700 hover:to-slate-800 text-white px-4 py-4 rounded-2xl text-sm font-bold flex items-center gap-3 transition-all duration-500 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-[1.02] border border-slate-400/20"
                             >
                                 <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
@@ -1514,6 +1513,50 @@ export default function AdminCampaigns() {
                     <button disabled className="text-gray-400 text-xs cursor-not-allowed">
                         İşlem sırasında pencereyi kapatmayınız
                     </button>
+                </div>
+            </Modal>
+
+            {/* ID List Modal */}
+            <Modal isOpen={isIdListModalOpen} onClose={() => setIsIdListModalOpen(false)}>
+                <div className="p-6">
+                    <div className="flex items-center gap-3 mb-6 border-b border-gray-100 pb-4">
+                        <div className="p-3 bg-slate-100 text-slate-600 rounded-lg">
+                            <Database size={24} />
+                        </div>
+                        <div>
+                            <h2 className="text-xl font-bold text-gray-900">Kampanya ID Listesi</h2>
+                            <p className="text-sm text-gray-500">Tüm kampanyaların ID numaraları ve başlıkları</p>
+                        </div>
+                    </div>
+                    
+                    <div className="max-h-96 overflow-y-auto space-y-2">
+                        {campaignService.getAllCampaigns().map((campaign) => (
+                            <div key={campaign.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                                <div className="flex-shrink-0">
+                                    <span className="inline-flex items-center gap-1 text-xs font-bold text-slate-600 bg-white px-2 py-1 rounded border border-slate-200">
+                                        ID:{campaign.id}
+                                    </span>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <h4 className="font-medium text-gray-900 truncate">{campaign.title}</h4>
+                                    <p className="text-xs text-gray-500">{campaign.bank} • {campaign.category}</p>
+                                </div>
+                                <div className="flex-shrink-0">
+                                    {campaign.isApproved ? (
+                                        <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full">Yayında</span>
+                                    ) : (
+                                        <span className="text-xs text-amber-600 bg-amber-100 px-2 py-1 rounded-full">Bekliyor</span>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    
+                    <div className="mt-6 pt-4 border-t border-gray-100 text-center">
+                        <p className="text-sm text-gray-500">
+                            Toplam <span className="font-bold text-gray-700">{campaignService.getAllCampaigns().length}</span> kampanya
+                        </p>
+                    </div>
                 </div>
             </Modal>
 
