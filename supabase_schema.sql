@@ -86,3 +86,55 @@ create policy "Enable delete for all users" on public.campaigns for delete using
 create policy "Enable items access for all users" on public.banks for select using (true);
 create policy "Enable insert for all users" on public.banks for insert with check (true);
 create policy "Enable update for all users" on public.banks for update using (true);
+
+-- 4. ADMIN INTEGRATIONS TABLE
+-- Stores integration configurations (API keys, settings) for admin panel
+create table public.admin_integrations (
+  id text primary key default 'main', -- Single row for all integrations
+  configs jsonb not null default '{}'::jsonb, -- All integration configs
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_by text -- Admin email who made the change
+);
+
+-- Enable RLS for admin integrations
+alter table public.admin_integrations enable row level security;
+
+-- ADMIN INTEGRATIONS POLICIES
+create policy "Enable read access for all users" on public.admin_integrations for select using (true);
+create policy "Enable insert for all users" on public.admin_integrations for insert with check (true);
+create policy "Enable update for all users" on public.admin_integrations for update using (true);
+
+-- 5. ADMIN ACTIVITY LOGS TABLE
+-- Stores admin activity logs for monitoring and auditing
+create table public.admin_activity_logs (
+  id text primary key default 'main', -- Single row for all logs
+  logs jsonb not null default '[]'::jsonb, -- Array of activity log objects
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  total_count integer default 0 -- Total number of logs
+);
+
+-- Enable RLS for activity logs
+alter table public.admin_activity_logs enable row level security;
+
+-- ACTIVITY LOGS POLICIES
+create policy "Enable read access for all users" on public.admin_activity_logs for select using (true);
+create policy "Enable insert for all users" on public.admin_activity_logs for insert with check (true);
+create policy "Enable update for all users" on public.admin_activity_logs for update using (true);
+
+-- 6. ADMIN SECURITY SETTINGS TABLE
+-- Stores security configuration and IP whitelist
+create table public.admin_security_settings (
+  id text primary key default 'main', -- Single row for all security settings
+  settings jsonb not null default '{}'::jsonb, -- Security configuration
+  ip_whitelist jsonb not null default '[]'::jsonb, -- IP whitelist array
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_by text -- Admin email who made the change
+);
+
+-- Enable RLS for security settings
+alter table public.admin_security_settings enable row level security;
+
+-- SECURITY SETTINGS POLICIES
+create policy "Enable read access for all users" on public.admin_security_settings for select using (true);
+create policy "Enable insert for all users" on public.admin_security_settings for insert with check (true);
+create policy "Enable update for all users" on public.admin_security_settings for update using (true);

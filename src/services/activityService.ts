@@ -45,17 +45,37 @@ class ActivityService {
     }
 
     private async syncToSupabase() {
-        // Supabase'e senkronize et (opsiyonel)
         try {
             const supabaseUrl = localStorage.getItem('sb_url');
             const supabaseKey = localStorage.getItem('sb_key');
             
-            if (supabaseUrl && supabaseKey) {
-                // Supabase sync logic burada olacak
-                console.log('Activity logs synced to Supabase');
+            if (!supabaseUrl || !supabaseKey) {
+                console.log('Supabase credentials not found, skipping activity sync');
+                return;
+            }
+
+            const { createClient } = await import('@supabase/supabase-js');
+            const supabase = createClient(supabaseUrl, supabaseKey);
+            
+            // Son 100 log'u Supabase'e gönder
+            const recentLogs = this.logs.slice(0, 100);
+            
+            const { error } = await supabase
+                .from('admin_activity_logs')
+                .upsert({
+                    id: 'main',
+                    logs: recentLogs,
+                    updated_at: new Date().toISOString(),
+                    total_count: this.logs.length
+                });
+
+            if (error) {
+                console.error('Activity logs sync error:', error);
+            } else {
+                console.log('✅ Activity logs synced to Supabase');
             }
         } catch (error) {
-            console.error('Supabase sync error:', error);
+            console.error('Activity logs sync failed:', error);
         }
     }
 

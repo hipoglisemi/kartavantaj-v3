@@ -61,10 +61,45 @@ export default function AdminSecurity() {
         }
     };
 
-    const saveSecuritySettings = () => {
+    const saveSecuritySettings = async () => {
         localStorage.setItem('admin_security_settings', JSON.stringify(securitySettings));
+        
+        // Supabase'e senkronize et
+        await syncSecuritySettingsToSupabase();
+        
         logActivity.settings('Security Settings Updated', 'Security configuration changed', 'info');
         success('Güvenlik ayarları kaydedildi');
+    };
+
+    // Supabase senkronizasyon fonksiyonu
+    const syncSecuritySettingsToSupabase = async () => {
+        try {
+            const supabaseUrl = localStorage.getItem('sb_url');
+            const supabaseKey = localStorage.getItem('sb_key');
+            
+            if (!supabaseUrl || !supabaseKey) return;
+
+            const { createClient } = await import('@supabase/supabase-js');
+            const supabase = createClient(supabaseUrl, supabaseKey);
+            
+            const { error } = await supabase
+                .from('admin_security_settings')
+                .upsert({
+                    id: 'main',
+                    settings: securitySettings,
+                    ip_whitelist: ipWhitelist,
+                    updated_at: new Date().toISOString(),
+                    updated_by: localStorage.getItem('admin_email') || 'unknown'
+                });
+
+            if (error) {
+                console.error('Security settings sync error:', error);
+            } else {
+                console.log('✅ Security settings synced to Supabase');
+            }
+        } catch (error) {
+            console.error('Security settings sync failed:', error);
+        }
     };
 
     const handleAddIP = () => {
@@ -75,8 +110,13 @@ export default function AdminSecurity() {
 
         const added = ipWhitelistService.addIP(newIP.trim());
         if (added) {
-            setIpWhitelist(ipWhitelistService.getWhitelist());
+            const newWhitelist = ipWhitelistService.getWhitelist();
+            setIpWhitelist(newWhitelist);
             setNewIP('');
+            
+            // Supabase'e senkronize et
+            syncSecuritySettingsToSupabase();
+            
             success('IP adresi whitelist\'e eklendi');
         } else {
             error('Geçersiz IP adresi veya zaten mevcut');
@@ -93,6 +133,10 @@ export default function AdminSecurity() {
         if (confirmed) {
             ipWhitelistService.removeIP(ip);
             setIpWhitelist(ipWhitelistService.getWhitelist());
+            
+            // Supabase'e senkronize et
+            syncSecuritySettingsToSupabase();
+            
             success('IP adresi kaldırıldı');
         }
     };
@@ -107,6 +151,10 @@ export default function AdminSecurity() {
         if (confirmed) {
             ipWhitelistService.clearWhitelist();
             setIpWhitelist([]);
+            
+            // Supabase'e senkronize et
+            syncSecuritySettingsToSupabase();
+            
             success('IP whitelist temizlendi');
         }
     };

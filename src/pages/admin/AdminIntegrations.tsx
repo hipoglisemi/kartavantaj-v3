@@ -21,17 +21,97 @@ export default function AdminIntegrations() {
         googleads: { connected: false, enabled: false, clientId: '', slotId: '' }
     });
 
+    // Supabase senkronizasyon fonksiyonu
+    const syncIntegrationsToSupabase = async (integrationConfigs: Record<ServiceType, ServiceConfig>) => {
+        try {
+            const supabaseUrl = localStorage.getItem('sb_url');
+            const supabaseKey = localStorage.getItem('sb_key');
+            
+            if (!supabaseUrl || !supabaseKey) {
+                console.log('Supabase credentials not found, skipping sync');
+                return;
+            }
+
+            const { createClient } = await import('@supabase/supabase-js');
+            const supabase = createClient(supabaseUrl, supabaseKey);
+            
+            // Admin integrations tablosuna kaydet
+            const { error } = await supabase
+                .from('admin_integrations')
+                .upsert({
+                    id: 'main',
+                    configs: integrationConfigs,
+                    updated_at: new Date().toISOString(),
+                    updated_by: localStorage.getItem('admin_email') || 'unknown'
+                });
+
+            if (error) {
+                console.error('Supabase sync error:', error);
+            } else {
+                console.log('✅ Integrations synced to Supabase');
+            }
+        } catch (error) {
+            console.error('Supabase sync failed:', error);
+        }
+    };
+
+    // Supabase'den entegrasyon ayarlarını yükle
+    const loadIntegrationsFromSupabase = async () => {
+        try {
+            const supabaseUrl = localStorage.getItem('sb_url');
+            const supabaseKey = localStorage.getItem('sb_key');
+            
+            if (!supabaseUrl || !supabaseKey) return null;
+
+            const { createClient } = await import('@supabase/supabase-js');
+            const supabase = createClient(supabaseUrl, supabaseKey);
+            
+            const { data, error } = await supabase
+                .from('admin_integrations')
+                .select('configs')
+                .eq('id', 'main')
+                .single();
+
+            if (error) {
+                console.log('No remote integrations found:', error.message);
+                return null;
+            }
+
+            return data?.configs || null;
+        } catch (error) {
+            console.error('Failed to load integrations from Supabase:', error);
+            return null;
+        }
+    };
+
     // Load from localStorage on mount
     useEffect(() => {
-        try {
-            const stored = localStorage.getItem('adminIntegrations');
-            if (stored) {
-                const parsedConfigs = JSON.parse(stored);
-                // Ensure all required services exist
-                const defaultConfigs = getDefaultConfigs();
-                const mergedConfigs = { ...defaultConfigs, ...parsedConfigs };
-                setConfigs(mergedConfigs);
-            } else {
+        const loadConfigs = async () => {
+            try {
+                // Önce Supabase'den yükle
+                const remoteConfigs = await loadIntegrationsFromSupabase();
+                
+                if (remoteConfigs) {
+                    console.log('🔄 Loading integrations from Supabase');
+                    const defaultConfigs = getDefaultConfigs();
+                    const mergedConfigs = { ...defaultConfigs, ...remoteConfigs };
+                    setConfigs(mergedConfigs);
+                    localStorage.setItem('adminIntegrations', JSON.stringify(mergedConfigs));
+                    return;
+                }
+
+                // Supabase'de yoksa localStorage'dan yükle
+                const stored = localStorage.getItem('adminIntegrations');
+                if (stored) {
+                    const parsedConfigs = JSON.parse(stored);
+                    // Ensure all required services exist
+                    const defaultConfigs = getDefaultConfigs();
+                    const mergedConfigs = { ...defaultConfigs, ...parsedConfigs };
+                    setConfigs(mergedConfigs);
+                    
+                    // İlk kez Supabase'e sync et
+                    syncIntegrationsToSupabase(mergedConfigs);
+                } else {
                 // Load existing keys from localStorage
                 const adConfigStr = localStorage.getItem('ad_config') || '{}';
                 let adConfig = {};
@@ -68,14 +148,20 @@ export default function AdminIntegrations() {
                         slotId: (adConfig as any).slotId || ''
                     }
                 };
-                setConfigs(initialConfigs);
+                    setConfigs(initialConfigs);
+                    
+                    // İlk kez Supabase'e sync et
+                    syncIntegrationsToSupabase(initialConfigs);
+                }
+            } catch (error) {
+                console.error('Error loading integrations:', error);
+                setConfigs(getDefaultConfigs());
+            } finally {
+                setLoading(false);
             }
-        } catch (error) {
-            console.error('Error loading integrations:', error);
-            setConfigs(getDefaultConfigs());
-        } finally {
-            setLoading(false);
-        }
+        };
+
+        loadConfigs();
     }, []);
 
     const handleConnect = (service: ServiceType) => {
@@ -86,6 +172,9 @@ export default function AdminIntegrations() {
         newConfigs[service].connected = true;
         setConfigs(newConfigs);
         localStorage.setItem('adminIntegrations', JSON.stringify(newConfigs));
+        
+        // Supabase'e senkronize et
+        syncIntegrationsToSupabase(newConfigs);
 
         // Save individual keys for compatibility
         if (service === 'supabase') {
@@ -119,10 +208,16 @@ export default function AdminIntegrations() {
         
         setConfigs(prev => {
             if (!prev) return prev;
-            return {
+            const newConfigs = {
                 ...prev,
                 [service]: { ...prev[service], [field]: value, connected: false } // Reset connection on change
             };
+            
+            // Auto-save to localStorage and Supabase
+            localStorage.setItem('adminIntegrations', JSON.stringify(newConfigs));
+            syncIntegrationsToSupabase(newConfigs);
+            
+            return newConfigs;
         });
     };
 
