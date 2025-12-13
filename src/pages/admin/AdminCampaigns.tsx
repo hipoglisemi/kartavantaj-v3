@@ -485,8 +485,11 @@ export default function AdminCampaigns() {
             const { createClient } = await import('@supabase/supabase-js');
             const supabase = createClient(supabaseUrl, supabaseKey);
             
-            // Clear existing campaigns first
-            await supabase.from('campaigns').delete().gt('id', -1);
+            // Clear existing campaigns first (use neq 0 for reliable deletion)
+            const { error: deleteError } = await supabase.from('campaigns').delete().neq('id', 0);
+            if (deleteError && localStorage.getItem('isAdmin') === 'true') {
+                console.error('🚨 Auto-sync delete error:', deleteError);
+            }
             
             // Insert new campaigns
             if (allCampaigns.length > 0) {
@@ -513,7 +516,10 @@ export default function AdminCampaigns() {
                     participation_points: c.participation_points || []
                 }));
                 
-                await supabase.from('campaigns').insert(dbRecords);
+                const { error: insertError } = await supabase.from('campaigns').insert(dbRecords);
+                if (insertError && localStorage.getItem('isAdmin') === 'true') {
+                    console.error('🚨 Auto-sync insert error:', insertError);
+                }
             }
             
             if (localStorage.getItem('isAdmin') === 'true') {
