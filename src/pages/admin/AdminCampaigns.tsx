@@ -119,7 +119,9 @@ export default function AdminCampaigns() {
         // Load campaigns from Supabase (same as Dashboard and Homepage)
         const loadCampaignsFromSupabase = async () => {
             try {
-                console.log("AdminCampaigns: Loading campaigns from Supabase...");
+                if (localStorage.getItem('isAdmin') === 'true') {
+                    console.log("AdminCampaigns: Loading campaigns from Supabase...");
+                }
                 const supabaseCampaigns = await campaignService.fetchCampaigns(true); // Include unapproved
                 
                 if (supabaseCampaigns.length > 0) {
@@ -156,9 +158,13 @@ export default function AdminCampaigns() {
                     setCampaignsMap(newMap);
                     // Also update localStorage for consistency
                     localStorage.setItem('campaign_data', JSON.stringify(newMap));
-                    console.log(`AdminCampaigns: Loaded ${supabaseCampaigns.length} campaigns from Supabase`);
+                    if (localStorage.getItem('isAdmin') === 'true') {
+                        console.log(`AdminCampaigns: Loaded ${supabaseCampaigns.length} campaigns from Supabase`);
+                    }
                 } else {
-                    console.log("AdminCampaigns: No campaigns found in Supabase, checking localStorage...");
+                    if (localStorage.getItem('isAdmin') === 'true') {
+                        console.log("AdminCampaigns: No campaigns found in Supabase, checking localStorage...");
+                    }
                     // Fallback to localStorage if Supabase is empty
                     setCampaignsMap(getCampaignsData());
                 }
@@ -450,11 +456,75 @@ export default function AdminCampaigns() {
         }
     };
 
-    // Helper to update state and storage events
+    // Helper to update state and storage events with auto-sync
     const updateCampaigns = (newMap: Record<string, CampaignProps[]>) => {
         setCampaignsMap(newMap);
         localStorage.setItem('campaign_data', JSON.stringify(newMap));
         window.dispatchEvent(new Event('campaigns-updated'));
+        
+        // Auto-sync to Supabase (fire and forget)
+        autoSyncToSupabase(newMap);
+    };
+
+    // Auto-sync function (non-blocking)
+    const autoSyncToSupabase = async (campaignsMap: Record<string, CampaignProps[]>) => {
+        const supabaseUrl = localStorage.getItem('sb_url');
+        const supabaseKey = localStorage.getItem('sb_key');
+        
+        if (!supabaseUrl || !supabaseKey) return; // Skip if no config
+        
+        try {
+            // Convert map to flat array for Supabase
+            const allCampaigns: CampaignProps[] = [];
+            Object.entries(campaignsMap).forEach(([, campaigns]) => {
+                campaigns.forEach(campaign => {
+                    allCampaigns.push(campaign);
+                });
+            });
+            
+            const { createClient } = await import('@supabase/supabase-js');
+            const supabase = createClient(supabaseUrl, supabaseKey);
+            
+            // Clear existing campaigns first
+            await supabase.from('campaigns').delete().gt('id', -1);
+            
+            // Insert new campaigns
+            if (allCampaigns.length > 0) {
+                const dbRecords = allCampaigns.map(c => ({
+                    id: c.id,
+                    title: c.title,
+                    description: c.description || '',
+                    bank: c.bank || 'Diğer',
+                    card_name: c.cardName,
+                    category: c.category || 'Genel',
+                    valid_until: c.validUntil || null,
+                    is_approved: c.isApproved !== false,
+                    image: c.image || null,
+                    url: c.url || null,
+                    badge_text: c.badgeText,
+                    badge_color: c.badgeColor,
+                    min_spend: c.min_spend || 0,
+                    earning: c.earning,
+                    discount: c.discount,
+                    participation_method: c.participation_method,
+                    valid_from: c.valid_from,
+                    eligible_customers: c.eligible_customers || [],
+                    conditions: c.conditions || [],
+                    participation_points: c.participation_points || []
+                }));
+                
+                await supabase.from('campaigns').insert(dbRecords);
+            }
+            
+            if (localStorage.getItem('isAdmin') === 'true') {
+                console.log(`🔄 Auto-synced ${allCampaigns.length} campaigns to Supabase`);
+            }
+        } catch (error) {
+            // Silent fail - don't interrupt user experience
+            if (localStorage.getItem('isAdmin') === 'true') {
+                console.error('Auto-sync failed:', error);
+            }
+        }
     };
 
     // Bank and Card Management Functions
@@ -761,9 +831,13 @@ export default function AdminCampaigns() {
                 const { createClient } = await import('@supabase/supabase-js');
                 const supabase = createClient(supabaseUrl, supabaseKey);
                 
-                console.log('🔍 SUPABASE CLEAR: Testing connection...');
-                console.log(`URL: ${supabaseUrl}`);
-                console.log(`Key: ${supabaseKey.substring(0, 20)}...`);
+                // Admin-only debug logs (hidden from public)
+                const isAdmin = localStorage.getItem('isAdmin') === 'true';
+                if (isAdmin) {
+                    console.log('🔍 SUPABASE CLEAR: Testing connection...');
+                    console.log(`URL: ${supabaseUrl}`);
+                    console.log(`Key: ${supabaseKey.substring(0, 20)}...`);
+                }
                 
                 // Get current count first
                 const { count: initialCount, error: countError } = await supabase
@@ -809,7 +883,7 @@ export default function AdminCampaigns() {
                 const allIds = allCampaigns.map(c => c.id);
                 console.log(`🗑️ Deleting ${allIds.length} campaigns by ID...`, allIds);
                 
-                // Delete using IN clause with all IDs
+                // Delete using IN clause with all IDs (with RLS bypass attempt)
                 const { error: deleteError, count: deletedCount } = await supabase
                     .from('campaigns')
                     .delete({ count: 'exact' })
@@ -850,140 +924,7 @@ export default function AdminCampaigns() {
         }
     };
 
-    // Clear ALL Campaign Data Function (Nuclear Option)
-    const handleClearAllData = async () => {
-        if (await confirm({
-            title: '⚠️ TÜM KAMPANYA VERİLERİNİ SİFİRLA',
-            message: 'Bu işlem SİSTEMDEKİ TÜM KAMPANYA VERİLERİNİ SİLECEK:\n\n• Admin paneli kampanyaları\n• Supabase kampanyaları\n• Tüm localStorage verileri\n• Dashboard ve anasayfa sıfırlanacak\n\nBu işlem GERİ ALINAMAZ!\n\nEmin misiniz?',
-            confirmText: 'EVET, HEPSİNİ SİL',
-            type: 'danger'
-        })) {
-            let totalCleared = 0;
-            
-            // 1. Clear ALL localStorage campaign keys
-            const allKeys = Object.keys(localStorage);
-            const campaignKeys = allKeys.filter(key => 
-                key.includes('campaign') || 
-                key.includes('Campaign') ||
-                key === 'campaigns_data' ||
-                key === 'campaign_data'
-            );
-            
-            campaignKeys.forEach(key => {
-                localStorage.removeItem(key);
-                console.log(`🗑️ Cleared: ${key}`);
-                totalCleared++;
-            });
-            
-            // 2. Clear current admin campaign data specifically
-            setCampaignsMap({});
-            localStorage.setItem('campaign_data', JSON.stringify({}));
-            
-            // 3. Clear Supabase campaigns
-            const supabaseUrl = localStorage.getItem('sb_url');
-            const supabaseKey = localStorage.getItem('sb_key');
-            
-            if (supabaseUrl && supabaseKey) {
-                try {
-                    const { createClient } = await import('@supabase/supabase-js');
-                    const supabase = createClient(supabaseUrl, supabaseKey);
-                    
-                    const { count } = await supabase
-                        .from('campaigns')
-                        .select('*', { count: 'exact', head: true });
-                    
-                    if (count && count > 0) {
-                        const { error } = await supabase
-                            .from('campaigns')
-                            .delete()
-                            .neq('id', 0);
-                        
-                        if (!error) {
-                            totalCleared += count;
-                            console.log(`🗑️ Cleared ${count} campaigns from Supabase`);
-                        }
-                    }
-                } catch (error) {
-                    console.error('Supabase clear error:', error);
-                }
-            }
-            
-            // 4. Force refresh everything
-            window.dispatchEvent(new Event('campaigns-updated'));
-            window.dispatchEvent(new Event('storage'));
-            
-            logActivity.campaign('ALL DATA CLEARED', `Nuclear option: Cleared ${totalCleared} total campaign records`, 'error');
-            
-            await alert(`🗑️ TÜM VERİLER TEMİZLENDİ!\n\n${totalCleared} adet kampanya verisi silindi.\n\nSayfa yenileniyor...`, 'Sıfırlama Tamamlandı');
-            
-            // Force page reload to ensure clean state
-            window.location.reload();
-        }
-    };
-
-    // Clear Legacy Data Function
-    const handleClearLegacyData = async () => {
-        if (await confirm({
-            title: 'Eski Verileri Temizle',
-            message: 'Bu işlem eski sistemden kalan kampanya verilerini temizleyecek (hem localStorage hem Supabase). Sadece mevcut admin paneli verileri kalacak. Bu işlem geri alınamaz.\n\nEmin misiniz?',
-            confirmText: 'Evet, Temizle',
-            type: 'danger'
-        })) {
-            let clearedCount = 0;
-            
-            // 1. Clear localStorage legacy data
-            localStorage.removeItem('campaigns_data');
-            
-            const keysToCheck = ['campaigns', 'legacy_campaigns', 'old_campaigns'];
-            keysToCheck.forEach(key => {
-                if (localStorage.getItem(key)) {
-                    localStorage.removeItem(key);
-                    console.log(`🗑️ Cleared legacy key: ${key}`);
-                    clearedCount++;
-                }
-            });
-            
-            // 2. Clear Supabase campaigns table
-            const supabaseUrl = localStorage.getItem('sb_url');
-            const supabaseKey = localStorage.getItem('sb_key');
-            
-            if (supabaseUrl && supabaseKey) {
-                try {
-                    const { createClient } = await import('@supabase/supabase-js');
-                    const supabase = createClient(supabaseUrl, supabaseKey);
-                    
-                    // Get count first
-                    const { count } = await supabase
-                        .from('campaigns')
-                        .select('*', { count: 'exact', head: true });
-                    
-                    if (count && count > 0) {
-                        // Delete all campaigns
-                        const { error } = await supabase
-                            .from('campaigns')
-                            .delete()
-                            .neq('id', 0); // Delete all (neq 0 means all records)
-                        
-                        if (!error) {
-                            clearedCount += count;
-                            console.log(`🗑️ Cleared ${count} campaigns from Supabase`);
-                        } else {
-                            console.error('Supabase clear error:', error);
-                        }
-                    }
-                } catch (error) {
-                    console.error('Failed to clear Supabase data:', error);
-                }
-            }
-            
-            // Trigger refresh
-            window.dispatchEvent(new Event('campaigns-updated'));
-            
-            logActivity.campaign('Legacy Data Cleared', `Cleared ${clearedCount} legacy campaign records from localStorage and Supabase`, 'warning');
-            
-            await alert(`✅ Eski veriler temizlendi!\n\n${clearedCount} adet eski kampanya verisi silindi.\nDashboard ve anasayfa artık sadece mevcut admin paneli verilerini gösterecek.`, 'Temizlik Tamamlandı');
-        }
-    };
+    // Removed unused clear functions - auto-sync handles everything now
 
     // New: Sync to Live Logic
     const [isSyncing, setIsSyncing] = useState(false);
@@ -1089,20 +1030,9 @@ export default function AdminCampaigns() {
                             <CloudUpload size={12} />
                             SB Sil
                         </button>
-                        <button
-                            onClick={handleClearLegacyData}
-                            className="bg-red-500 text-white px-2 py-1 rounded text-xs flex items-center gap-1 hover:bg-red-600 transition-colors justify-center"
-                        >
-                            <Trash2 size={12} />
-                            Eski
-                        </button>
-                        <button
-                            onClick={handleClearAllData}
-                            className="bg-red-700 text-white px-2 py-1 rounded text-xs flex items-center gap-1 hover:bg-red-800 transition-colors justify-center"
-                        >
-                            <Trash2 size={12} />
-                            Tümü
-                        </button>
+                        <div className="bg-gray-100 px-2 py-1 rounded text-xs text-gray-500 flex items-center justify-center">
+                            Otomatik Sync
+                        </div>
                     </div>
                 </div>
                 <div className="absolute right-0 top-0 h-full w-1/3 opacity-5">

@@ -3,13 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { Award, Zap, Clock, Activity, Trash2, ChevronDown, ChevronRight, CreditCard, RefreshCw } from 'lucide-react';
 import { campaignService } from '../../services/campaignService';
 
-import { useToast } from '../../context/ToastContext';
+// import { useToast } from '../../context/ToastContext'; // Removed - not needed
 
 // ... (inside component)
 
 export default function AdminDashboard() {
     const navigate = useNavigate();
-    const { success, error } = useToast();
+    // const { success, error } = useToast(); // Removed - not needed
     const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
@@ -115,33 +115,7 @@ export default function AdminDashboard() {
             .slice(0, 10);
     }, [allCampaigns]);
 
-    const handleClearAllData = () => {
-        setConfirmModal({
-            isOpen: true,
-            title: 'Tüm Verileri Sil',
-            message: 'DİKKAT! Veritabanındaki VE yerel hafızadaki TÜM kampanyalar silinecek. Bu işlem geri alınamaz. Onaylıyor musunuz?',
-            onConfirm: async () => {
-                // 1. Clear Local Admin Data
-                localStorage.setItem('campaign_data', '{}');
-                localStorage.setItem('campaigns_data', '[]');
-
-                // 2. Clear Remote Data
-                const cloudCleared = await campaignService.clearAllRemoteData();
-
-                if (cloudCleared) {
-                    success("Tüm veriler başarıyla silindi ve veritabanı temizlendi.");
-                } else {
-                    error("Yerel veriler silindi ancak bulut temizlenirken hata oluştu.");
-                }
-
-                setRefreshTrigger(prev => prev + 1);
-                window.dispatchEvent(new Event('campaigns-updated'));
-                window.dispatchEvent(new Event('storage'));
-
-                setConfirmModal(prev => ({ ...prev, isOpen: false }));
-            }
-        });
-    };
+    // Removed - auto-sync handles everything now
 
     return (
         <div className="space-y-6 max-w-7xl mx-auto pb-10">
@@ -152,13 +126,6 @@ export default function AdminDashboard() {
                     <p className="text-sm text-gray-500 mt-1">Sistem durumunu ve kampanya istatistiklerini buradan takip edebilirsiniz.</p>
                 </div>
                 <div className="flex gap-3">
-                    <button
-                        onClick={handleClearAllData}
-                        className="bg-red-50 text-red-600 px-4 py-2 rounded-lg font-bold hover:bg-red-100 transition-colors flex items-center gap-2"
-                    >
-                        <Trash2 size={18} />
-                        Verileri Temizle
-                    </button>
                     <button
                         onClick={() => {
                             setRefreshTrigger(prev => prev + 1);
