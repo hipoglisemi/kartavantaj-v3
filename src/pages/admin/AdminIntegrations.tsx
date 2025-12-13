@@ -9,7 +9,11 @@ interface ServiceConfig {
 }
 
 export default function AdminIntegrations() {
-    const [configs, setConfigs] = useState<Record<ServiceType, ServiceConfig>>({
+    const [configs, setConfigs] = useState<Record<ServiceType, ServiceConfig> | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    // Initialize default configs
+    const getDefaultConfigs = (): Record<ServiceType, ServiceConfig> => ({
         supabase: { connected: false, url: '', key: '' },
         github: { connected: false, repo: '', token: '' },
         vercel: { connected: false, token: '', project: '' },
@@ -19,43 +23,64 @@ export default function AdminIntegrations() {
 
     // Load from localStorage on mount
     useEffect(() => {
-        const stored = localStorage.getItem('adminIntegrations');
-        if (stored) {
-            setConfigs(JSON.parse(stored));
-        } else {
-            // Mevcut anahtarları yükle
-            setConfigs(prev => ({
-                ...prev,
-                supabase: {
-                    connected: !!localStorage.getItem('sb_url'),
-                    url: localStorage.getItem('sb_url') || '',
-                    key: localStorage.getItem('sb_key') || ''
-                },
-                github: {
-                    connected: !!localStorage.getItem('github_token'),
-                    token: localStorage.getItem('github_token') || '',
-                    repo: ''
-                },
-                vercel: {
-                    connected: !!localStorage.getItem('vercel_token'),
-                    token: localStorage.getItem('vercel_token') || '',
-                    project: ''
-                },
-                gemini: {
-                    connected: !!localStorage.getItem('gemini_key'),
-                    apiKey: localStorage.getItem('gemini_key') || ''
-                },
-                googleads: {
-                    connected: !!localStorage.getItem('ad_config'),
-                    enabled: JSON.parse(localStorage.getItem('ad_config') || '{}').enabled || false,
-                    clientId: JSON.parse(localStorage.getItem('ad_config') || '{}').clientId || '',
-                    slotId: JSON.parse(localStorage.getItem('ad_config') || '{}').slotId || ''
+        try {
+            const stored = localStorage.getItem('adminIntegrations');
+            if (stored) {
+                const parsedConfigs = JSON.parse(stored);
+                // Ensure all required services exist
+                const defaultConfigs = getDefaultConfigs();
+                const mergedConfigs = { ...defaultConfigs, ...parsedConfigs };
+                setConfigs(mergedConfigs);
+            } else {
+                // Load existing keys from localStorage
+                const adConfigStr = localStorage.getItem('ad_config') || '{}';
+                let adConfig = {};
+                try {
+                    adConfig = JSON.parse(adConfigStr);
+                } catch {
+                    adConfig = {};
                 }
-            }));
+
+                const initialConfigs = {
+                    supabase: {
+                        connected: !!localStorage.getItem('sb_url'),
+                        url: localStorage.getItem('sb_url') || '',
+                        key: localStorage.getItem('sb_key') || ''
+                    },
+                    github: {
+                        connected: !!localStorage.getItem('github_token'),
+                        token: localStorage.getItem('github_token') || '',
+                        repo: ''
+                    },
+                    vercel: {
+                        connected: !!localStorage.getItem('vercel_token'),
+                        token: localStorage.getItem('vercel_token') || '',
+                        project: ''
+                    },
+                    gemini: {
+                        connected: !!localStorage.getItem('gemini_key'),
+                        apiKey: localStorage.getItem('gemini_key') || ''
+                    },
+                    googleads: {
+                        connected: !!localStorage.getItem('ad_config'),
+                        enabled: (adConfig as any).enabled || false,
+                        clientId: (adConfig as any).clientId || '',
+                        slotId: (adConfig as any).slotId || ''
+                    }
+                };
+                setConfigs(initialConfigs);
+            }
+        } catch (error) {
+            console.error('Error loading integrations:', error);
+            setConfigs(getDefaultConfigs());
+        } finally {
+            setLoading(false);
         }
     }, []);
 
     const handleConnect = (service: ServiceType) => {
+        if (!configs) return;
+        
         // Simulate connection check
         const newConfigs = { ...configs };
         newConfigs[service].connected = true;
@@ -90,10 +115,15 @@ export default function AdminIntegrations() {
     };
 
     const handleChange = (service: ServiceType, field: string, value: string) => {
-        setConfigs(prev => ({
-            ...prev,
-            [service]: { ...prev[service], [field]: value, connected: false } // Reset connection on change
-        }));
+        if (!configs) return;
+        
+        setConfigs(prev => {
+            if (!prev) return prev;
+            return {
+                ...prev,
+                [service]: { ...prev[service], [field]: value, connected: false } // Reset connection on change
+            };
+        });
     };
 
     const StatusBadge = ({ connected }: { connected: boolean }) => (
@@ -102,6 +132,18 @@ export default function AdminIntegrations() {
             {connected ? 'Bağlandı' : 'Bağlı Değil'}
         </div>
     );
+
+    // Show loading state
+    if (loading || !configs) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <div className="text-center">
+                    <RefreshCw className="w-8 h-8 animate-spin text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-500">Entegrasyonlar yükleniyor...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-8 max-w-5xl mx-auto">
@@ -125,7 +167,7 @@ export default function AdminIntegrations() {
                             </div>
                             <h3 className="font-bold text-gray-900">Google Gemini AI</h3>
                         </div>
-                        <StatusBadge connected={configs.gemini.connected} />
+                        <StatusBadge connected={configs?.gemini?.connected || false} />
                     </div>
                     <div className="p-6 space-y-4">
                         <div>
@@ -134,13 +176,13 @@ export default function AdminIntegrations() {
                                 type="password"
                                 className="w-full text-sm border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500"
                                 placeholder="AIzaSy..."
-                                value={configs.gemini.apiKey}
+                                value={configs?.gemini?.apiKey || ''}
                                 onChange={(e) => handleChange('gemini', 'apiKey', e.target.value)}
                             />
                         </div>
                         <button
                             onClick={() => handleConnect('gemini')}
-                            disabled={!configs.gemini.apiKey}
+                            disabled={!configs?.gemini?.apiKey}
                             className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
                         >
                             Bağlan
@@ -162,7 +204,7 @@ export default function AdminIntegrations() {
                             </div>
                             <h3 className="font-bold text-gray-900">Supabase Database</h3>
                         </div>
-                        <StatusBadge connected={configs.supabase.connected} />
+                        <StatusBadge connected={configs?.supabase?.connected || false} />
                     </div>
                     <div className="p-6 space-y-4">
                         <div>
@@ -171,7 +213,7 @@ export default function AdminIntegrations() {
                                 type="text"
                                 className="w-full text-sm border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
                                 placeholder="https://xyz.supabase.co"
-                                value={configs.supabase.url}
+                                value={configs?.supabase?.url || ''}
                                 onChange={(e) => handleChange('supabase', 'url', e.target.value)}
                             />
                         </div>
@@ -181,7 +223,7 @@ export default function AdminIntegrations() {
                                 type="password"
                                 className="w-full text-sm border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
                                 placeholder="eyJh..."
-                                value={configs.supabase.key}
+                                value={configs?.supabase?.key || ''}
                                 onChange={(e) => handleChange('supabase', 'key', e.target.value)}
                             />
                         </div>
@@ -193,7 +235,7 @@ export default function AdminIntegrations() {
                                 <Save size={16} /> Kaydet
                             </button>
                             <button
-                                disabled={!configs.supabase.connected}
+                                disabled={!configs?.supabase?.connected}
                                 className="flex-1 border border-gray-200 hover:bg-gray-50 text-gray-700 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                                 onClick={() => window.location.reload()}
                             >
@@ -214,7 +256,7 @@ export default function AdminIntegrations() {
                             </div>
                             <h3 className="font-bold text-gray-900">GitHub</h3>
                         </div>
-                        <StatusBadge connected={configs.github.connected} />
+                        <StatusBadge connected={configs?.github?.connected || false} />
                     </div>
                     <div className="p-6 space-y-4">
                         <div>
@@ -223,7 +265,7 @@ export default function AdminIntegrations() {
                                 type="text"
                                 className="w-full text-sm border-gray-300 rounded-lg focus:ring-gray-800 focus:border-gray-800"
                                 placeholder="user/project"
-                                value={configs.github.repo}
+                                value={configs?.github?.repo || ''}
                                 onChange={(e) => handleChange('github', 'repo', e.target.value)}
                             />
                         </div>
@@ -233,7 +275,7 @@ export default function AdminIntegrations() {
                                 type="password"
                                 className="w-full text-sm border-gray-300 rounded-lg focus:ring-gray-800 focus:border-gray-800"
                                 placeholder="ghp_..."
-                                value={configs.github.token}
+                                value={configs?.github?.token || ''}
                                 onChange={(e) => handleChange('github', 'token', e.target.value)}
                             />
                         </div>
@@ -260,8 +302,8 @@ export default function AdminIntegrations() {
                             <h3 className="font-bold text-white">Vercel</h3>
                         </div>
                         <div className="bg-white/10 backdrop-blur-sm rounded-full px-3 py-1">
-                            <span className={`text-xs font-medium ${configs.vercel.connected ? 'text-green-300' : 'text-gray-300'}`}>
-                                {configs.vercel.connected ? '✓ Bağlandı' : '○ Bağlı Değil'}
+                            <span className={`text-xs font-medium ${configs?.vercel?.connected ? 'text-green-300' : 'text-gray-300'}`}>
+                                {configs?.vercel?.connected ? '✓ Bağlandı' : '○ Bağlı Değil'}
                             </span>
                         </div>
                     </div>
@@ -272,7 +314,7 @@ export default function AdminIntegrations() {
                                 type="text"
                                 className="w-full text-sm border-gray-300 rounded-lg focus:ring-black focus:border-black"
                                 placeholder="prj_..."
-                                value={configs.vercel.project}
+                                value={configs?.vercel?.project || ''}
                                 onChange={(e) => handleChange('vercel', 'project', e.target.value)}
                             />
                         </div>
@@ -282,7 +324,7 @@ export default function AdminIntegrations() {
                                 type="password"
                                 className="w-full text-sm border-gray-300 rounded-lg focus:ring-black focus:border-black"
                                 placeholder="Ele..."
-                                value={configs.vercel.token}
+                                value={configs?.vercel?.token || ''}
                                 onChange={(e) => handleChange('vercel', 'token', e.target.value)}
                             />
                         </div>
@@ -294,7 +336,7 @@ export default function AdminIntegrations() {
                                 <Save size={16} /> Kaydet
                             </button>
                             <button
-                                disabled={!configs.vercel.connected}
+                                disabled={!configs?.vercel?.connected}
                                 className="flex-1 border border-gray-200 hover:bg-gray-50 text-gray-700 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                                 onClick={() => alert('Sunucu Deploy tetiklendi! 🚀')}
                             >
@@ -316,14 +358,14 @@ export default function AdminIntegrations() {
                             </div>
                             <h3 className="font-bold text-gray-900">Google Ads</h3>
                         </div>
-                        <StatusBadge connected={configs.googleads.connected} />
+                        <StatusBadge connected={configs?.googleads?.connected || false} />
                     </div>
                     <div className="p-6 space-y-4">
                         <div className="flex items-center gap-3">
                             <input
                                 type="checkbox"
                                 id="ads-enabled"
-                                checked={configs.googleads.enabled}
+                                checked={configs?.googleads?.enabled || false}
                                 onChange={(e) => handleChange('googleads', 'enabled', e.target.checked.toString())}
                                 className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
                             />
@@ -337,7 +379,7 @@ export default function AdminIntegrations() {
                                 type="text"
                                 className="w-full text-sm border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                                 placeholder="ca-pub-XXXXXXXXXXXXXXXX"
-                                value={configs.googleads.clientId}
+                                value={configs?.googleads?.clientId || ''}
                                 onChange={(e) => handleChange('googleads', 'clientId', e.target.value)}
                             />
                         </div>
@@ -347,13 +389,13 @@ export default function AdminIntegrations() {
                                 type="text"
                                 className="w-full text-sm border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                                 placeholder="1234567890"
-                                value={configs.googleads.slotId}
+                                value={configs?.googleads?.slotId || ''}
                                 onChange={(e) => handleChange('googleads', 'slotId', e.target.value)}
                             />
                         </div>
                         <button
                             onClick={() => handleConnect('googleads')}
-                            disabled={!configs.googleads.clientId || !configs.googleads.slotId}
+                            disabled={!configs?.googleads?.clientId || !configs?.googleads?.slotId}
                             className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
                         >
                             Kaydet
