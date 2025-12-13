@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, User, Shield, Mail, Calendar, Trash2, CheckCircle, Smartphone, Copy, Clock } from 'lucide-react';
+import { Search, User, Shield, Mail, Calendar, Trash2, CheckCircle, Smartphone, Copy, Clock, Save, XCircle, Users } from 'lucide-react';
 import TOTPService from '../../services/totpService';
 import AdminRegisterModal from '../../components/AdminRegisterModal';
 import SecurityService from '../../services/securityService';
@@ -325,9 +325,32 @@ export default function AdminMembers() {
                                 <select value={newMember.role} onChange={e => setNewMember({ ...newMember, role: e.target.value })} className="px-3 py-2 rounded-lg border border-blue-200">
                                     <option>User</option><option>Editor</option><option>Admin</option>
                                 </select>
-                                <div className="flex gap-2">
-                                    <button type="submit" className="flex-1 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700">Kaydet</button>
-                                    <button type="button" onClick={() => setIsAddingMember(false)} className="px-4 bg-white text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50">İptal</button>
+                                <div className="flex gap-3">
+                                    <div className="group relative flex-1">
+                                        <button 
+                                            type="submit" 
+                                            className="w-full group relative bg-gradient-to-br from-green-500 via-green-600 to-green-700 hover:from-green-600 hover:via-green-700 hover:to-green-800 text-white py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-all duration-500 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-[1.02] border border-green-400/20"
+                                        >
+                                            <div className="bg-white/20 p-1 rounded-lg backdrop-blur-sm">
+                                                <Save size={14} />
+                                            </div>
+                                            <span>Kaydet</span>
+                                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
+                                        </button>
+                                    </div>
+                                    <div className="group relative">
+                                        <button 
+                                            type="button" 
+                                            onClick={() => setIsAddingMember(false)} 
+                                            className="group relative bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 hover:from-gray-200 hover:via-gray-300 hover:to-gray-400 text-gray-700 px-6 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-all duration-500 shadow-lg hover:shadow-xl transform hover:-translate-y-1 hover:scale-[1.02] border border-gray-300/50"
+                                        >
+                                            <div className="bg-white/50 p-1 rounded-lg backdrop-blur-sm">
+                                                <XCircle size={14} />
+                                            </div>
+                                            <span>İptal</span>
+                                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
+                                        </button>
+                                    </div>
                                 </div>
                             </form>
                         </div>
@@ -345,9 +368,21 @@ export default function AdminMembers() {
                                 className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                             />
                         </div>
-                        <button onClick={() => setIsAddingMember(!isAddingMember)} className="bg-blue-600 text-white px-5 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors">
-                            + Yeni Üye
-                        </button>
+                        <div className="group relative">
+                            <button 
+                                onClick={() => setIsAddingMember(!isAddingMember)} 
+                                className="group relative bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-2xl text-sm font-bold flex items-center gap-3 transition-all duration-500 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-[1.02] border border-blue-400/20"
+                            >
+                                <div className="bg-white/20 p-1.5 rounded-lg backdrop-blur-sm">
+                                    <Users size={16} />
+                                </div>
+                                <span>+ Yeni Üye</span>
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
+                            </button>
+                            <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100 bg-blue-500 text-white text-xs px-2 py-1 rounded-lg shadow-lg z-10 whitespace-nowrap">
+                                Yeni kullanıcı ekle
+                            </div>
+                        </div>
                     </div>
 
                     {/* Users Table */}

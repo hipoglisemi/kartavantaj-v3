@@ -126,16 +126,27 @@ export default function AdminDashboard() {
                     <p className="text-sm text-gray-500 mt-1">Sistem durumunu ve kampanya istatistiklerini buradan takip edebilirsiniz.</p>
                 </div>
                 <div className="flex gap-3">
-                    <button
-                        onClick={() => {
-                            setRefreshTrigger(prev => prev + 1);
-                            window.dispatchEvent(new Event('campaigns-updated'));
-                        }}
-                        className="bg-gray-100 text-gray-600 px-4 py-2 rounded-lg font-bold hover:bg-gray-200 transition-colors flex items-center gap-2"
-                    >
-                        <RefreshCw size={18} />
-                        Yenile
-                    </button>
+                    <div className="group relative">
+                        <button
+                            onClick={() => {
+                                setRefreshTrigger(prev => prev + 1);
+                                window.dispatchEvent(new Event('campaigns-updated'));
+                            }}
+                            className="group relative bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-2xl text-sm font-bold flex items-center gap-3 transition-all duration-500 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-[1.02] border border-blue-400/20"
+                        >
+                            <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
+                                <RefreshCw size={18} className="group-hover:rotate-180 transition-transform duration-500" />
+                            </div>
+                            <div className="text-left">
+                                <div className="font-bold">Yenile</div>
+                                <div className="text-xs text-blue-100 opacity-90">Verileri güncelle</div>
+                            </div>
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
+                        </button>
+                        <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100 bg-blue-500 text-white text-xs px-2 py-1 rounded-lg shadow-lg z-10 whitespace-nowrap">
+                            Tüm verileri yeniden yükle
+                        </div>
+                    </div>
                 </div>
             </div>
 
