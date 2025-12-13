@@ -500,7 +500,7 @@ export default function AdminCampaigns() {
                     bank: c.bank || 'Diğer',
                     card_name: c.cardName,
                     category: c.category || 'Genel',
-                    valid_until: c.validUntil || null,
+                    valid_until: c.validUntil && c.validUntil.length > 4 ? c.validUntil : null,
                     is_approved: c.isApproved !== false,
                     image: c.image || null,
                     url: c.url || null,
@@ -510,7 +510,7 @@ export default function AdminCampaigns() {
                     earning: c.earning,
                     discount: c.discount,
                     participation_method: c.participation_method,
-                    valid_from: c.valid_from,
+                    valid_from: c.valid_from && c.valid_from.length > 4 ? c.valid_from : null,
                     eligible_customers: c.eligible_customers || [],
                     conditions: c.conditions || [],
                     participation_points: c.participation_points || []
