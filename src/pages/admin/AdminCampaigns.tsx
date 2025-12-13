@@ -263,14 +263,44 @@ export default function AdminCampaigns() {
     const handleDeleteCampaign = async (cardId: string, campaignId: number) => {
         if (await confirm({
             title: 'Kampanyayı Sil',
-            message: 'Bu kampanyayı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.',
+            message: 'Bu kampanyayı silmek istediğinize emin misiniz? Bu işlem hem yerel hem Supabase\'den silinecek ve geri alınamaz.',
             type: 'danger'
         })) {
             const campaign = (campaignsMap[cardId] || []).find(c => c.id === campaignId);
+            
+            // 1. Delete from localStorage
             const updatedList = (campaignsMap[cardId] || []).filter(c => c.id !== campaignId);
             const newMap = { ...campaignsMap, [cardId]: updatedList };
             updateCampaigns(newMap);
-            logActivity.campaign('Campaign Deleted', `Campaign "${campaign?.title || campaignId}" deleted from ${cardId}`, 'warning');
+            
+            // 2. Delete from Supabase immediately
+            const supabaseUrl = localStorage.getItem('sb_url');
+            const supabaseKey = localStorage.getItem('sb_key');
+            
+            if (supabaseUrl && supabaseKey && campaign) {
+                try {
+                    const { createClient } = await import('@supabase/supabase-js');
+                    const supabase = createClient(supabaseUrl, supabaseKey);
+                    
+                    const { error } = await supabase
+                        .from('campaigns')
+                        .delete()
+                        .eq('id', campaignId);
+                    
+                    if (error) {
+                        console.error('Supabase delete error:', error);
+                        logActivity.campaign('Campaign Delete Error', `Failed to delete campaign ${campaignId} from Supabase: ${error.message}`, 'error');
+                    } else {
+                        console.log(`✅ Campaign ${campaignId} deleted from Supabase`);
+                        logActivity.campaign('Campaign Deleted', `Campaign "${campaign?.title || campaignId}" deleted from both localStorage and Supabase`, 'warning');
+                    }
+                } catch (error) {
+                    console.error('Supabase delete failed:', error);
+                    logActivity.campaign('Campaign Delete Error', `Failed to delete campaign ${campaignId} from Supabase`, 'error');
+                }
+            } else {
+                logActivity.campaign('Campaign Deleted', `Campaign "${campaign?.title || campaignId}" deleted from ${cardId} (localStorage only)`, 'warning');
+            }
         }
     };
 
@@ -290,13 +320,45 @@ export default function AdminCampaigns() {
     const handleDeleteAllCampaigns = async (cardId: string) => {
         if (await confirm({
             title: 'Tümünü Sil',
-            message: 'Bu karta ait TÜM kampanyalar SİLİNECEK! Bu işlem geri alınamaz. Emin misiniz?',
+            message: 'Bu karta ait TÜM kampanyalar SİLİNECEK! Bu işlem hem yerel hem Supabase\'den silinecek ve geri alınamaz. Emin misiniz?',
             type: 'danger'
         })) {
-            const campaignCount = (campaignsMap[cardId] || []).length;
+            const campaigns = campaignsMap[cardId] || [];
+            const campaignCount = campaigns.length;
+            const campaignIds = campaigns.map(c => c.id);
+            
+            // 1. Delete from localStorage
             const newMap = { ...campaignsMap, [cardId]: [] };
             updateCampaigns(newMap);
-            logActivity.campaign('Bulk Delete', `All ${campaignCount} campaigns deleted from ${cardId}`, 'warning');
+            
+            // 2. Delete from Supabase
+            const supabaseUrl = localStorage.getItem('sb_url');
+            const supabaseKey = localStorage.getItem('sb_key');
+            
+            if (supabaseUrl && supabaseKey && campaignIds.length > 0) {
+                try {
+                    const { createClient } = await import('@supabase/supabase-js');
+                    const supabase = createClient(supabaseUrl, supabaseKey);
+                    
+                    const { error } = await supabase
+                        .from('campaigns')
+                        .delete()
+                        .in('id', campaignIds);
+                    
+                    if (error) {
+                        console.error('Supabase bulk delete error:', error);
+                        logActivity.campaign('Bulk Delete Error', `Failed to delete ${campaignCount} campaigns from Supabase: ${error.message}`, 'error');
+                    } else {
+                        console.log(`✅ ${campaignCount} campaigns deleted from Supabase`);
+                        logActivity.campaign('Bulk Delete', `All ${campaignCount} campaigns deleted from ${cardId} (localStorage + Supabase)`, 'warning');
+                    }
+                } catch (error) {
+                    console.error('Supabase bulk delete failed:', error);
+                    logActivity.campaign('Bulk Delete Error', `Failed to delete campaigns from Supabase`, 'error');
+                }
+            } else {
+                logActivity.campaign('Bulk Delete', `All ${campaignCount} campaigns deleted from ${cardId} (localStorage only)`, 'warning');
+            }
         }
     };
 
