@@ -144,28 +144,13 @@ export default function Footer() {
           </div>
 
           <div className="border-t border-white/10 pt-6 text-center text-xs text-gray-500">
-            <div className="flex flex-col items-center gap-3">
-              {/* Ana telif hakkı */}
-              <div className="flex items-center justify-center gap-4">
-                <span>{settings.footer.copyright || `© ${currentYear} KartAvantaj. Tüm yasal hakları saklıdır.`}</span>
-                <span className="text-gray-600">•</span>
-                <a 
-                  href="/panel" 
-                  className="text-gray-600 hover:text-gray-400 transition-colors opacity-50 hover:opacity-100"
-                  title="Admin Paneli"
-                >
-                  Panel
-                </a>
-              </div>
-              
-              {/* Sevimli kalp mesajı */}
-              <div className="flex items-center justify-center gap-2 text-gray-600">
+            <div className="flex items-center justify-center gap-3 flex-wrap">
+              <span>{settings.footer.copyright || `© ${currentYear} KartAvantaj. Tüm yasal hakları saklıdır.`}</span>
+              <span className="text-gray-600 text-lg">|</span>
+              <div className="flex items-center gap-2">
                 <span className="text-[11px]">Kart Avantaj Ekibi tarafından</span>
                 <span 
-                  className="text-red-500 text-sm animate-pulse hover:scale-125 transition-transform cursor-pointer"
-                  style={{
-                    animation: 'heartbeat 1.5s ease-in-out infinite'
-                  }}
+                  className="text-red-500 text-sm hover:scale-125 transition-transform cursor-pointer heartbeat-animation"
                   title="Made with love ❤️"
                 >
                   ❤️
@@ -174,17 +159,6 @@ export default function Footer() {
               </div>
             </div>
           </div>
-          
-          {/* Kalp animasyonu için CSS */}
-          <style jsx>{`
-            @keyframes heartbeat {
-              0% { transform: scale(1); }
-              14% { transform: scale(1.1); }
-              28% { transform: scale(1); }
-              42% { transform: scale(1.1); }
-              70% { transform: scale(1); }
-            }
-          `}</style>
         </div>
       </footer>
 
