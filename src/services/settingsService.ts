@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { syncToSupabase, loadFromSupabase } from './universalSyncService';
+import { syncToSupabase } from './universalSyncService';
 
 const STORAGE_KEY = 'site_settings';
 

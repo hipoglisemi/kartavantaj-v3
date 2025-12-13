@@ -8,9 +8,7 @@ interface SyncConfig {
     syncInterval?: number; // milliseconds
 }
 
-interface TableSchema {
-    [columnName: string]: 'text' | 'jsonb' | 'integer' | 'boolean' | 'timestamp';
-}
+
 
 class UniversalSyncService {
     private supabase: any = null;

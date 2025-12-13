@@ -22,68 +22,7 @@ export default function AdminIntegrations() {
         googleads: { connected: false, enabled: false, clientId: '', slotId: '' }
     });
 
-    // Supabase senkronizasyon fonksiyonu
-    const syncIntegrationsToSupabase = async (integrationConfigs: Record<ServiceType, ServiceConfig>) => {
-        try {
-            const supabaseUrl = localStorage.getItem('sb_url');
-            const supabaseKey = localStorage.getItem('sb_key');
-            
-            if (!supabaseUrl || !supabaseKey) {
-                console.log('Supabase credentials not found, skipping sync');
-                return;
-            }
 
-            const { createClient } = await import('@supabase/supabase-js');
-            const supabase = createClient(supabaseUrl, supabaseKey);
-            
-            // Admin integrations tablosuna kaydet
-            const { error } = await supabase
-                .from('admin_integrations')
-                .upsert({
-                    id: 'main',
-                    configs: integrationConfigs,
-                    updated_at: new Date().toISOString(),
-                    updated_by: localStorage.getItem('admin_email') || 'unknown'
-                });
-
-            if (error) {
-                console.error('Supabase sync error:', error);
-            } else {
-                console.log('✅ Integrations synced to Supabase');
-            }
-        } catch (error) {
-            console.error('Supabase sync failed:', error);
-        }
-    };
-
-    // Supabase'den entegrasyon ayarlarını yükle
-    const loadIntegrationsFromSupabase = async () => {
-        try {
-            const supabaseUrl = localStorage.getItem('sb_url');
-            const supabaseKey = localStorage.getItem('sb_key');
-            
-            if (!supabaseUrl || !supabaseKey) return null;
-
-            const { createClient } = await import('@supabase/supabase-js');
-            const supabase = createClient(supabaseUrl, supabaseKey);
-            
-            const { data, error } = await supabase
-                .from('admin_integrations')
-                .select('configs')
-                .eq('id', 'main')
-                .single();
-
-            if (error) {
-                console.log('No remote integrations found:', error.message);
-                return null;
-            }
-
-            return data?.configs || null;
-        } catch (error) {
-            console.error('Failed to load integrations from Supabase:', error);
-            return null;
-        }
-    };
 
     // Load from localStorage on mount
     useEffect(() => {

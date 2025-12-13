@@ -57,77 +57,7 @@ const saveBanksConfig = async (banks: BankConfig[]) => {
     window.dispatchEvent(new Event('campaigns-updated'));
 };
 
-// Supabase senkronizasyon fonksiyonu
-const syncBanksToSupabase = async (banks: BankConfig[]) => {
-    try {
-        const supabaseUrl = localStorage.getItem('sb_url');
-        const supabaseKey = localStorage.getItem('sb_key');
-        
-        if (!supabaseUrl || !supabaseKey) {
-            console.log('Supabase credentials not found, skipping banks sync');
-            return;
-        }
 
-        const { createClient } = await import('@supabase/supabase-js');
-        const supabase = createClient(supabaseUrl, supabaseKey);
-        
-        // Her bankayı ayrı ayrı kaydet
-        for (const bank of banks) {
-            const { error } = await supabase
-                .from('banks')
-                .upsert({
-                    id: bank.id,
-                    name: bank.name,
-                    logo: bank.logo,
-                    config: bank.cards || []
-                });
-
-            if (error) {
-                console.error(`Bank ${bank.id} sync error:`, error);
-            }
-        }
-        
-        console.log('✅ Banks and logos synced to Supabase');
-    } catch (error) {
-        console.error('Banks sync failed:', error);
-    }
-};
-
-// Supabase'den banka verilerini yükle
-const loadBanksFromSupabase = async (): Promise<BankConfig[] | null> => {
-    try {
-        const supabaseUrl = localStorage.getItem('sb_url');
-        const supabaseKey = localStorage.getItem('sb_key');
-        
-        if (!supabaseUrl || !supabaseKey) return null;
-
-        const { createClient } = await import('@supabase/supabase-js');
-        const supabase = createClient(supabaseUrl, supabaseKey);
-        
-        const { data, error } = await supabase
-            .from('banks')
-            .select('*')
-            .order('name');
-
-        if (error) {
-            console.log('No remote banks found:', error.message);
-            return null;
-        }
-
-        // Supabase formatından local formata çevir
-        const banksConfig: BankConfig[] = data.map(bank => ({
-            id: bank.id,
-            name: bank.name,
-            logo: bank.logo || '',
-            cards: bank.config || []
-        }));
-
-        return banksConfig;
-    } catch (error) {
-        console.error('Failed to load banks from Supabase:', error);
-        return null;
-    }
-};
 
 export default function AdminLogos() {
     const [banks, setBanks] = useState<BankConfig[]>([]);
@@ -161,9 +91,9 @@ export default function AdminLogos() {
                         async (payload) => {
                             console.log('🔔 Banks change detected:', payload);
                             
-                            // Reload banks from Supabase
-                            const updatedBanks = await loadBanksFromSupabase();
-                            if (updatedBanks) {
+                            // Reload banks from Universal sync
+                            const updatedBanks = await loadFromSupabase('admin_logos');
+                            if (updatedBanks && Array.isArray(updatedBanks)) {
                                 setBanks(updatedBanks);
                                 localStorage.setItem('scraper_config', JSON.stringify(updatedBanks));
                                 window.dispatchEvent(new Event('storage'));
