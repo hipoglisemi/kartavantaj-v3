@@ -927,61 +927,121 @@ export default function AdminCampaigns() {
                     <p className="text-blue-100 opacity-90 max-w-xl">
                         Mevcut kampanyaları inceleyin. Yayına almak için <strong>"Onayla"</strong> butonunu kullanın.
                     </p>
-                    <div className="grid grid-cols-3 gap-3 mt-6">
+                    <div className="grid grid-cols-3 gap-4 mt-6">
                         {/* İlk Sıra - Ana İşlemler */}
-                        <button
-                            onClick={handleOpenImportModal}
-                            title="URL'den otomatik kampanya çeker ve AI ile analiz eder"
-                            className="group relative bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 py-3 rounded-xl text-sm font-medium flex items-center gap-2 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                        >
-                            <Link size={16} className="group-hover:rotate-12 transition-transform" />
-                            <span>URL'den Ekle</span>
-                        </button>
+                        <div className="group relative">
+                            <button
+                                onClick={handleOpenImportModal}
+                                className="w-full group relative bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 text-white px-4 py-4 rounded-2xl text-sm font-bold flex items-center gap-3 transition-all duration-500 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-[1.02] border border-blue-400/20"
+                            >
+                                <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
+                                    <Link size={18} className="group-hover:rotate-12 transition-transform duration-300" />
+                                </div>
+                                <div className="text-left">
+                                    <div className="font-bold">URL'den Ekle</div>
+                                    <div className="text-xs text-blue-100 opacity-90">AI ile otomatik analiz</div>
+                                </div>
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
+                            </button>
+                            <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100 bg-blue-500 text-white text-xs px-2 py-1 rounded-lg shadow-lg z-10 whitespace-nowrap">
+                                URL'den otomatik kampanya çeker ve AI ile analiz eder
+                            </div>
+                        </div>
                         
-                        <button
-                            onClick={handleCreateNew}
-                            title="Sıfırdan yeni kampanya oluştur"
-                            className="group relative bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-4 py-3 rounded-xl text-sm font-medium flex items-center gap-2 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                        >
-                            <Plus size={16} className="group-hover:rotate-90 transition-transform" />
-                            <span>Yeni Oluştur</span>
-                        </button>
+                        <div className="group relative">
+                            <button
+                                onClick={handleCreateNew}
+                                className="w-full group relative bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 hover:from-purple-600 hover:via-purple-700 hover:to-purple-800 text-white px-4 py-4 rounded-2xl text-sm font-bold flex items-center gap-3 transition-all duration-500 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-[1.02] border border-purple-400/20"
+                            >
+                                <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
+                                    <Plus size={18} className="group-hover:rotate-90 transition-transform duration-300" />
+                                </div>
+                                <div className="text-left">
+                                    <div className="font-bold">Yeni Oluştur</div>
+                                    <div className="text-xs text-purple-100 opacity-90">Sıfırdan kampanya</div>
+                                </div>
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
+                            </button>
+                            <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100 bg-purple-500 text-white text-xs px-2 py-1 rounded-lg shadow-lg z-10 whitespace-nowrap">
+                                Sıfırdan yeni kampanya oluştur
+                            </div>
+                        </div>
                         
-                        <button
-                            onClick={handleFindDuplicates}
-                            title="Tekrarlayan kampanyaları bul ve temizle"
-                            className="group relative bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white px-4 py-3 rounded-xl text-sm font-medium flex items-center gap-2 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                        >
-                            <Sparkles size={16} className="group-hover:scale-110 transition-transform" />
-                            <span>Duplikasyon Bul</span>
-                        </button>
+                        <div className="group relative">
+                            <button
+                                onClick={handleFindDuplicates}
+                                className="w-full group relative bg-gradient-to-br from-cyan-500 via-cyan-600 to-cyan-700 hover:from-cyan-600 hover:via-cyan-700 hover:to-cyan-800 text-white px-4 py-4 rounded-2xl text-sm font-bold flex items-center gap-3 transition-all duration-500 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-[1.02] border border-cyan-400/20"
+                            >
+                                <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
+                                    <Sparkles size={18} className="group-hover:scale-110 transition-transform duration-300" />
+                                </div>
+                                <div className="text-left">
+                                    <div className="font-bold">Tekrar Bul</div>
+                                    <div className="text-xs text-cyan-100 opacity-90">Duplikasyon temizle</div>
+                                </div>
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
+                            </button>
+                            <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100 bg-cyan-500 text-white text-xs px-2 py-1 rounded-lg shadow-lg z-10 whitespace-nowrap">
+                                Tekrarlayan kampanyaları bul ve temizle
+                            </div>
+                        </div>
                         
                         {/* İkinci Sıra - Araçlar */}
-                        <button
-                            onClick={handleBatchAI}
-                            title="Mevcut kampanyaları AI ile zenginleştir ve iyileştir"
-                            className="group relative bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white px-4 py-3 rounded-xl text-sm font-medium flex items-center gap-2 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                        >
-                            <Sparkles size={16} className="group-hover:animate-pulse" />
-                            <span>AI İyileştir</span>
-                        </button>
+                        <div className="group relative">
+                            <button
+                                onClick={handleBatchAI}
+                                className="w-full group relative bg-gradient-to-br from-indigo-500 via-indigo-600 to-indigo-700 hover:from-indigo-600 hover:via-indigo-700 hover:to-indigo-800 text-white px-4 py-4 rounded-2xl text-sm font-bold flex items-center gap-3 transition-all duration-500 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-[1.02] border border-indigo-400/20"
+                            >
+                                <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
+                                    <Sparkles size={18} className="group-hover:animate-pulse" />
+                                </div>
+                                <div className="text-left">
+                                    <div className="font-bold">AI İyileştir</div>
+                                    <div className="text-xs text-indigo-100 opacity-90">Toplu zenginleştir</div>
+                                </div>
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
+                            </button>
+                            <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100 bg-indigo-500 text-white text-xs px-2 py-1 rounded-lg shadow-lg z-10 whitespace-nowrap">
+                                Mevcut kampanyaları AI ile zenginleştir ve iyileştir
+                            </div>
+                        </div>
                         
-                        <button
-                            onClick={handleClearSupabaseOnly}
-                            title="Sadece Supabase'deki kampanyaları temizle (yerel veriler korunur)"
-                            className="group relative bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-4 py-3 rounded-xl text-sm font-medium flex items-center gap-2 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                        >
-                            <CloudUpload size={16} className="group-hover:scale-110 transition-transform" />
-                            <span>Supabase Temizle</span>
-                        </button>
+                        <div className="group relative">
+                            <button
+                                onClick={handleClearSupabaseOnly}
+                                className="w-full group relative bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 hover:from-orange-600 hover:via-orange-700 hover:to-orange-800 text-white px-4 py-4 rounded-2xl text-sm font-bold flex items-center gap-3 transition-all duration-500 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-[1.02] border border-orange-400/20"
+                            >
+                                <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
+                                    <CloudUpload size={18} className="group-hover:scale-110 transition-transform duration-300" />
+                                </div>
+                                <div className="text-left">
+                                    <div className="font-bold">Cloud Temizle</div>
+                                    <div className="text-xs text-orange-100 opacity-90">Supabase sıfırla</div>
+                                </div>
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
+                            </button>
+                            <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100 bg-orange-500 text-white text-xs px-2 py-1 rounded-lg shadow-lg z-10 whitespace-nowrap">
+                                Sadece Supabase'deki kampanyaları temizle (yerel veriler korunur)
+                            </div>
+                        </div>
                         
-                        {/* Sync Durumu Göstergesi */}
-                        <div 
-                            title="Otomatik senkronizasyon durumu - Kampanyalar otomatik olarak Supabase'e kaydediliyor"
-                            className="relative bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-200 px-4 py-3 rounded-xl text-sm font-medium flex items-center gap-2 justify-center"
-                        >
-                            <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse shadow-lg"></div>
-                            <span className="text-green-700 font-semibold">Otomatik Sync Aktif</span>
+                        {/* Sync Durumu Göstergisi */}
+                        <div className="group relative">
+                            <div className="w-full relative bg-gradient-to-br from-green-50 via-green-100 to-green-200 border-2 border-green-300/50 px-4 py-4 rounded-2xl text-sm font-bold flex items-center gap-3 shadow-lg backdrop-blur-sm">
+                                <div className="bg-green-500/20 p-2 rounded-xl backdrop-blur-sm">
+                                    <div className="w-4 h-4 bg-green-500 rounded-full animate-pulse shadow-lg relative">
+                                        <div className="absolute inset-0 bg-green-400 rounded-full animate-ping opacity-75"></div>
+                                    </div>
+                                </div>
+                                <div className="text-left">
+                                    <div className="text-green-800 font-bold">Sync Aktif</div>
+                                    <div className="text-xs text-green-600 opacity-90">Otomatik kayıt</div>
+                                </div>
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-green-200/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
+                            </div>
+                            <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100 bg-green-500 text-white text-xs px-2 py-1 rounded-lg shadow-lg z-10 whitespace-nowrap">
+                                Otomatik senkronizasyon - Kampanyalar otomatik Supabase'e kaydediliyor
+                            </div>
                         </div>
                     </div>
                 </div>
