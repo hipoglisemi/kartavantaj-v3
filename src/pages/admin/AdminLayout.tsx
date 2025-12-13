@@ -69,7 +69,14 @@ export default function AdminLayout() {
         const updateVersion = () => {
             try {
                 const versionHistory = JSON.parse(localStorage.getItem('app_version_history') || '{}');
-                setCurrentVersion(versionHistory.current || '3.0.0');
+                const newVersion = versionHistory.current || '3.0.0';
+                
+                // Eğer versiyon değiştiyse, console'a log at
+                if (newVersion !== currentVersion) {
+                    console.log(`🚀 Version updated: v${currentVersion} → v${newVersion}`);
+                }
+                
+                setCurrentVersion(newVersion);
             } catch {
                 setCurrentVersion('3.0.0');
             }
@@ -86,7 +93,7 @@ export default function AdminLayout() {
             window.removeEventListener('version-updated', updateVersion);
             window.removeEventListener('storage', updateVersion);
         };
-    }, []);
+    }, [currentVersion]);
 
     // Body'ye arka plan rengi ekle
     useEffect(() => {

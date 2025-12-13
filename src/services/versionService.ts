@@ -36,6 +36,44 @@ class VersionService {
         ]
     };
 
+    // Test için versiyon sistemi başlat
+    constructor() {
+        this.initializeVersionSystem();
+    }
+
+    private initializeVersionSystem() {
+        // Eğer localStorage'da versiyon geçmişi yoksa, varsayılanı kaydet
+        const stored = localStorage.getItem(this.storageKey);
+        if (!stored) {
+            this.saveVersionHistory(this.defaultHistory);
+            console.log('🚀 Version system initialized with v3.0.0');
+            
+            // Test için hemen yeni bir versiyon ekle
+            setTimeout(() => {
+                this.createTestVersion();
+            }, 1000);
+        }
+    }
+
+    // Test versiyonu oluştur
+    private createTestVersion() {
+        const testChanges = [
+            'Otomatik versiyon yönetimi sistemi eklendi',
+            'Modern buton tasarımları tamamlandı',
+            'AdminDesign sayfasına versiyon paneli eklendi',
+            'Dinamik footer versiyon gösterimi',
+            'Supabase versiyon senkronizasyonu'
+        ];
+        
+        const newVersion = this.addVersion(testChanges, 'minor');
+        console.log(`✨ Test version created: v${newVersion}`);
+        
+        // Event dispatch et ki footer güncellensin
+        window.dispatchEvent(new Event('version-updated'));
+        
+        return newVersion;
+    }
+
     // Versiyon geçmişini yükle
     getVersionHistory(): VersionHistory {
         const stored = localStorage.getItem(this.storageKey);

@@ -140,6 +140,33 @@ export default function VersionManager() {
                     
                     <div className="group relative">
                         <button
+                            onClick={() => {
+                                // Test versiyonu oluştur
+                                const testChanges = [
+                                    'Test versiyon güncelleme sistemi',
+                                    'Footer dinamik versiyon gösterimi test',
+                                    'Versiyon yönetimi demo'
+                                ];
+                                const newVersion = versionService.addVersion(testChanges, 'patch');
+                                alert(`🎉 Test versiyonu oluşturuldu: v${newVersion}\n\nFooter'da versiyon numarasının değiştiğini kontrol edin!`);
+                                setVersionHistory(versionService.getVersionHistory());
+                                window.dispatchEvent(new Event('version-updated'));
+                            }}
+                            className="group relative bg-gradient-to-br from-green-500 via-green-600 to-green-700 hover:from-green-600 hover:via-green-700 hover:to-green-800 text-white px-4 py-2 rounded-2xl text-sm font-bold flex items-center gap-2 transition-all duration-500 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-[1.02] border border-green-400/20"
+                        >
+                            <div className="bg-white/20 p-1 rounded-lg backdrop-blur-sm">
+                                <Tag size={14} />
+                            </div>
+                            <span>Test Versiyon</span>
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
+                        </button>
+                        <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100 bg-green-500 text-white text-xs px-2 py-1 rounded-lg shadow-lg z-10 whitespace-nowrap">
+                            Hızlı test versiyonu oluştur
+                        </div>
+                    </div>
+                    
+                    <div className="group relative">
+                        <button
                             onClick={() => setIsAddingVersion(!isAddingVersion)}
                             className="group relative bg-gradient-to-br from-indigo-500 via-indigo-600 to-indigo-700 hover:from-indigo-600 hover:via-indigo-700 hover:to-indigo-800 text-white px-4 py-2 rounded-2xl text-sm font-bold flex items-center gap-2 transition-all duration-500 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-[1.02] border border-indigo-400/20"
                         >
