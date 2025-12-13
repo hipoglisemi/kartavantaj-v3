@@ -466,7 +466,7 @@ export default function AdminCampaigns() {
         autoSyncToSupabase(newMap);
     };
 
-    // Auto-sync function (non-blocking)
+    // Auto-sync function (non-blocking) - Simplified version
     const autoSyncToSupabase = async (campaignsMap: Record<string, CampaignProps[]>) => {
         const supabaseUrl = localStorage.getItem('sb_url');
         const supabaseKey = localStorage.getItem('sb_key');
@@ -482,48 +482,15 @@ export default function AdminCampaigns() {
                 });
             });
             
-            const { createClient } = await import('@supabase/supabase-js');
-            const supabase = createClient(supabaseUrl, supabaseKey);
-            
-            // Clear existing campaigns first (use neq 0 for reliable deletion)
-            const { error: deleteError } = await supabase.from('campaigns').delete().neq('id', 0);
-            if (deleteError && localStorage.getItem('isAdmin') === 'true') {
-                console.error('🚨 Auto-sync delete error:', deleteError);
-            }
-            
-            // Insert new campaigns
-            if (allCampaigns.length > 0) {
-                const dbRecords = allCampaigns.map(c => ({
-                    id: c.id,
-                    title: c.title,
-                    description: c.description || '',
-                    bank: c.bank || 'Diğer',
-                    card_name: c.cardName,
-                    category: c.category || 'Genel',
-                    valid_until: c.validUntil && c.validUntil.length > 4 ? c.validUntil : null,
-                    is_approved: c.isApproved !== false,
-                    image: c.image || null,
-                    url: c.url || null,
-                    badge_text: c.badgeText,
-                    badge_color: c.badgeColor,
-                    min_spend: c.min_spend || 0,
-                    earning: c.earning,
-                    discount: c.discount,
-                    participation_method: c.participation_method,
-                    valid_from: c.valid_from && c.valid_from.length > 4 ? c.valid_from : null,
-                    eligible_customers: c.eligible_customers || [],
-                    conditions: c.conditions || [],
-                    participation_points: c.participation_points || []
-                }));
-                
-                const { error: insertError } = await supabase.from('campaigns').insert(dbRecords);
-                if (insertError && localStorage.getItem('isAdmin') === 'true') {
-                    console.error('🚨 Auto-sync insert error:', insertError);
-                }
-            }
+            // Use the existing campaignService sync method (more reliable)
+            const result = await campaignService.syncToSupabase(supabaseUrl, supabaseKey);
             
             if (localStorage.getItem('isAdmin') === 'true') {
-                console.log(`🔄 Auto-synced ${allCampaigns.length} campaigns to Supabase`);
+                if (result.success) {
+                    console.log(`🔄 Auto-synced ${result.count} campaigns to Supabase`);
+                } else {
+                    console.error('🚨 Auto-sync failed:', result.error);
+                }
             }
         } catch (error) {
             // Silent fail - don't interrupt user experience
