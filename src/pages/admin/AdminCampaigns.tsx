@@ -927,51 +927,61 @@ export default function AdminCampaigns() {
                     <p className="text-blue-100 opacity-90 max-w-xl">
                         Mevcut kampanyaları inceleyin. Yayına almak için <strong>"Onayla"</strong> butonunu kullanın.
                     </p>
-                    <div className="grid grid-cols-4 gap-1.5 mt-4">
+                    <div className="grid grid-cols-3 gap-3 mt-6">
                         {/* İlk Sıra - Ana İşlemler */}
                         <button
                             onClick={handleOpenImportModal}
-                            className="bg-blue-600 text-white px-2 py-1 rounded text-xs flex items-center gap-1 hover:bg-blue-700 transition-colors justify-center"
+                            title="URL'den otomatik kampanya çeker ve AI ile analiz eder"
+                            className="group relative bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 py-3 rounded-xl text-sm font-medium flex items-center gap-2 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                         >
-                            <Link size={12} />
-                            Link Ekle
-                        </button>
-                        <button
-                            onClick={handleCreateNew}
-                            className="bg-purple-600 text-white px-2 py-1 rounded text-xs flex items-center gap-1 hover:bg-purple-700 transition-colors justify-center"
-                        >
-                            <Plus size={12} />
-                            Yeni
-                        </button>
-                        <button
-                            onClick={handleFindDuplicates}
-                            className="bg-cyan-600 text-white px-2 py-1 rounded text-xs flex items-center gap-1 hover:bg-cyan-700 transition-colors justify-center"
-                        >
-                            <Sparkles size={12} />
-                            Tekrar
-                        </button>
-                        <button
-                            onClick={handleBatchAI}
-                            className="bg-indigo-600 text-white px-2 py-1 rounded text-xs flex items-center gap-1 hover:bg-indigo-700 transition-colors justify-center"
-                        >
-                            <Sparkles size={12} />
-                            AI
+                            <Link size={16} className="group-hover:rotate-12 transition-transform" />
+                            <span>URL'den Ekle</span>
                         </button>
                         
-                        {/* İkinci Sıra - Sync ve Temizlik İşlemleri */}
-                        <div className="bg-green-100 px-2 py-1 rounded text-xs text-green-700 flex items-center gap-1 justify-center">
-                            <CloudUpload size={12} />
-                            Otomatik
-                        </div>
+                        <button
+                            onClick={handleCreateNew}
+                            title="Sıfırdan yeni kampanya oluştur"
+                            className="group relative bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-4 py-3 rounded-xl text-sm font-medium flex items-center gap-2 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                        >
+                            <Plus size={16} className="group-hover:rotate-90 transition-transform" />
+                            <span>Yeni Oluştur</span>
+                        </button>
+                        
+                        <button
+                            onClick={handleFindDuplicates}
+                            title="Tekrarlayan kampanyaları bul ve temizle"
+                            className="group relative bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white px-4 py-3 rounded-xl text-sm font-medium flex items-center gap-2 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                        >
+                            <Sparkles size={16} className="group-hover:scale-110 transition-transform" />
+                            <span>Duplikasyon Bul</span>
+                        </button>
+                        
+                        {/* İkinci Sıra - Araçlar */}
+                        <button
+                            onClick={handleBatchAI}
+                            title="Mevcut kampanyaları AI ile zenginleştir ve iyileştir"
+                            className="group relative bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white px-4 py-3 rounded-xl text-sm font-medium flex items-center gap-2 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                        >
+                            <Sparkles size={16} className="group-hover:animate-pulse" />
+                            <span>AI İyileştir</span>
+                        </button>
+                        
                         <button
                             onClick={handleClearSupabaseOnly}
-                            className="bg-orange-600 text-white px-2 py-1 rounded text-xs flex items-center gap-1 hover:bg-orange-700 transition-colors justify-center"
+                            title="Sadece Supabase'deki kampanyaları temizle (yerel veriler korunur)"
+                            className="group relative bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-4 py-3 rounded-xl text-sm font-medium flex items-center gap-2 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                         >
-                            <CloudUpload size={12} />
-                            SB Sil
+                            <CloudUpload size={16} className="group-hover:scale-110 transition-transform" />
+                            <span>Supabase Temizle</span>
                         </button>
-                        <div className="bg-gray-100 px-2 py-1 rounded text-xs text-gray-500 flex items-center justify-center">
-                            Otomatik Sync
+                        
+                        {/* Sync Durumu Göstergesi */}
+                        <div 
+                            title="Otomatik senkronizasyon durumu - Kampanyalar otomatik olarak Supabase'e kaydediliyor"
+                            className="relative bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-200 px-4 py-3 rounded-xl text-sm font-medium flex items-center gap-2 justify-center"
+                        >
+                            <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse shadow-lg"></div>
+                            <span className="text-green-700 font-semibold">Otomatik Sync Aktif</span>
                         </div>
                     </div>
                 </div>
