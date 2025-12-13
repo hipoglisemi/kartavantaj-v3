@@ -255,31 +255,55 @@ export default function AdminCampaigns() {
             const supabaseUrl = localStorage.getItem('sb_url');
             const supabaseKey = localStorage.getItem('sb_key');
             
+            console.log(`🔍 Supabase Config Check:`);
+            console.log(`URL: ${supabaseUrl ? 'EXISTS' : 'MISSING'}`);
+            console.log(`Key: ${supabaseKey ? 'EXISTS' : 'MISSING'}`);
+            console.log(`Campaign: ${campaign ? 'EXISTS' : 'MISSING'}`);
+            
             if (supabaseUrl && supabaseKey && campaign) {
                 try {
                     const { createClient } = await import('@supabase/supabase-js');
                     const supabase = createClient(supabaseUrl, supabaseKey);
                     
-                    console.log(`🗑️ Attempting to delete from Supabase...`);
-                    const { error } = await supabase
-                        .from('campaigns')
-                        .delete()
-                        .eq('id', campaignId);
+                    console.log(`🗑️ Attempting to delete campaign ID ${campaignId} from Supabase...`);
                     
-                    if (error) {
-                        console.error('🚨 Supabase delete error:', error);
-                        logActivity.campaign('Campaign Delete Error', `Failed to delete campaign ${campaignId} from Supabase: ${error.message}`, 'error');
+                    // First check if campaign exists in Supabase
+                    const { data: existingCampaign, error: checkError } = await supabase
+                        .from('campaigns')
+                        .select('id, title')
+                        .eq('id', campaignId)
+                        .single();
+                    
+                    if (checkError) {
+                        console.log(`⚠️ Campaign ${campaignId} not found in Supabase:`, checkError.message);
+                        logActivity.campaign('Campaign Not Found', `Campaign ${campaignId} not found in Supabase for deletion`, 'warning');
                     } else {
-                        console.log(`✅ Campaign ${campaignId} deleted from Supabase successfully`);
-                        logActivity.campaign('Campaign Deleted', `Campaign "${campaign?.title || campaignId}" deleted from both localStorage and Supabase`, 'warning');
+                        console.log(`✅ Found campaign in Supabase:`, existingCampaign);
+                        
+                        // Now delete it
+                        const { error: deleteError, count } = await supabase
+                            .from('campaigns')
+                            .delete({ count: 'exact' })
+                            .eq('id', campaignId);
+                        
+                        if (deleteError) {
+                            console.error('🚨 Supabase delete error:', deleteError);
+                            logActivity.campaign('Campaign Delete Error', `Failed to delete campaign ${campaignId} from Supabase: ${deleteError.message}`, 'error');
+                        } else {
+                            console.log(`✅ Campaign ${campaignId} deleted from Supabase successfully. Rows affected: ${count}`);
+                            logActivity.campaign('Campaign Deleted', `Campaign "${campaign?.title || campaignId}" deleted from both localStorage and Supabase`, 'warning');
+                        }
                     }
                 } catch (error) {
                     console.error('🚨 Supabase delete failed:', error);
-                    logActivity.campaign('Campaign Delete Error', `Failed to delete campaign ${campaignId} from Supabase`, 'error');
+                    logActivity.campaign('Campaign Delete Error', `Failed to delete campaign ${campaignId} from Supabase: ${error}`, 'error');
                 }
             } else {
-                console.log(`⚠️ No Supabase config, localStorage only delete`);
-                logActivity.campaign('Campaign Deleted', `Campaign "${campaign?.title || campaignId}" deleted from ${cardId} (localStorage only)`, 'warning');
+                console.log(`⚠️ Missing requirements for Supabase delete:`);
+                console.log(`- URL: ${supabaseUrl ? '✅' : '❌'}`);
+                console.log(`- Key: ${supabaseKey ? '✅' : '❌'}`);
+                console.log(`- Campaign: ${campaign ? '✅' : '❌'}`);
+                logActivity.campaign('Campaign Deleted', `Campaign "${campaign?.title || campaignId}" deleted from ${cardId} (localStorage only - Supabase config missing)`, 'warning');
             }
             
             console.log(`🗑️ Delete operation completed for campaign ${campaignId}`);
@@ -713,41 +737,67 @@ export default function AdminCampaigns() {
                 const { createClient } = await import('@supabase/supabase-js');
                 const supabase = createClient(supabaseUrl, supabaseKey);
                 
-                // Get count first
-                console.log('🔍 Supabase kampanya sayısı kontrol ediliyor...');
-                const { count, error: countError } = await supabase
+                console.log('🔍 Testing Supabase connection...');
+                console.log(`URL: ${supabaseUrl}`);
+                console.log(`Key: ${supabaseKey.substring(0, 20)}...`);
+                
+                // Test connection first
+                const { error: testError } = await supabase
                     .from('campaigns')
-                    .select('*', { count: 'exact', head: true });
+                    .select('count', { count: 'exact', head: true });
+                
+                if (testError) {
+                    console.error('🚨 Supabase connection test failed:', testError);
+                    throw new Error(`Connection test failed: ${testError.message}`);
+                }
+                
+                console.log('✅ Supabase connection successful');
+                
+                // Get count and sample data
+                const { data: sampleData, count, error: countError } = await supabase
+                    .from('campaigns')
+                    .select('id, title', { count: 'exact' })
+                    .limit(5);
                 
                 if (countError) {
                     throw new Error(`Count error: ${countError.message}`);
                 }
                 
                 console.log(`📊 Supabase'de ${count || 0} kampanya bulundu`);
+                console.log('📋 Sample campaigns:', sampleData);
                 
                 if (count && count > 0) {
-                    // Delete all campaigns
+                    // Delete all campaigns with detailed logging
                     console.log('🗑️ Tüm kampanyalar siliniyor...');
-                    const { error: deleteError } = await supabase
+                    const { error: deleteError, count: deletedCount } = await supabase
                         .from('campaigns')
-                        .delete()
+                        .delete({ count: 'exact' })
                         .neq('id', 0); // Delete all records
                     
                     if (deleteError) {
+                        console.error('🚨 Delete operation failed:', deleteError);
                         throw new Error(`Delete error: ${deleteError.message}`);
                     }
                     
-                    console.log(`✅ ${count} kampanya Supabase'den silindi`);
-                    logActivity.campaign('Supabase Cleared', `${count} campaigns deleted from Supabase only`, 'warning');
+                    console.log(`✅ Delete operation completed. Rows affected: ${deletedCount}`);
                     
-                    await alert(`✅ Supabase Temizlendi!\n\n${count} kampanya Supabase'den silindi.\n\nYerel veriler korundu.`, 'Temizlik Tamamlandı');
+                    // Verify deletion
+                    const { count: remainingCount } = await supabase
+                        .from('campaigns')
+                        .select('*', { count: 'exact', head: true });
+                    
+                    console.log(`🔍 Verification: ${remainingCount || 0} campaigns remaining`);
+                    
+                    logActivity.campaign('Supabase Cleared', `${deletedCount || count} campaigns deleted from Supabase only`, 'warning');
+                    
+                    await alert(`✅ Supabase Temizlendi!\n\n${deletedCount || count} kampanya silindi.\n${remainingCount || 0} kampanya kaldı.\n\nYerel veriler korundu.`, 'Temizlik Tamamlandı');
                 } else {
                     await alert('ℹ️ Supabase zaten boş!\n\nSilinecek kampanya bulunamadı.', 'Bilgi');
                 }
                 
             } catch (error) {
                 console.error('🚨 Supabase temizleme hatası:', error);
-                await alert(`❌ Hata Oluştu:\n\n${error}`, 'Supabase Hatası');
+                await alert(`❌ Hata Oluştu:\n\n${error}\n\nKonsolu kontrol edin.`, 'Supabase Hatası');
             }
         }
     };
