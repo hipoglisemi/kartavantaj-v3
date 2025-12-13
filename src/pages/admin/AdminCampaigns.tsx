@@ -653,28 +653,63 @@ export default function AdminCampaigns() {
     const handleClearLegacyData = async () => {
         if (await confirm({
             title: 'Eski Verileri Temizle',
-            message: 'Bu işlem eski sistemden kalan kampanya verilerini temizleyecek. Sadece mevcut admin paneli verileri kalacak. Bu işlem geri alınamaz.\n\nEmin misiniz?',
+            message: 'Bu işlem eski sistemden kalan kampanya verilerini temizleyecek (hem localStorage hem Supabase). Sadece mevcut admin paneli verileri kalacak. Bu işlem geri alınamaz.\n\nEmin misiniz?',
             confirmText: 'Evet, Temizle',
             type: 'danger'
         })) {
-            // Clear legacy campaigns_data
+            let clearedCount = 0;
+            
+            // 1. Clear localStorage legacy data
             localStorage.removeItem('campaigns_data');
             
-            // Clear any other legacy keys
             const keysToCheck = ['campaigns', 'legacy_campaigns', 'old_campaigns'];
             keysToCheck.forEach(key => {
                 if (localStorage.getItem(key)) {
                     localStorage.removeItem(key);
                     console.log(`🗑️ Cleared legacy key: ${key}`);
+                    clearedCount++;
                 }
             });
+            
+            // 2. Clear Supabase campaigns table
+            const supabaseUrl = localStorage.getItem('sb_url');
+            const supabaseKey = localStorage.getItem('sb_key');
+            
+            if (supabaseUrl && supabaseKey) {
+                try {
+                    const { createClient } = await import('@supabase/supabase-js');
+                    const supabase = createClient(supabaseUrl, supabaseKey);
+                    
+                    // Get count first
+                    const { count } = await supabase
+                        .from('campaigns')
+                        .select('*', { count: 'exact', head: true });
+                    
+                    if (count && count > 0) {
+                        // Delete all campaigns
+                        const { error } = await supabase
+                            .from('campaigns')
+                            .delete()
+                            .neq('id', 0); // Delete all (neq 0 means all records)
+                        
+                        if (!error) {
+                            clearedCount += count;
+                            console.log(`🗑️ Cleared ${count} campaigns from Supabase`);
+                        } else {
+                            console.error('Supabase clear error:', error);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Failed to clear Supabase data:', error);
+                }
+            }
             
             // Trigger refresh
             window.dispatchEvent(new Event('campaigns-updated'));
             
-            logActivity.campaign('Legacy Data Cleared', 'Old campaign data cleared from localStorage', 'warning');
+            logActivity.campaign('Legacy Data Cleared', `Cleared ${clearedCount} legacy campaign records from localStorage and Supabase`, 'warning');
             
-            await alert('✅ Eski veriler temizlendi!\n\nDashboard ve anasayfa artık sadece mevcut admin paneli verilerini gösterecek.', 'Temizlik Tamamlandı');
+            await alert(`✅ Eski veriler temizlendi!\n\n${clearedCount} adet eski kampanya verisi silindi.\nDashboard ve anasayfa artık sadece mevcut admin paneli verilerini gösterecek.`, 'Temizlik Tamamlandı');
         }
     };
 
