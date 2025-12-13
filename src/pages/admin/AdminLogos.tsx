@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Image, Plus, Trash2, Upload, Search } from 'lucide-react';
+import { logActivity } from '../../services/activityService';
 
 interface CardConfig {
     id: string;
@@ -14,17 +15,111 @@ interface BankConfig {
     cards: CardConfig[];
 }
 
-// Reuse helper for consistency
-const getBanksConfig = (): BankConfig[] => {
+// Reuse helper for consistency - now with Supabase support
+const getBanksConfig = async (): Promise<BankConfig[]> => {
+    // Önce Supabase'den yükle
+    const remoteBanks = await loadBanksFromSupabase();
+    
+    if (remoteBanks && remoteBanks.length > 0) {
+        console.log('🔄 Loading banks from Supabase');
+        // localStorage'ı da güncelle
+        localStorage.setItem('scraper_config', JSON.stringify(remoteBanks));
+        return remoteBanks;
+    }
+    
+    // Supabase'de yoksa localStorage'dan yükle
     const saved = localStorage.getItem('scraper_config');
-    return saved ? JSON.parse(saved) : [];
+    const localBanks = saved ? JSON.parse(saved) : [];
+    
+    // İlk kez Supabase'e sync et
+    if (localBanks.length > 0) {
+        await syncBanksToSupabase(localBanks);
+    }
+    
+    return localBanks;
 };
 
-const saveBanksConfig = (banks: BankConfig[]) => {
+const saveBanksConfig = async (banks: BankConfig[]) => {
     localStorage.setItem('scraper_config', JSON.stringify(banks));
+    
+    // Supabase'e senkronize et
+    await syncBanksToSupabase(banks);
+    
     // Dispatch event for other components to update
     window.dispatchEvent(new Event('storage'));
     window.dispatchEvent(new Event('campaigns-updated'));
+};
+
+// Supabase senkronizasyon fonksiyonu
+const syncBanksToSupabase = async (banks: BankConfig[]) => {
+    try {
+        const supabaseUrl = localStorage.getItem('sb_url');
+        const supabaseKey = localStorage.getItem('sb_key');
+        
+        if (!supabaseUrl || !supabaseKey) {
+            console.log('Supabase credentials not found, skipping banks sync');
+            return;
+        }
+
+        const { createClient } = await import('@supabase/supabase-js');
+        const supabase = createClient(supabaseUrl, supabaseKey);
+        
+        // Her bankayı ayrı ayrı kaydet
+        for (const bank of banks) {
+            const { error } = await supabase
+                .from('banks')
+                .upsert({
+                    id: bank.id,
+                    name: bank.name,
+                    logo: bank.logo,
+                    config: bank.cards || []
+                });
+
+            if (error) {
+                console.error(`Bank ${bank.id} sync error:`, error);
+            }
+        }
+        
+        console.log('✅ Banks and logos synced to Supabase');
+    } catch (error) {
+        console.error('Banks sync failed:', error);
+    }
+};
+
+// Supabase'den banka verilerini yükle
+const loadBanksFromSupabase = async (): Promise<BankConfig[] | null> => {
+    try {
+        const supabaseUrl = localStorage.getItem('sb_url');
+        const supabaseKey = localStorage.getItem('sb_key');
+        
+        if (!supabaseUrl || !supabaseKey) return null;
+
+        const { createClient } = await import('@supabase/supabase-js');
+        const supabase = createClient(supabaseUrl, supabaseKey);
+        
+        const { data, error } = await supabase
+            .from('banks')
+            .select('*')
+            .order('name');
+
+        if (error) {
+            console.log('No remote banks found:', error.message);
+            return null;
+        }
+
+        // Supabase formatından local formata çevir
+        const banksConfig: BankConfig[] = data.map(bank => ({
+            id: bank.id,
+            name: bank.name,
+            logo: bank.logo || '',
+            cards: bank.config || []
+        }));
+
+        return banksConfig;
+    } catch (error) {
+        console.error('Failed to load banks from Supabase:', error);
+        return null;
+    }
 };
 
 export default function AdminLogos() {
@@ -34,7 +129,50 @@ export default function AdminLogos() {
     const [newBankName, setNewBankName] = useState('');
 
     useEffect(() => {
-        setBanks(getBanksConfig());
+        const loadBanks = async () => {
+            const banksConfig = await getBanksConfig();
+            setBanks(banksConfig);
+        };
+        
+        loadBanks();
+
+        // Real-time listening for bank changes
+        const setupRealtimeListener = async () => {
+            const supabaseUrl = localStorage.getItem('sb_url');
+            const supabaseKey = localStorage.getItem('sb_key');
+            
+            if (!supabaseUrl || !supabaseKey) return;
+
+            try {
+                const { createClient } = await import('@supabase/supabase-js');
+                const supabase = createClient(supabaseUrl, supabaseKey);
+                
+                const subscription = supabase
+                    .channel('banks_changes')
+                    .on('postgres_changes', 
+                        { event: '*', schema: 'public', table: 'banks' },
+                        async (payload) => {
+                            console.log('🔔 Banks change detected:', payload);
+                            
+                            // Reload banks from Supabase
+                            const updatedBanks = await loadBanksFromSupabase();
+                            if (updatedBanks) {
+                                setBanks(updatedBanks);
+                                localStorage.setItem('scraper_config', JSON.stringify(updatedBanks));
+                                window.dispatchEvent(new Event('storage'));
+                                window.dispatchEvent(new Event('campaigns-updated'));
+                            }
+                        }
+                    )
+                    .subscribe();
+                    
+                return () => subscription.unsubscribe();
+            } catch (error) {
+                console.error('Failed to setup realtime listener:', error);
+            }
+        };
+
+        setupRealtimeListener();
     }, []);
 
     const handleUpdateLogo = (bankId: string, cardId: string | null, newLogo: string) => {
@@ -57,6 +195,10 @@ export default function AdminLogos() {
         });
         setBanks(updatedBanks);
         saveBanksConfig(updatedBanks);
+        
+        // Activity log
+        const targetName = cardId ? `${bankId} - ${cardId}` : bankId;
+        logActivity.settings('Logo Updated', `Logo updated for ${targetName}`, 'success');
     };
 
     const handleAddBank = () => {
@@ -71,6 +213,10 @@ export default function AdminLogos() {
         const updated = [...banks, newBank];
         setBanks(updated);
         saveBanksConfig(updated);
+        
+        // Activity log
+        logActivity.settings('Bank Added', `New bank added: ${newBankName}`, 'success');
+        
         setNewBankName('');
         setIsAddingBank(false);
     };
@@ -83,9 +229,14 @@ export default function AdminLogos() {
 
     const confirmDelete = () => {
         if (!deleteId) return;
+        const bankToDelete = banks.find(b => b.id === deleteId);
         const updated = banks.filter(b => b.id !== deleteId);
         setBanks(updated);
         saveBanksConfig(updated);
+        
+        // Activity log
+        logActivity.settings('Bank Deleted', `Bank deleted: ${bankToDelete?.name || deleteId}`, 'warning');
+        
         setDeleteId(null);
     };
 
