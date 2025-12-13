@@ -45,38 +45,9 @@ class ActivityService {
     }
 
     private async syncToSupabase() {
-        try {
-            const supabaseUrl = localStorage.getItem('sb_url');
-            const supabaseKey = localStorage.getItem('sb_key');
-            
-            if (!supabaseUrl || !supabaseKey) {
-                console.log('Supabase credentials not found, skipping activity sync');
-                return;
-            }
-
-            const { createClient } = await import('@supabase/supabase-js');
-            const supabase = createClient(supabaseUrl, supabaseKey);
-            
-            // Son 100 log'u Supabase'e gönder
-            const recentLogs = this.logs.slice(0, 100);
-            
-            const { error } = await supabase
-                .from('admin_activity_logs')
-                .upsert({
-                    id: 'main',
-                    logs: recentLogs,
-                    updated_at: new Date().toISOString(),
-                    total_count: this.logs.length
-                });
-
-            if (error) {
-                console.error('Activity logs sync error:', error);
-            } else {
-                console.log('✅ Activity logs synced to Supabase');
-            }
-        } catch (error) {
-            console.error('Activity logs sync failed:', error);
-        }
+        // DISABLED: admin_activity_logs table doesn't exist in Supabase
+        // Prevents 404 errors in console
+        return;
     }
 
     private startPeriodicSync() {

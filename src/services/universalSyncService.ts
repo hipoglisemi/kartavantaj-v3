@@ -37,87 +37,15 @@ class UniversalSyncService {
     }
 
     private setupDefaultConfigs() {
-        // Mevcut sistemler için default konfigürasyonlar
-        this.registerSyncConfig('admin_settings', {
-            tableName: 'admin_universal_data',
-            primaryKey: 'admin_settings',
-            autoCreateTable: true,
-            realTimeSync: true,
-            syncInterval: 5000 // 5 saniye
-        });
-
-        this.registerSyncConfig('admin_integrations', {
-            tableName: 'admin_universal_data',
-            primaryKey: 'admin_integrations',
-            autoCreateTable: true,
-            realTimeSync: true,
-            syncInterval: 3000
-        });
-
-        this.registerSyncConfig('admin_security', {
-            tableName: 'admin_universal_data',
-            primaryKey: 'admin_security',
-            autoCreateTable: true,
-            realTimeSync: true,
-            syncInterval: 10000
-        });
-
-        this.registerSyncConfig('admin_logos', {
-            tableName: 'admin_universal_data',
-            primaryKey: 'admin_logos',
-            autoCreateTable: true,
-            realTimeSync: true,
-            syncInterval: 5000
-        });
-
-        // DISABLED: admin_campaigns sync to prevent deleted campaigns from reappearing
-        // this.registerSyncConfig('admin_campaigns', {
-        //     tableName: 'admin_universal_data',
-        //     primaryKey: 'admin_campaigns',
-        //     autoCreateTable: true,
-        //     realTimeSync: true,
-        //     syncInterval: 3000
-        // });
-
-        this.registerSyncConfig('admin_members', {
-            tableName: 'admin_universal_data',
-            primaryKey: 'admin_members',
-            autoCreateTable: true,
-            realTimeSync: true,
-            syncInterval: 5000
-        });
-
-        this.registerSyncConfig('admin_analytics', {
-            tableName: 'admin_universal_data',
-            primaryKey: 'admin_analytics',
-            autoCreateTable: true,
-            realTimeSync: true,
-            syncInterval: 30000 // 30 saniye
-        });
-
-        this.registerSyncConfig('admin_seo', {
-            tableName: 'admin_universal_data',
-            primaryKey: 'admin_seo',
-            autoCreateTable: true,
-            realTimeSync: true,
-            syncInterval: 10000
-        });
-
-        this.registerSyncConfig('admin_design', {
-            tableName: 'admin_universal_data',
-            primaryKey: 'admin_design',
-            autoCreateTable: true,
-            realTimeSync: true,
-            syncInterval: 5000
-        });
-
-        this.registerSyncConfig('admin_newsletter', {
-            tableName: 'admin_universal_data',
-            primaryKey: 'admin_newsletter',
-            autoCreateTable: true,
-            realTimeSync: true,
-            syncInterval: 10000
-        });
+        // DISABLED ALL: Universal Sync causing 404 errors due to missing admin tables
+        // Only campaigns table exists in Supabase, admin tables are not created
+        console.log('🚫 Universal Sync disabled - admin tables not available in Supabase');
+        
+        // All sync configs disabled to prevent 404 errors:
+        // - admin_universal_data table doesn't exist
+        // - admin_activity_logs table doesn't exist  
+        // - exec_sql function doesn't exist
+        // Only campaigns table is available
     }
 
     // Yeni sistem kaydetme
