@@ -790,12 +790,30 @@ export default function AdminCampaigns() {
                 
                 console.log('📋 Sample campaigns to be deleted:', sampleData);
                 
-                // Delete ALL campaigns (use gt -1 to delete all records)
-                console.log('🗑️ Deleting ALL campaigns from Supabase...');
+                // Get all campaign IDs first, then delete them
+                console.log('🗑️ Getting all campaign IDs...');
+                const { data: allCampaigns, error: fetchError } = await supabase
+                    .from('campaigns')
+                    .select('id');
+                
+                if (fetchError) {
+                    throw new Error(`Fetch error: ${fetchError.message}`);
+                }
+                
+                if (!allCampaigns || allCampaigns.length === 0) {
+                    console.log('ℹ️ No campaigns found to delete');
+                    await alert('ℹ️ Supabase zaten boş!\n\nSilinecek kampanya bulunamadı.', 'Bilgi');
+                    return;
+                }
+                
+                const allIds = allCampaigns.map(c => c.id);
+                console.log(`🗑️ Deleting ${allIds.length} campaigns by ID...`, allIds);
+                
+                // Delete using IN clause with all IDs
                 const { error: deleteError, count: deletedCount } = await supabase
                     .from('campaigns')
                     .delete({ count: 'exact' })
-                    .gt('id', -1); // This deletes ALL records (id > -1 means all)
+                    .in('id', allIds);
                 
                 if (deleteError) {
                     console.error('🚨 Delete operation failed:', deleteError);
