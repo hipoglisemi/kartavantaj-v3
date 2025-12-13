@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Save, Layout, LayoutTemplate, Upload, CheckCircle, Plus, Trash2, Database } from 'lucide-react';
 import { settingsService, type SiteSettings } from '../../services/settingsService';
+import VersionManager from '../../components/VersionManager';
 
 export default function AdminDesign() {
     const [settings, setSettings] = useState<SiteSettings | null>(null);
@@ -560,6 +561,9 @@ export default function AdminDesign() {
                         </div>
                     </div>
                 </div>
+
+                {/* Versiyon Yönetimi */}
+                <VersionManager />
 
                 {/* Kaydet Butonu */}
                 <div className="sticky bottom-6 flex flex-col items-end gap-2">

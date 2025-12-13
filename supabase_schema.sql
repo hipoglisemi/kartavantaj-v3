@@ -178,3 +178,25 @@ begin
   execute sql;
 end;
 $$;
+-- 8. APP VERSIONS TABLE
+-- Stores application version history and current version
+create table public.app_versions (
+  id integer primary key default 1,
+  current_version text not null default '3.0.0',
+  version_history jsonb default '[]'::jsonb,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  constraint single_row check (id = 1)
+);
+
+-- Enable RLS
+alter table public.app_versions enable row level security;
+
+-- Version policies
+create policy "Enable read access for all users" on public.app_versions for select using (true);
+create policy "Enable insert for all users" on public.app_versions for insert with check (true);
+create policy "Enable update for all users" on public.app_versions for update using (true);
+
+-- Insert default version record
+insert into public.app_versions (id, current_version, version_history) 
+values (1, '3.0.0', '[{"version":"3.0.0","date":"2025-01-01","changes":["Gerçek Zamanlı Senkronizasyon sistemi","Akıllı Kampanya Doğrulama sistemi","Dropdown menü yapısı","Modern admin paneli tasarımı","Email tabanlı admin sistemi","2FA güvenlik sistemi"],"type":"major"}]'::jsonb)
+on conflict (id) do nothing;

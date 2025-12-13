@@ -4,6 +4,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Database, LogOut, UploadCloud, ShieldAlert, Home, Search, Bot, Users, Image, Activity, Mail, CloudUpload, Loader2, Bell, ChevronDown, ChevronRight, Target, Palette, Cog, Plug } from 'lucide-react';
 import { campaignService } from '../../services/campaignService';
 import { settingsService } from '../../services/settingsService';
+import { useAutoVersion } from '../../hooks/useAutoVersion';
 
 function PublishButton() {
     const [isDirty, setIsDirty] = useState(false);
@@ -56,6 +57,36 @@ function PublishButton() {
 export default function AdminLayout() {
     const navigate = useNavigate();
     const location = useLocation();
+    
+    // Otomatik versiyon güncelleme sistemi
+    useAutoVersion();
+    
+    // Versiyon numarası state'i
+    const [currentVersion, setCurrentVersion] = useState('3.0.0');
+    
+    // Versiyon güncellemelerini dinle
+    useEffect(() => {
+        const updateVersion = () => {
+            try {
+                const versionHistory = JSON.parse(localStorage.getItem('app_version_history') || '{}');
+                setCurrentVersion(versionHistory.current || '3.0.0');
+            } catch {
+                setCurrentVersion('3.0.0');
+            }
+        };
+        
+        // İlk yükleme
+        updateVersion();
+        
+        // Versiyon güncellemelerini dinle
+        window.addEventListener('version-updated', updateVersion);
+        window.addEventListener('storage', updateVersion);
+        
+        return () => {
+            window.removeEventListener('version-updated', updateVersion);
+            window.removeEventListener('storage', updateVersion);
+        };
+    }, []);
 
     // Body'ye arka plan rengi ekle
     useEffect(() => {
@@ -354,9 +385,9 @@ export default function AdminLayout() {
 
                     {/* Footer */}
                     <footer className="mt-8 pt-6 border-t border-gray-200 text-center text-[10px] text-gray-400 flex-shrink-0 pb-6">
-                        <p>KartAvantaj Admin Paneli v3.0 • 2025</p>
+                        <p>KartAvantaj Admin Paneli v{currentVersion} • 2025</p>
                         <p className="text-[9px] text-gray-300 mt-1">
-                            ✨ Yeni: Gerçek Zamanlı Senkronizasyon • Akıllı Kampanya Doğrulama • Dropdown Menüler
+                            ✨ Yeni: Modern Buton Tasarımı • Otomatik Versiyon Yönetimi • 3D Gradyan Efektleri
                         </p>
                     </footer>
                 </main>
