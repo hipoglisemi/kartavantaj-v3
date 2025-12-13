@@ -927,7 +927,7 @@ export default function AdminCampaigns() {
                     <p className="text-blue-100 opacity-90 max-w-xl">
                         Mevcut kampanyaları inceleyin. Yayına almak için <strong>"Onayla"</strong> butonunu kullanın.
                     </p>
-                    <div className="grid grid-cols-3 gap-4 mt-6">
+                    <div className="grid grid-cols-2 gap-4 mt-6">
                         {/* İlk Sıra - Ana İşlemler */}
                         <div className="group relative">
                             <button
@@ -948,27 +948,7 @@ export default function AdminCampaigns() {
                             </div>
                         </div>
 
-                        <div className="group relative">
-                            <button
-                                onClick={() => {
-                                    campaignService.testIdGeneration();
-                                    alert('🧪 ID sistemi test edildi! Console\'u kontrol edin.');
-                                }}
-                                className="w-full group relative bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 hover:from-emerald-600 hover:via-emerald-700 hover:to-emerald-800 text-white px-4 py-4 rounded-2xl text-sm font-bold flex items-center gap-3 transition-all duration-500 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-[1.02] border border-emerald-400/20"
-                            >
-                                <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
-                                    <Settings size={18} className="group-hover:rotate-180 transition-transform duration-500" />
-                                </div>
-                                <div className="text-left">
-                                    <div className="font-bold">ID Sistemi Test</div>
-                                    <div className="text-xs text-emerald-100 opacity-90">Benzersiz ID kontrolü</div>
-                                </div>
-                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
-                            </button>
-                            <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100 bg-emerald-500 text-white text-xs px-2 py-1 rounded-lg shadow-lg z-10 whitespace-nowrap">
-                                Kampanya ID sistemini test eder
-                            </div>
-                        </div>
+
                         
                         <div className="group relative">
                             <button

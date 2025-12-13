@@ -399,48 +399,6 @@ export const campaignService = {
             console.error(e);
             return false;
         }
-    },
-
-    // Test ID generation system
-    testIdGeneration: (): void => {
-        console.log('🧪 Kampanya ID Sistemi Test Ediliyor...');
-        
-        // Test kampanyası oluştur
-        const testCampaign = campaignService.addCampaign({
-            title: 'Test Kampanyası - Benzersiz ID',
-            description: 'Bu kampanya ID sistemini test etmek için oluşturuldu',
-            image: 'https://images.unsplash.com/photo-1556742049-0cfed4f7a07d?auto=format&fit=crop&q=80&w=800',
-            bank: 'Test Bankası',
-            cardName: 'Test Kartı',
-            category: 'Test',
-            validUntil: '2025-12-31',
-            badgeText: 'Test',
-            badgeColor: 'green'
-        });
-
-        console.log(`✅ Test kampanyası oluşturuldu:`, testCampaign);
-        console.log(`🆔 Atanan ID: ${testCampaign.id}`);
-        
-        // Bir tane daha oluştur
-        const testCampaign2 = campaignService.addCampaign({
-            title: 'İkinci Test Kampanyası',
-            description: 'ID artışını test etmek için',
-            image: 'https://images.unsplash.com/photo-1556742049-0cfed4f7a07d?auto=format&fit=crop&q=80&w=800',
-            bank: 'Test Bankası 2',
-            cardName: 'Test Kartı 2',
-            category: 'Test',
-            validUntil: '2025-12-31',
-            badgeText: 'Test',
-            badgeColor: 'blue'
-        });
-
-        console.log(`✅ İkinci test kampanyası oluşturuldu:`, testCampaign2);
-        console.log(`🆔 Atanan ID: ${testCampaign2.id}`);
-        
-        // Tüm kampanyaları listele
-        const allCampaigns = campaignService.getAllCampaigns();
-        console.log(`📊 Toplam kampanya sayısı: ${allCampaigns.length}`);
-        console.log(`🔢 Mevcut ID'ler:`, allCampaigns.map(c => c.id).sort((a, b) => a - b));
     }
 };
 
