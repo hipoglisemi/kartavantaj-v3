@@ -5,7 +5,7 @@ import { campaignParser } from '../../services/campaignParser';
 import { campaignService } from '../../services/campaignService';
 import CampaignValidationPanel from '../../components/CampaignValidationPanel';
 import { logActivity } from '../../services/activityService';
-import { syncToSupabase } from '../../services/universalSyncService';
+// import { syncToSupabase } from '../../services/universalSyncService'; // DISABLED: Admin tables don't exist in Supabase
 
 interface CardConfig {
     id: string;
@@ -243,7 +243,45 @@ export default function AdminCampaigns() {
             console.log(`🗑️ DELETING Campaign ID: ${campaignId} from card: ${cardId}`);
             console.log(`🗑️ Campaign title: ${campaign?.title}`);
             
-            // 1. Delete from localStorage
+            // 1. Delete from Supabase FIRST (to prevent re-sync issues)
+            const supabaseUrl = localStorage.getItem('sb_url');
+            const supabaseKey = localStorage.getItem('sb_key');
+            
+            let supabaseDeleted = false;
+            
+            if (supabaseUrl && supabaseKey) {
+                try {
+                    const { createClient } = await import('@supabase/supabase-js');
+                    const supabase = createClient(supabaseUrl, supabaseKey);
+                    
+                    console.log(`🗑️ Step 1: Deleting from Supabase first...`);
+                    
+                    // Delete directly without checking existence (more reliable)
+                    const { error: deleteError, count } = await supabase
+                        .from('campaigns')
+                        .delete({ count: 'exact' })
+                        .eq('id', campaignId);
+                    
+                    if (deleteError) {
+                        console.error('🚨 Supabase delete error:', deleteError);
+                        await alert(`❌ Supabase Silme Hatası:\n\n${deleteError.message}\n\nYerel silme işlemi iptal edildi.`, 'Hata');
+                        return; // Don't proceed with local delete if Supabase fails
+                    } else {
+                        console.log(`✅ Campaign ${campaignId} deleted from Supabase. Rows affected: ${count}`);
+                        supabaseDeleted = true;
+                        
+                        // Wait a moment for Supabase to process
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    }
+                } catch (error) {
+                    console.error('🚨 Supabase delete failed:', error);
+                    await alert(`❌ Supabase Bağlantı Hatası:\n\n${error}\n\nYerel silme işlemi iptal edildi.`, 'Hata');
+                    return; // Don't proceed with local delete if Supabase fails
+                }
+            }
+            
+            // 2. Delete from localStorage AFTER Supabase success
+            console.log(`🗑️ Step 2: Deleting from localStorage...`);
             const updatedList = (campaignsMap[cardId] || []).filter(c => c.id !== campaignId);
             const newMap = { ...campaignsMap, [cardId]: updatedList };
             console.log(`🗑️ Updated list length: ${updatedList.length} (was ${(campaignsMap[cardId] || []).length})`);
@@ -251,62 +289,21 @@ export default function AdminCampaigns() {
             updateCampaigns(newMap);
             console.log(`🗑️ localStorage updated`);
             
-            // 2. Delete from Supabase immediately
-            const supabaseUrl = localStorage.getItem('sb_url');
-            const supabaseKey = localStorage.getItem('sb_key');
+            // 3. Force refresh all components to prevent ghost data
+            setTimeout(() => {
+                window.dispatchEvent(new Event('campaigns-updated'));
+                window.dispatchEvent(new Event('storage'));
+                console.log(`🔄 Forced refresh events dispatched`);
+            }, 100);
             
-            console.log(`🔍 Supabase Config Check:`);
-            console.log(`URL: ${supabaseUrl ? 'EXISTS' : 'MISSING'}`);
-            console.log(`Key: ${supabaseKey ? 'EXISTS' : 'MISSING'}`);
-            console.log(`Campaign: ${campaign ? 'EXISTS' : 'MISSING'}`);
-            
-            if (supabaseUrl && supabaseKey && campaign) {
-                try {
-                    const { createClient } = await import('@supabase/supabase-js');
-                    const supabase = createClient(supabaseUrl, supabaseKey);
-                    
-                    console.log(`🗑️ Attempting to delete campaign ID ${campaignId} from Supabase...`);
-                    
-                    // First check if campaign exists in Supabase
-                    const { data: existingCampaign, error: checkError } = await supabase
-                        .from('campaigns')
-                        .select('id, title')
-                        .eq('id', campaignId)
-                        .single();
-                    
-                    if (checkError) {
-                        console.log(`⚠️ Campaign ${campaignId} not found in Supabase:`, checkError.message);
-                        logActivity.campaign('Campaign Not Found', `Campaign ${campaignId} not found in Supabase for deletion`, 'warning');
-                    } else {
-                        console.log(`✅ Found campaign in Supabase:`, existingCampaign);
-                        
-                        // Now delete it
-                        const { error: deleteError, count } = await supabase
-                            .from('campaigns')
-                            .delete({ count: 'exact' })
-                            .eq('id', campaignId);
-                        
-                        if (deleteError) {
-                            console.error('🚨 Supabase delete error:', deleteError);
-                            logActivity.campaign('Campaign Delete Error', `Failed to delete campaign ${campaignId} from Supabase: ${deleteError.message}`, 'error');
-                        } else {
-                            console.log(`✅ Campaign ${campaignId} deleted from Supabase successfully. Rows affected: ${count}`);
-                            logActivity.campaign('Campaign Deleted', `Campaign "${campaign?.title || campaignId}" deleted from both localStorage and Supabase`, 'warning');
-                        }
-                    }
-                } catch (error) {
-                    console.error('🚨 Supabase delete failed:', error);
-                    logActivity.campaign('Campaign Delete Error', `Failed to delete campaign ${campaignId} from Supabase: ${error}`, 'error');
-                }
+            // 4. Log the successful operation
+            if (supabaseDeleted) {
+                logActivity.campaign('Campaign Deleted', `Campaign "${campaign?.title || campaignId}" deleted from both Supabase and localStorage`, 'warning');
+                console.log(`✅ Complete deletion successful for campaign ${campaignId}`);
             } else {
-                console.log(`⚠️ Missing requirements for Supabase delete:`);
-                console.log(`- URL: ${supabaseUrl ? '✅' : '❌'}`);
-                console.log(`- Key: ${supabaseKey ? '✅' : '❌'}`);
-                console.log(`- Campaign: ${campaign ? '✅' : '❌'}`);
-                logActivity.campaign('Campaign Deleted', `Campaign "${campaign?.title || campaignId}" deleted from ${cardId} (localStorage only - Supabase config missing)`, 'warning');
+                logActivity.campaign('Campaign Deleted', `Campaign "${campaign?.title || campaignId}" deleted from localStorage only (Supabase config missing)`, 'warning');
+                console.log(`⚠️ Local-only deletion for campaign ${campaignId}`);
             }
-            
-            console.log(`🗑️ Delete operation completed for campaign ${campaignId}`);
         }
     };
 
@@ -333,37 +330,64 @@ export default function AdminCampaigns() {
             const campaignCount = campaigns.length;
             const campaignIds = campaigns.map(c => c.id);
             
-            // 1. Delete from localStorage
-            const newMap = { ...campaignsMap, [cardId]: [] };
-            updateCampaigns(newMap);
+            console.log(`🗑️ BULK DELETE: ${campaignCount} campaigns from ${cardId}`);
+            console.log(`🗑️ Campaign IDs:`, campaignIds);
             
-            // 2. Delete from Supabase
+            // 1. Delete from Supabase FIRST
             const supabaseUrl = localStorage.getItem('sb_url');
             const supabaseKey = localStorage.getItem('sb_key');
+            
+            let supabaseDeleted = false;
             
             if (supabaseUrl && supabaseKey && campaignIds.length > 0) {
                 try {
                     const { createClient } = await import('@supabase/supabase-js');
                     const supabase = createClient(supabaseUrl, supabaseKey);
                     
-                    const { error } = await supabase
+                    console.log(`🗑️ Step 1: Bulk deleting ${campaignIds.length} campaigns from Supabase...`);
+                    
+                    const { error, count } = await supabase
                         .from('campaigns')
-                        .delete()
+                        .delete({ count: 'exact' })
                         .in('id', campaignIds);
                     
                     if (error) {
-                        console.error('Supabase bulk delete error:', error);
-                        logActivity.campaign('Bulk Delete Error', `Failed to delete ${campaignCount} campaigns from Supabase: ${error.message}`, 'error');
+                        console.error('🚨 Supabase bulk delete error:', error);
+                        await alert(`❌ Supabase Toplu Silme Hatası:\n\n${error.message}\n\nYerel silme işlemi iptal edildi.`, 'Hata');
+                        return; // Don't proceed with local delete if Supabase fails
                     } else {
-                        console.log(`✅ ${campaignCount} campaigns deleted from Supabase`);
-                        logActivity.campaign('Bulk Delete', `All ${campaignCount} campaigns deleted from ${cardId} (localStorage + Supabase)`, 'warning');
+                        console.log(`✅ ${count || campaignIds.length} campaigns deleted from Supabase`);
+                        supabaseDeleted = true;
+                        
+                        // Wait for Supabase to process
+                        await new Promise(resolve => setTimeout(resolve, 1000));
                     }
                 } catch (error) {
-                    console.error('Supabase bulk delete failed:', error);
-                    logActivity.campaign('Bulk Delete Error', `Failed to delete campaigns from Supabase`, 'error');
+                    console.error('🚨 Supabase bulk delete failed:', error);
+                    await alert(`❌ Supabase Bağlantı Hatası:\n\n${error}\n\nYerel silme işlemi iptal edildi.`, 'Hata');
+                    return; // Don't proceed with local delete if Supabase fails
                 }
+            }
+            
+            // 2. Delete from localStorage AFTER Supabase success
+            console.log(`🗑️ Step 2: Clearing localStorage for ${cardId}...`);
+            const newMap = { ...campaignsMap, [cardId]: [] };
+            updateCampaigns(newMap);
+            
+            // 3. Force refresh all components
+            setTimeout(() => {
+                window.dispatchEvent(new Event('campaigns-updated'));
+                window.dispatchEvent(new Event('storage'));
+                console.log(`🔄 Forced refresh after bulk delete`);
+            }, 100);
+            
+            // 4. Log the operation
+            if (supabaseDeleted) {
+                logActivity.campaign('Bulk Delete', `All ${campaignCount} campaigns deleted from ${cardId} (Supabase + localStorage)`, 'warning');
+                console.log(`✅ Complete bulk deletion successful for ${cardId}`);
             } else {
                 logActivity.campaign('Bulk Delete', `All ${campaignCount} campaigns deleted from ${cardId} (localStorage only)`, 'warning');
+                console.log(`⚠️ Local-only bulk deletion for ${cardId}`);
             }
         }
     };
@@ -437,11 +461,11 @@ export default function AdminCampaigns() {
     const saveBanksConfig = async (banks: BankConfig[]) => {
         localStorage.setItem('scraper_config', JSON.stringify(banks));
         
-        // Universal sync
-        await syncToSupabase('admin_logos', banks, { 
-            action: 'banks_update',
-            count: banks.length
-        });
+        // Universal sync - DISABLED: Admin tables don't exist in Supabase
+        // await syncToSupabase('admin_logos', banks, { 
+        //     action: 'banks_update',
+        //     count: banks.length
+        // });
         
         // Dispatch event for other components to update
         window.dispatchEvent(new Event('storage'));
@@ -729,7 +753,7 @@ export default function AdminCampaigns() {
             const supabaseKey = localStorage.getItem('sb_key');
             
             if (!supabaseUrl || !supabaseKey) {
-                await alert('❌ Hata: Supabase bağlantı bilgileri bulunamadı!', 'Bağlantı Hatası');
+                await alert('❌ Hata: Supabase bağlantı bilgileri bulunamadı!\n\nEntegrasyonlar sayfasından Supabase ayarlarını kontrol edin.', 'Bağlantı Hatası');
                 return;
             }
             
@@ -737,67 +761,71 @@ export default function AdminCampaigns() {
                 const { createClient } = await import('@supabase/supabase-js');
                 const supabase = createClient(supabaseUrl, supabaseKey);
                 
-                console.log('🔍 Testing Supabase connection...');
+                console.log('🔍 SUPABASE CLEAR: Testing connection...');
                 console.log(`URL: ${supabaseUrl}`);
                 console.log(`Key: ${supabaseKey.substring(0, 20)}...`);
                 
-                // Test connection first
-                const { error: testError } = await supabase
+                // Get current count first
+                const { count: initialCount, error: countError } = await supabase
                     .from('campaigns')
-                    .select('count', { count: 'exact', head: true });
-                
-                if (testError) {
-                    console.error('🚨 Supabase connection test failed:', testError);
-                    throw new Error(`Connection test failed: ${testError.message}`);
-                }
-                
-                console.log('✅ Supabase connection successful');
-                
-                // Get count and sample data
-                const { data: sampleData, count, error: countError } = await supabase
-                    .from('campaigns')
-                    .select('id, title', { count: 'exact' })
-                    .limit(5);
+                    .select('*', { count: 'exact', head: true });
                 
                 if (countError) {
+                    console.error('🚨 Count error:', countError);
                     throw new Error(`Count error: ${countError.message}`);
                 }
                 
-                console.log(`📊 Supabase'de ${count || 0} kampanya bulundu`);
-                console.log('📋 Sample campaigns:', sampleData);
+                console.log(`📊 Supabase'de ${initialCount || 0} kampanya bulundu`);
                 
-                if (count && count > 0) {
-                    // Delete all campaigns with detailed logging
-                    console.log('🗑️ Tüm kampanyalar siliniyor...');
-                    const { error: deleteError, count: deletedCount } = await supabase
-                        .from('campaigns')
-                        .delete({ count: 'exact' })
-                        .neq('id', 0); // Delete all records
-                    
-                    if (deleteError) {
-                        console.error('🚨 Delete operation failed:', deleteError);
-                        throw new Error(`Delete error: ${deleteError.message}`);
-                    }
-                    
-                    console.log(`✅ Delete operation completed. Rows affected: ${deletedCount}`);
-                    
-                    // Verify deletion
-                    const { count: remainingCount } = await supabase
-                        .from('campaigns')
-                        .select('*', { count: 'exact', head: true });
-                    
-                    console.log(`🔍 Verification: ${remainingCount || 0} campaigns remaining`);
-                    
-                    logActivity.campaign('Supabase Cleared', `${deletedCount || count} campaigns deleted from Supabase only`, 'warning');
-                    
-                    await alert(`✅ Supabase Temizlendi!\n\n${deletedCount || count} kampanya silindi.\n${remainingCount || 0} kampanya kaldı.\n\nYerel veriler korundu.`, 'Temizlik Tamamlandı');
-                } else {
+                if (!initialCount || initialCount === 0) {
                     await alert('ℹ️ Supabase zaten boş!\n\nSilinecek kampanya bulunamadı.', 'Bilgi');
+                    return;
                 }
+                
+                // Show sample data for confirmation
+                const { data: sampleData } = await supabase
+                    .from('campaigns')
+                    .select('id, title, bank')
+                    .limit(3);
+                
+                console.log('📋 Sample campaigns to be deleted:', sampleData);
+                
+                // Delete ALL campaigns (use gt -1 to delete all records)
+                console.log('🗑️ Deleting ALL campaigns from Supabase...');
+                const { error: deleteError, count: deletedCount } = await supabase
+                    .from('campaigns')
+                    .delete({ count: 'exact' })
+                    .gt('id', -1); // This deletes ALL records (id > -1 means all)
+                
+                if (deleteError) {
+                    console.error('🚨 Delete operation failed:', deleteError);
+                    throw new Error(`Delete error: ${deleteError.message}`);
+                }
+                
+                console.log(`✅ Delete operation completed. Rows affected: ${deletedCount}`);
+                
+                // Verify deletion with a small delay
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                const { count: remainingCount } = await supabase
+                    .from('campaigns')
+                    .select('*', { count: 'exact', head: true });
+                
+                console.log(`🔍 Verification: ${remainingCount || 0} campaigns remaining`);
+                
+                logActivity.campaign('Supabase Cleared', `${deletedCount || initialCount} campaigns deleted from Supabase only`, 'warning');
+                
+                await alert(`✅ Supabase Temizlendi!\n\n${deletedCount || initialCount} kampanya silindi.\n${remainingCount || 0} kampanya kaldı.\n\nYerel veriler korundu.\n\nAnasayfa ve dashboard artık sadece yerel verileri gösterecek.`, 'Temizlik Tamamlandı');
+                
+                // Force refresh to show the change
+                setTimeout(() => {
+                    window.dispatchEvent(new Event('campaigns-updated'));
+                    window.dispatchEvent(new Event('storage'));
+                }, 500);
                 
             } catch (error) {
                 console.error('🚨 Supabase temizleme hatası:', error);
-                await alert(`❌ Hata Oluştu:\n\n${error}\n\nKonsolu kontrol edin.`, 'Supabase Hatası');
+                await alert(`❌ Hata Oluştu:\n\n${error}\n\nDetaylar konsola yazıldı.\n\nSupabase bağlantı bilgilerinizi kontrol edin.`, 'Supabase Hatası');
             }
         }
     };
@@ -985,72 +1013,75 @@ export default function AdminCampaigns() {
                     <p className="text-blue-100 opacity-90 max-w-xl">
                         Mevcut kampanyaları inceleyin. Yayına almak için <strong>"Onayla"</strong> butonunu kullanın.
                     </p>
-                    <div className="flex gap-2 mt-4">
+                    <div className="grid grid-cols-4 gap-1.5 mt-4">
+                        {/* İlk Sıra - Ana İşlemler */}
                         <button
                             onClick={handleOpenImportModal}
-                            className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors"
+                            className="bg-blue-600 text-white px-2 py-1 rounded text-xs flex items-center gap-1 hover:bg-blue-700 transition-colors justify-center"
                         >
-                            <Link size={20} />
-                            Linkten Ekle
+                            <Link size={12} />
+                            Link Ekle
                         </button>
                         <button
                             onClick={handleCreateNew}
-                            className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700"
+                            className="bg-purple-600 text-white px-2 py-1 rounded text-xs flex items-center gap-1 hover:bg-purple-700 transition-colors justify-center"
                         >
-                            <Plus size={20} />
-                            Yeni Ekle
+                            <Plus size={12} />
+                            Yeni
                         </button>
                         <button
                             onClick={handleFindDuplicates}
-                            className="bg-cyan-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-cyan-700 font-medium"
+                            className="bg-cyan-600 text-white px-2 py-1 rounded text-xs flex items-center gap-1 hover:bg-cyan-700 transition-colors justify-center"
                         >
-                            <Sparkles size={20} />
-                            Tekrarlayanları Bul
+                            <Sparkles size={12} />
+                            Tekrar
                         </button>
                         <button
                             onClick={handleBatchAI}
-                            className="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-indigo-700 font-medium border border-indigo-400"
+                            className="bg-indigo-600 text-white px-2 py-1 rounded text-xs flex items-center gap-1 hover:bg-indigo-700 transition-colors justify-center"
                         >
-                            <Sparkles size={20} className="fill-current" />
-                            Toplu AI Düzenle
+                            <Sparkles size={12} />
+                            AI
                         </button>
+                        
+                        {/* İkinci Sıra - Sync ve Temizlik İşlemleri */}
                         <button
                             onClick={handleSyncToLive}
                             disabled={isSyncing}
-                            className={`px-4 py-2 rounded-lg flex items-center gap-2 font-bold shadow-lg transition-all
+                            className={`px-2 py-1 rounded text-xs flex items-center gap-1 transition-colors justify-center
                                 ${isSyncing
                                     ? 'bg-gray-400 cursor-not-allowed text-white'
-                                    : 'bg-green-600 hover:bg-green-700 text-white border border-green-400 hover:shadow-green-900/20'
+                                    : 'bg-green-600 hover:bg-green-700 text-white'
                                 }
                             `}
                         >
                             {isSyncing ? (
-                                <Loader2 size={20} className="animate-spin" />
+                                <Loader2 size={12} className="animate-spin" />
                             ) : (
-                                <CloudUpload size={20} />
+                                <CloudUpload size={12} />
                             )}
-                            {isSyncing ? 'Gönderiliyor...' : 'Canlıya Gönder'}
-                        </button>
-                        <button
-                            onClick={handleClearLegacyData}
-                            className="px-4 py-2 rounded-lg flex items-center gap-2 font-medium text-red-600 border border-red-200 hover:bg-red-50 transition-colors"
-                        >
-                            <Trash2 size={20} />
-                            Eski Verileri Temizle
-                        </button>
-                        <button
-                            onClick={handleClearAllData}
-                            className="px-4 py-2 rounded-lg flex items-center gap-2 font-medium text-red-700 border border-red-300 hover:bg-red-100 transition-colors"
-                        >
-                            <Trash2 size={20} />
-                            TÜM Verileri Sıfırla
+                            {isSyncing ? 'Sync...' : 'Canlı'}
                         </button>
                         <button
                             onClick={handleClearSupabaseOnly}
-                            className="px-4 py-2 rounded-lg flex items-center gap-2 font-medium text-orange-600 border border-orange-300 hover:bg-orange-50 transition-colors"
+                            className="bg-orange-600 text-white px-2 py-1 rounded text-xs flex items-center gap-1 hover:bg-orange-700 transition-colors justify-center"
                         >
-                            <CloudUpload size={20} />
-                            Sadece Supabase'i Temizle
+                            <CloudUpload size={12} />
+                            SB Sil
+                        </button>
+                        <button
+                            onClick={handleClearLegacyData}
+                            className="bg-red-500 text-white px-2 py-1 rounded text-xs flex items-center gap-1 hover:bg-red-600 transition-colors justify-center"
+                        >
+                            <Trash2 size={12} />
+                            Eski
+                        </button>
+                        <button
+                            onClick={handleClearAllData}
+                            className="bg-red-700 text-white px-2 py-1 rounded text-xs flex items-center gap-1 hover:bg-red-800 transition-colors justify-center"
+                        >
+                            <Trash2 size={12} />
+                            Tümü
                         </button>
                     </div>
                 </div>
