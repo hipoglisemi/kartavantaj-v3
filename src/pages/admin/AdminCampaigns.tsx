@@ -118,9 +118,20 @@ export default function AdminCampaigns() {
         ]);
         setCampaignsMap(getCampaignsData()); // Load Local Data Immediately (Preserve Bulk Uploads)
 
-        // NEW: Cloud-First Loading (Sync & Merge)
-        const loadFromCloud = async () => {
-            console.log("Admin: Cloud-First Loading triggered.");
+        // DISABLED: Cloud-First Loading (Causes deleted campaigns to reappear)
+        // Only load from cloud if localStorage is completely empty
+        const loadFromCloudIfEmpty = async () => {
+            const currentLocalData = getCampaignsData();
+            const hasLocalCampaigns = Object.values(currentLocalData).some(campaigns => 
+                Array.isArray(campaigns) && campaigns.length > 0
+            );
+            
+            if (hasLocalCampaigns) {
+                console.log("Admin: Local campaigns exist, skipping cloud sync to prevent deleted campaigns from reappearing");
+                return;
+            }
+            
+            console.log("Admin: No local campaigns found, loading from cloud...");
             const currentBanks = getBanksConfig();
 
             // Inject "General" Bank for UI
@@ -133,24 +144,20 @@ export default function AdminCampaigns() {
                 ]
             };
 
-            // Only add if not strictly managed elsewhere, but for Admin view we append it.
-            // We set it to state immediately so UI shows it
             setBanks([...currentBanks, otherBank]);
 
-            // 1. Fetch ALL campaigns (including unapproved) from Supabase
+            // Only fetch from cloud if we have no local data
             const cloudCampaigns = await campaignService.fetchCampaigns(true);
 
             if (cloudCampaigns.length > 0) {
-                // 2. Merge Cloud Data into Local Map
-                // We start with current local state to PRESERVE unsynced drafts (like Bulk Uploads)
-                const newMap = { ...getCampaignsData() };
-
+                const newMap: Record<string, CampaignProps[]> = {};
+                
                 // Ensure bucket for uncategorized exists
-                if (!newMap['uncategorized_card']) newMap['uncategorized_card'] = [];
+                newMap['uncategorized_card'] = [];
 
                 // Ensure all card buckets exist
                 currentBanks.forEach(b => b.cards.forEach(c => {
-                    if (!newMap[c.id]) newMap[c.id] = [];
+                    newMap[c.id] = [];
                 }));
 
                 cloudCampaigns.forEach((camp: any) => {
@@ -168,34 +175,24 @@ export default function AdminCampaigns() {
                         }
                     }
 
-                    // Fallback: If no card match, check if it already has a local home? 
-                    // Or just dump to Uncategorized.
+                    // Fallback to uncategorized
                     if (!targetCardId) {
                         targetCardId = 'uncategorized_card';
                     }
 
-                    // If found, upsert in that bucket
-                    if (targetCardId) {
-                        const list = newMap[targetCardId] || [];
-                        const existingIndex = list.findIndex(c => c.id === camp.id);
-
-                        if (existingIndex !== -1) {
-                            // Update existing (Cloud is newer)
-                            list[existingIndex] = camp;
-                        } else {
-                            // Add new from cloud
-                            list.push(camp);
-                        }
-                        newMap[targetCardId] = list;
+                    // Add to appropriate bucket
+                    if (targetCardId && newMap[targetCardId]) {
+                        newMap[targetCardId].push(camp);
                     }
                 });
 
                 setCampaignsMap(newMap);
                 localStorage.setItem('campaign_data', JSON.stringify(newMap));
+                console.log("Admin: Loaded", cloudCampaigns.length, "campaigns from cloud");
             }
         };
 
-        loadFromCloud();
+        loadFromCloudIfEmpty();
 
         // Listen for storage changes in case other tabs update it
         const handleStorage = () => {
