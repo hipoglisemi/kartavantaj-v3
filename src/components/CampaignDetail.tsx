@@ -595,7 +595,7 @@ export default function CampaignDetail({ data, isAdmin, onSave, onDelete, onHome
                         onClick={async () => data.url ? window.open(data.url, '_blank') : await alert('Kampanya linki bulunamadı.', 'Hata')}
                         className="w-full bg-[#57AC79] hover:bg-[#469666] text-white text-sm py-4 rounded-xl font-bold mt-4 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 transform active:scale-95"
                     >
-                        Kampanyaya Katıl <ArrowRight size={18} />
+                        Kampanyaya Katıl (ID:{data.id}) <ArrowRight size={18} />
                     </button>
                 )}
             </div>

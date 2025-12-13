@@ -214,6 +214,15 @@ export default function CampaignCard({ data, isAdmin }: { data: CampaignProps, i
   return (
     <div className="group bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col h-full relative">
 
+      {/* ID Badge (Admin Only) */}
+      {isAdmin && (
+        <div className="absolute top-2 left-2 z-20">
+          <span className="inline-flex items-center gap-1 text-[9px] uppercase font-bold text-slate-600 bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded border border-slate-200 shadow-sm">
+            ID:{data.id}
+          </span>
+        </div>
+      )}
+
       {/* Admin Edit Overlay Icon */}
       {isAdmin && (
         <div className="absolute top-2 right-2 z-20 bg-white p-2 rounded-full shadow-lg text-brand-red opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer transform hover:scale-110">

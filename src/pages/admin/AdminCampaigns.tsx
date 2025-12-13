@@ -927,7 +927,7 @@ export default function AdminCampaigns() {
                     <p className="text-blue-100 opacity-90 max-w-xl">
                         Mevcut kampanyaları inceleyin. Yayına almak için <strong>"Onayla"</strong> butonunu kullanın.
                     </p>
-                    <div className="grid grid-cols-2 gap-4 mt-6">
+                    <div className="grid grid-cols-3 gap-4 mt-6">
                         {/* İlk Sıra - Ana İşlemler */}
                         <div className="group relative">
                             <button
@@ -948,6 +948,28 @@ export default function AdminCampaigns() {
                             </div>
                         </div>
 
+                        <div className="group relative">
+                            <button
+                                onClick={() => {
+                                    const allCampaigns = campaignService.getAllCampaigns();
+                                    const idList = allCampaigns.map(c => `ID:${c.id} - ${c.title}`).join('\n');
+                                    alert(`📋 Kampanya ID Listesi:\n\n${idList}`);
+                                }}
+                                className="w-full group relative bg-gradient-to-br from-slate-500 via-slate-600 to-slate-700 hover:from-slate-600 hover:via-slate-700 hover:to-slate-800 text-white px-4 py-4 rounded-2xl text-sm font-bold flex items-center gap-3 transition-all duration-500 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-[1.02] border border-slate-400/20"
+                            >
+                                <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
+                                    <Database size={18} className="group-hover:scale-110 transition-transform duration-300" />
+                                </div>
+                                <div className="text-left">
+                                    <div className="font-bold">ID Listesi</div>
+                                    <div className="text-xs text-slate-100 opacity-90">Tüm kampanya ID'leri</div>
+                                </div>
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
+                            </button>
+                            <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100 bg-slate-500 text-white text-xs px-2 py-1 rounded-lg shadow-lg z-10 whitespace-nowrap">
+                                Hangi kampanya hangi ID'ye sahip göster
+                            </div>
+                        </div>
 
                         
                         <div className="group relative">
@@ -1268,6 +1290,13 @@ export default function AdminCampaigns() {
                                                     .map((camp) => (
                                                         <div key={camp.id} className={`bg-white p-4 rounded-xl border shadow-sm hover:shadow-md transition-all group relative ${camp.isArchived ? 'border-gray-200 bg-gray-50 opacity-75' : camp.isApproved ? 'border-green-100 bg-green-50/10' : 'border-amber-200 bg-amber-50/30'}`}>
                                                             <div className="flex justify-between items-start gap-4">
+                                                                {/* ID Badge */}
+                                                                <div className="absolute top-2 left-2 z-10">
+                                                                    <span className="inline-flex items-center gap-1 text-[9px] uppercase font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 shadow-sm">
+                                                                        ID:{camp.id}
+                                                                    </span>
+                                                                </div>
+
                                                                 {/* Status Indicator */}
                                                                 <div className="absolute top-4 right-12 z-10">
                                                                     {camp.isArchived ? (
