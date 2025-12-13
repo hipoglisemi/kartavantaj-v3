@@ -118,7 +118,7 @@ const defaultSettings: SiteSettings = {
     },
     logo: {
         url: '', // Empty defaults to local asset import in Header
-        height: 48,
+        height: 75,
         opacity: 1,
         offsetX: 0,
         offsetY: 0
@@ -150,6 +150,15 @@ export const settingsService = {
         if (!stored) return defaultSettings;
         try {
             const parsed = JSON.parse(stored);
+            
+            // Migration: Update old small logo heights to new default
+            if (parsed.logo && parsed.logo.height && parsed.logo.height < 60) {
+                parsed.logo.height = 75;
+                console.log('🔄 Migrated logo height from', parsed.logo.height, 'to 75px');
+                // Save the migrated settings
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+            }
+            
             return {
                 ...defaultSettings,
                 ...parsed,

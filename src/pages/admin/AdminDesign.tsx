@@ -236,7 +236,7 @@ export default function AdminDesign() {
                             </div>
                             <input
                                 type="range" min="20" max="200"
-                                value={settings.logo?.height || 48}
+                                value={settings.logo?.height || 75}
                                 onChange={(e) => handleChange('logo', 'height', Number(e.target.value))}
                                 className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-pink-600"
                             />
