@@ -930,26 +930,38 @@ export default function AdminCampaigns() {
                     <p className="text-blue-100 opacity-90 max-w-xl">
                         Mevcut kampanyaları inceleyin. Yayına almak için <strong>"Onayla"</strong> butonunu kullanın.
                     </p>
-                    <div className="grid grid-cols-3 gap-4 mt-6">
-                        {/* İlk Sıra - Ana İşlemler */}
-                        <div className="group relative">
-                            <button
-                                onClick={handleOpenImportModal}
-                                className="w-full group relative bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 text-white px-4 py-4 rounded-2xl text-sm font-bold flex items-center gap-3 transition-all duration-500 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-[1.02] border border-blue-400/20"
-                            >
-                                <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
-                                    <Link size={18} className="group-hover:rotate-12 transition-transform duration-300" />
+                    <div className="grid grid-cols-4 gap-3 mt-6">
+                        {/* 1. URL'den Ekle - Mavi */}
+                        <button
+                            onClick={handleOpenImportModal}
+                            className="group bg-white border border-blue-200 hover:border-blue-300 rounded-xl p-4 transition-all hover:shadow-md"
+                        >
+                            <div className="flex flex-col items-center text-center space-y-2">
+                                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 group-hover:bg-blue-200 transition-colors">
+                                    <Link size={20} />
                                 </div>
-                                <div className="text-left">
-                                    <div className="font-bold">URL'den Ekle</div>
-                                    <div className="text-xs text-blue-100 opacity-90">AI ile otomatik analiz</div>
+                                <div>
+                                    <div className="text-sm font-semibold text-gray-900">URL'den Ekle</div>
+                                    <div className="text-xs text-gray-500">AI analiz</div>
                                 </div>
-                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
-                            </button>
-                            <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100 bg-blue-500 text-white text-xs px-2 py-1 rounded-lg shadow-lg z-10 whitespace-nowrap">
-                                URL'den otomatik kampanya çeker ve AI ile analiz eder
                             </div>
-                        </div>
+                        </button>
+
+                        {/* 2. ID Listesi - Gri */}
+                        <button
+                            onClick={() => setIsIdListModalOpen(true)}
+                            className="group bg-white border border-gray-200 hover:border-gray-300 rounded-xl p-4 transition-all hover:shadow-md"
+                        >
+                            <div className="flex flex-col items-center text-center space-y-2">
+                                <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-gray-600 group-hover:bg-gray-200 transition-colors">
+                                    <Database size={20} />
+                                </div>
+                                <div>
+                                    <div className="text-sm font-semibold text-gray-900">ID Listesi</div>
+                                    <div className="text-xs text-gray-500">Tüm ID'ler</div>
+                                </div>
+                            </div>
+                        </button>
 
                         <div className="group relative">
                             <button
@@ -1531,15 +1543,22 @@ export default function AdminCampaigns() {
                     
                     <div className="max-h-96 overflow-y-auto space-y-2">
                         {campaignService.getAllCampaigns().map((campaign) => (
-                            <div key={campaign.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                            <div 
+                                key={campaign.id} 
+                                onClick={() => {
+                                    setIsIdListModalOpen(false);
+                                    openModal(campaign);
+                                }}
+                                className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-blue-50 hover:border-blue-200 border border-transparent transition-all cursor-pointer group"
+                            >
                                 <div className="flex-shrink-0">
-                                    <span className="inline-flex items-center gap-1 text-xs font-bold text-slate-600 bg-white px-2 py-1 rounded border border-slate-200">
+                                    <span className="inline-flex items-center gap-1 text-xs font-bold text-slate-600 bg-white px-2 py-1 rounded border border-slate-200 group-hover:border-blue-300 group-hover:bg-blue-50">
                                         ID:{campaign.id}
                                     </span>
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <h4 className="font-medium text-gray-900 truncate">{campaign.title}</h4>
-                                    <p className="text-xs text-gray-500">{campaign.bank} • {campaign.category}</p>
+                                    <h4 className="font-medium text-gray-900 truncate group-hover:text-blue-700">{campaign.title}</h4>
+                                    <p className="text-xs text-gray-500 group-hover:text-blue-600">{campaign.bank} • {campaign.category}</p>
                                 </div>
                                 <div className="flex-shrink-0">
                                     {campaign.isApproved ? (
