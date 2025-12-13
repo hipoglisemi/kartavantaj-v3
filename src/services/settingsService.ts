@@ -152,14 +152,15 @@ export const settingsService = {
             const parsed = JSON.parse(stored);
             
             // Migration: Update old small logo heights to new default
+            let needsSave = false;
             if (parsed.logo && parsed.logo.height && parsed.logo.height < 60) {
+                const oldHeight = parsed.logo.height;
                 parsed.logo.height = 75;
-                console.log('🔄 Migrated logo height from', parsed.logo.height, 'to 75px');
-                // Save the migrated settings
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+                needsSave = true;
+                console.log('🔄 Migrated logo height from', oldHeight, 'to 75px');
             }
             
-            return {
+            const result = {
                 ...defaultSettings,
                 ...parsed,
                 // Deep merge crucial objects to strict defaults
@@ -168,6 +169,13 @@ export const settingsService = {
                 header: { ...defaultSettings.header, ...(parsed.header || {}) },
                 footer: { ...defaultSettings.footer, ...(parsed.footer || {}) }
             };
+            
+            // Save migrated settings
+            if (needsSave) {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(result));
+            }
+            
+            return result;
         } catch (e) {
             return defaultSettings;
         }
@@ -191,14 +199,21 @@ export const settingsService = {
             }
 
             if (data?.settings) {
+                // Apply migration to remote data
+                const remoteSettings = data.settings;
+                if (remoteSettings.logo && remoteSettings.logo.height && remoteSettings.logo.height < 60) {
+                    remoteSettings.logo.height = 75;
+                    console.log('🔄 Migrated remote logo height to 75px');
+                }
+                
                 // Return merged remote settings
                 return {
                     ...defaultSettings,
-                    ...data.settings,
-                    logo: { ...defaultSettings.logo, ...(data.settings.logo || {}) },
-                    footerLogo: { ...defaultSettings.footerLogo, ...(data.settings.footerLogo || {}) },
-                    header: { ...defaultSettings.header, ...(data.settings.header || {}) },
-                    footer: { ...defaultSettings.footer, ...(data.settings.footer || {}) }
+                    ...remoteSettings,
+                    logo: { ...defaultSettings.logo, ...(remoteSettings.logo || {}) },
+                    footerLogo: { ...defaultSettings.footerLogo, ...(remoteSettings.footerLogo || {}) },
+                    header: { ...defaultSettings.header, ...(remoteSettings.header || {}) },
+                    footer: { ...defaultSettings.footer, ...(remoteSettings.footer || {}) }
                 };
             }
         } catch (err) {
@@ -287,6 +302,12 @@ export const settingsService = {
             const hydrate = async () => {
                 const remote = await settingsService.fetchRemoteSettings();
                 if (remote && isMounted) {
+                    // Apply migration to remote settings too
+                    if (remote.logo && remote.logo.height && remote.logo.height < 60) {
+                        remote.logo.height = 75;
+                        console.log('🔄 Migrated remote logo height to 75px');
+                    }
+                    
                     // If remote matches local, do nothing to avoid re-render loop/flicker
                     // But usually we just update local storage and state
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(remote));
