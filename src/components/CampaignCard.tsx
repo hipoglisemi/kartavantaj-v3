@@ -117,32 +117,65 @@ export interface CampaignProps {
 
 export default function CampaignCard({ data, isAdmin }: { data: CampaignProps, isAdmin?: boolean }) {
   // Provider Logoları (Axess, Bonus vb.)
-  // Provider Logoları (Dynamic Lookup)
-  const getProviderLogo = (provider: string): string | null => {
+  // Smart Logo Detection - Admin panelden hangi karta yüklendiyse o kartın logosu
+  const getProviderLogo = (bankName: string): string | null => {
+    // 1. Önce cardLogo field'ı varsa onu kullan
     if (data.cardLogo) return data.cardLogo;
-    if (!provider) return null;
+    if (!bankName) return null;
 
-    // 1. Try to find in localStorage config (Dynamic)
+    // 2. Admin paneldeki banka/kart konfigürasyonundan logo bul
     try {
       const savedConfig = localStorage.getItem('scraper_config');
       if (savedConfig) {
-        const banks = JSON.parse(savedConfig) as Array<{ id: string, name: string, logo: string, cards: any[] }>;
+        const banks = JSON.parse(savedConfig) as Array<{ 
+          id: string, 
+          name: string, 
+          logo: string, 
+          cards: Array<{ id: string, name: string, logo?: string }> 
+        }>;
 
-        // Search by Name
-        const bank = banks.find(b => b.name.toLowerCase().includes(provider.toLowerCase()) || provider.toLowerCase().includes(b.name.toLowerCase()));
-        if (bank && bank.logo) return bank.logo;
+        // Önce tam banka adı eşleşmesi ara
+        let targetBank = banks.find(bank => 
+          bank.name.toLowerCase() === bankName.toLowerCase() ||
+          bank.id.toLowerCase() === bankName.toLowerCase()
+        );
 
-        // Search by ID (if provider is actually an ID)
-        const bankById = banks.find(b => b.id === provider.toLowerCase());
-        if (bankById && bankById.logo) return bankById.logo;
+        // Bulamazsa kısmi eşleşme dene
+        if (!targetBank) {
+          targetBank = banks.find(bank => 
+            bank.name.toLowerCase().includes(bankName.toLowerCase()) ||
+            bankName.toLowerCase().includes(bank.name.toLowerCase())
+          );
+        }
+
+        if (targetBank) {
+          // Eğer cardName varsa, o kartın logosunu bul
+          if (data.cardName && targetBank.cards && targetBank.cards.length > 0) {
+            const targetCard = targetBank.cards.find(card => 
+              card.name.toLowerCase() === data.cardName!.toLowerCase() ||
+              card.id.toLowerCase() === data.cardName!.toLowerCase() ||
+              card.name.toLowerCase().includes(data.cardName!.toLowerCase()) ||
+              data.cardName!.toLowerCase().includes(card.name.toLowerCase())
+            );
+            
+            // Kart logosu varsa onu kullan, yoksa banka logosunu kullan
+            if (targetCard && targetCard.logo) {
+              return targetCard.logo;
+            }
+          }
+          
+          // Kart logosu bulunamazsa banka logosunu kullan
+          if (targetBank.logo) {
+            return targetBank.logo;
+          }
+        }
       }
     } catch (e) {
-      // Fallback silently
+      console.warn('Logo config parse error:', e);
     }
 
-    // 2. Fallback to Hardcoded Map (Enhanced for Card Names)
-    // Check both bank name and card name/title for better matching (e.g. Axess)
-    const searchText = (provider + ' ' + (data.cardName || '') + ' ' + (data.title || '')).toLowerCase();
+    // 3. Fallback: Hardcoded logo map (eski sistem)
+    const searchText = (bankName + ' ' + (data.cardName || '') + ' ' + (data.title || '')).toLowerCase();
 
     const logoMap: Record<string, string> = {
       'axess': '/assets/logos/axess.png',
@@ -171,6 +204,7 @@ export default function CampaignCard({ data, isAdmin }: { data: CampaignProps, i
         return logo;
       }
     }
+    
     return null;
   };
 

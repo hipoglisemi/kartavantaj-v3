@@ -231,13 +231,18 @@ export default function AdminCampaigns() {
             return;
         }
 
+        // Seçili kart ve banka bilgisini al
+        const activeBank = banks.find(b => b.id === expandedBank);
+        const activeCard = activeBank?.cards.find(c => c.id === expandedCard);
+
         const newCampaign: CampaignProps = {
             id: Date.now(),
             title: 'Yeni Kampanya',
             image: 'https://images.unsplash.com/photo-1556742049-0cfed4f7a07d?auto=format&fit=crop&q=80&w=800',
             badgeText: 'Fırsat',
             badgeColor: 'purple',
-            bank: 'Diğer',
+            bank: activeBank?.name || 'Diğer', // Gerçek banka adı
+            cardName: activeCard?.name, // Kart adı
             category: 'Genel',
             validUntil: '2025-12-31',
             isApproved: false
@@ -402,13 +407,18 @@ export default function AdminCampaigns() {
                 return;
             }
 
+            // Seçili kart ve banka bilgisini al
+            const activeBank = banks.find(b => b.id === expandedBank);
+            const activeCard = activeBank?.cards.find(c => c.id === expandedCard);
+
             const newCampaign: CampaignProps = {
                 id: Date.now(),
                 title: parsedData.title || 'Yeni Kampanya',
                 image: parsedData.image || 'https://images.unsplash.com/photo-1556742049-0cfed4f7a07d?auto=format&fit=crop&q=80&w=800',
                 badgeText: parsedData.badgeText || 'Fırsat',
                 badgeColor: parsedData.badgeColor || 'purple',
-                bank: parsedData.bank || 'Diğer',
+                bank: activeBank?.name || parsedData.bank || 'Diğer', // Önce seçili banka, sonra parsed data
+                cardName: activeCard?.name, // Seçili kartın adı
                 category: parsedData.category || 'Genel',
                 validUntil: parsedData.validUntil || '2025-12-31',
                 valid_from: parsedData.valid_from,
