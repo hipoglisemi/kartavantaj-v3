@@ -144,18 +144,18 @@ export default function Footer() {
           </div>
 
           <div className="border-t border-white/10 pt-6 text-center">
-            <div className="flex items-center justify-center gap-3 flex-wrap text-xs text-gray-500">
-              <span className="text-xs">{settings.footer.copyright || `© ${currentYear} KartAvantaj. Tüm yasal hakları saklıdır.`}</span>
-              <span className="text-gray-600 text-lg">|</span>
+            <div className="flex items-center justify-center gap-3 flex-wrap text-[10px] text-gray-600 opacity-75">
+              <span className="text-[10px]">{settings.footer.copyright || `© ${currentYear} KartAvantaj. Tüm yasal hakları saklıdır.`}</span>
+              <span className="text-gray-500 text-sm opacity-60">|</span>
               <div className="flex items-center gap-2">
-                <span className="text-xs">Kart Avantaj Ekibi tarafından</span>
+                <span className="text-[10px]">Kart Avantaj Ekibi tarafından</span>
                 <span 
-                  className="text-red-500 text-sm hover:scale-125 transition-transform cursor-pointer heartbeat-animation"
+                  className="text-red-500 text-xs hover:scale-125 transition-transform cursor-pointer heartbeat-animation opacity-90"
                   title="Made with love ❤️"
                 >
                   ❤️
                 </span>
-                <span className="text-xs">ile yapıldı</span>
+                <span className="text-[10px]">ile yapıldı</span>
               </div>
             </div>
           </div>
