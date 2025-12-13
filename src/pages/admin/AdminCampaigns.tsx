@@ -649,6 +649,77 @@ export default function AdminCampaigns() {
         }, 1000);
     };
 
+    // Clear ALL Campaign Data Function (Nuclear Option)
+    const handleClearAllData = async () => {
+        if (await confirm({
+            title: '⚠️ TÜM KAMPANYA VERİLERİNİ SİFİRLA',
+            message: 'Bu işlem SİSTEMDEKİ TÜM KAMPANYA VERİLERİNİ SİLECEK:\n\n• Admin paneli kampanyaları\n• Supabase kampanyaları\n• Tüm localStorage verileri\n• Dashboard ve anasayfa sıfırlanacak\n\nBu işlem GERİ ALINAMAZ!\n\nEmin misiniz?',
+            confirmText: 'EVET, HEPSİNİ SİL',
+            type: 'danger'
+        })) {
+            let totalCleared = 0;
+            
+            // 1. Clear ALL localStorage campaign keys
+            const allKeys = Object.keys(localStorage);
+            const campaignKeys = allKeys.filter(key => 
+                key.includes('campaign') || 
+                key.includes('Campaign') ||
+                key === 'campaigns_data' ||
+                key === 'campaign_data'
+            );
+            
+            campaignKeys.forEach(key => {
+                localStorage.removeItem(key);
+                console.log(`🗑️ Cleared: ${key}`);
+                totalCleared++;
+            });
+            
+            // 2. Clear current admin campaign data specifically
+            setCampaignsMap({});
+            localStorage.setItem('campaign_data', JSON.stringify({}));
+            
+            // 3. Clear Supabase campaigns
+            const supabaseUrl = localStorage.getItem('sb_url');
+            const supabaseKey = localStorage.getItem('sb_key');
+            
+            if (supabaseUrl && supabaseKey) {
+                try {
+                    const { createClient } = await import('@supabase/supabase-js');
+                    const supabase = createClient(supabaseUrl, supabaseKey);
+                    
+                    const { count } = await supabase
+                        .from('campaigns')
+                        .select('*', { count: 'exact', head: true });
+                    
+                    if (count && count > 0) {
+                        const { error } = await supabase
+                            .from('campaigns')
+                            .delete()
+                            .neq('id', 0);
+                        
+                        if (!error) {
+                            totalCleared += count;
+                            console.log(`🗑️ Cleared ${count} campaigns from Supabase`);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Supabase clear error:', error);
+                }
+            }
+            
+            // 4. Force refresh everything
+            window.dispatchEvent(new Event('campaigns-updated'));
+            window.dispatchEvent(new Event('storage'));
+            
+            logActivity.campaign('ALL DATA CLEARED', `Nuclear option: Cleared ${totalCleared} total campaign records`, 'error');
+            
+            await alert(`🗑️ TÜM VERİLER TEMİZLENDİ!\n\n${totalCleared} adet kampanya verisi silindi.\n\nSayfa yenileniyor...`, 'Sıfırlama Tamamlandı');
+            
+            // Force page reload to ensure clean state
+            window.location.reload();
+        }
+    };
+
     // Clear Legacy Data Function
     const handleClearLegacyData = async () => {
         if (await confirm({
@@ -813,6 +884,13 @@ export default function AdminCampaigns() {
                         >
                             <Trash2 size={20} />
                             Eski Verileri Temizle
+                        </button>
+                        <button
+                            onClick={handleClearAllData}
+                            className="px-4 py-2 rounded-lg flex items-center gap-2 font-medium text-red-700 border border-red-300 hover:bg-red-100 transition-colors"
+                        >
+                            <Trash2 size={20} />
+                            TÜM Verileri Sıfırla
                         </button>
                     </div>
                 </div>
