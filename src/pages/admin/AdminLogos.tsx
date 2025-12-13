@@ -64,6 +64,8 @@ export default function AdminLogos() {
     const [searchTerm, setSearchTerm] = useState('');
     const [isAddingBank, setIsAddingBank] = useState(false);
     const [newBankName, setNewBankName] = useState('');
+    const [isAddingCard, setIsAddingCard] = useState<string | null>(null); // bankId for which card is being added
+    const [newCardName, setNewCardName] = useState('');
 
     useEffect(() => {
         const loadBanks = async () => {
@@ -156,6 +158,59 @@ export default function AdminLogos() {
         
         setNewBankName('');
         setIsAddingBank(false);
+    };
+
+    const handleAddCard = (bankId: string) => {
+        if (!newCardName.trim()) return;
+        
+        const cardId = newCardName.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const newCard: CardConfig = {
+            id: cardId,
+            name: newCardName,
+            logo: `https://placehold.co/100x100?text=${newCardName.substring(0, 2).toUpperCase()}`
+        };
+
+        const updatedBanks = banks.map(bank => {
+            if (bank.id === bankId) {
+                return {
+                    ...bank,
+                    cards: [...bank.cards, newCard]
+                };
+            }
+            return bank;
+        });
+
+        setBanks(updatedBanks);
+        saveBanksConfig(updatedBanks);
+        
+        // Activity log
+        logActivity.settings('Card Added', `New card added: ${newCardName} to ${banks.find(b => b.id === bankId)?.name}`, 'success');
+        
+        setNewCardName('');
+        setIsAddingCard(null);
+    };
+
+    const handleDeleteCard = (bankId: string, cardId: string) => {
+        const bank = banks.find(b => b.id === bankId);
+        const card = bank?.cards.find(c => c.id === cardId);
+        
+        if (confirm(`"${card?.name}" kartını silmek istediğinizden emin misiniz?`)) {
+            const updatedBanks = banks.map(bank => {
+                if (bank.id === bankId) {
+                    return {
+                        ...bank,
+                        cards: bank.cards.filter(c => c.id !== cardId)
+                    };
+                }
+                return bank;
+            });
+
+            setBanks(updatedBanks);
+            saveBanksConfig(updatedBanks);
+            
+            // Activity log
+            logActivity.settings('Card Deleted', `Card deleted: ${card?.name} from ${bank?.name}`, 'warning');
+        }
     };
 
     const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -329,16 +384,63 @@ export default function AdminLogos() {
                                                 onChange={(e) => handleUpdateLogo(bank.id, card.id, e.target.value)}
                                                 className="text-xs border border-gray-200 rounded px-2 py-1 w-48 outline-none focus:border-purple-500"
                                             />
+                                            <button
+                                                onClick={() => handleDeleteCard(bank.id, card.id)}
+                                                className="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 transition-colors"
+                                                title="Kartı Sil"
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
                                         </div>
                                     </div>
                                 ))}
                             </div>
                         )}
+                        
+                        {/* Add Card Section */}
+                        <div className="bg-gray-50 border-t border-gray-100">
+                            {isAddingCard === bank.id ? (
+                                <div className="p-4 flex items-center gap-3">
+                                    <input
+                                        type="text"
+                                        placeholder="Kart adı (örn: Bonus Card, Maximum)"
+                                        value={newCardName}
+                                        onChange={(e) => setNewCardName(e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && handleAddCard(bank.id)}
+                                        className="flex-1 text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        autoFocus
+                                    />
+                                    <button 
+                                        onClick={() => handleAddCard(bank.id)}
+                                        className="bg-green-600 text-white px-4 py-2 rounded-lg font-medium text-sm hover:bg-green-700 transition-colors"
+                                    >
+                                        Kaydet
+                                    </button>
+                                    <button 
+                                        onClick={() => {
+                                            setIsAddingCard(null);
+                                            setNewCardName('');
+                                        }}
+                                        className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium text-sm hover:bg-gray-300 transition-colors"
+                                    >
+                                        İptal
+                                    </button>
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={() => setIsAddingCard(bank.id)}
+                                    className="w-full p-3 text-left text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 transition-colors flex items-center gap-2"
+                                >
+                                    <Plus size={16} />
+                                    Yeni Kart Ekle
+                                </button>
+                            )}
+                        </div>
+
                         {bank.cards.length === 0 && (
                             <div className="p-4 text-center text-xs text-gray-400 italic">
                                 Bu bankaya ait tanımlı kart bulunmuyor.
                             </div>
-
                         )}
                     </div>
                 ))}

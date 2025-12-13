@@ -5,10 +5,7 @@ import { campaignParser } from '../../services/campaignParser';
 import { campaignService } from '../../services/campaignService';
 import CampaignValidationPanel from '../../components/CampaignValidationPanel';
 import { logActivity } from '../../services/activityService';
-// matching the existing pattern found in the file, or if we want to use it, import correctly).
-// The error says "no default export". Let's remove it if it's unused, or fix it.
-// Looking at the code, I don't see campaignService being used in the *restored* functions, 
-// they use localStorage directly. So I will remove the import to fix the unused warning.
+import { syncToSupabase } from '../../services/universalSyncService';
 
 interface CardConfig {
     id: string;
@@ -92,6 +89,12 @@ export default function AdminCampaigns() {
     const [expandedBank, setExpandedBank] = useState<string | null>(null);
     const [expandedCard, setExpandedCard] = useState<string | null>(null);
     const [showArchived, setShowArchived] = useState(false);
+    
+    // Bank and Card Management States
+    const [isAddingBank, setIsAddingBank] = useState(false);
+    const [newBankName, setNewBankName] = useState('');
+    const [isAddingCard, setIsAddingCard] = useState<string | null>(null);
+    const [newCardName, setNewCardName] = useState('');
 
 
 
@@ -360,6 +363,98 @@ export default function AdminCampaigns() {
         setCampaignsMap(newMap);
         localStorage.setItem('campaign_data', JSON.stringify(newMap));
         window.dispatchEvent(new Event('campaigns-updated'));
+    };
+
+    // Bank and Card Management Functions
+    const saveBanksConfig = async (banks: BankConfig[]) => {
+        localStorage.setItem('scraper_config', JSON.stringify(banks));
+        
+        // Universal sync
+        await syncToSupabase('admin_logos', banks, { 
+            action: 'banks_update',
+            count: banks.length
+        });
+        
+        // Dispatch event for other components to update
+        window.dispatchEvent(new Event('storage'));
+        window.dispatchEvent(new Event('campaigns-updated'));
+    };
+
+    const handleAddBank = async () => {
+        if (!newBankName.trim()) return;
+        
+        const id = newBankName.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const newBank: BankConfig = {
+            id,
+            name: newBankName,
+            logo: `https://placehold.co/100x100?text=${newBankName.substring(0, 2).toUpperCase()}`,
+            cards: []
+        };
+        
+        // Exclude the "other_bank" from the saved config
+        const currentBanks = banks.filter(b => b.id !== 'other_bank');
+        const updated = [...currentBanks, newBank];
+        
+        // Update state with the new bank + other_bank
+        setBanks([...updated, {
+            id: 'other_bank',
+            name: 'Diğer / Kategorisiz',
+            logo: 'https://cdn-icons-png.flaticon.com/512/10009/10009968.png',
+            cards: [{ id: 'uncategorized_card', name: 'Tanımsız Kampanyalar' }]
+        }]);
+        
+        await saveBanksConfig(updated);
+        
+        // Activity log
+        logActivity.settings('Bank Added', `New bank added: ${newBankName}`, 'success');
+        
+        setNewBankName('');
+        setIsAddingBank(false);
+        
+        // Auto-expand the new bank
+        setExpandedBank(id);
+    };
+
+    const handleAddCard = async (bankId: string) => {
+        if (!newCardName.trim()) return;
+        
+        const cardId = newCardName.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const newCard: CardConfig = {
+            id: cardId,
+            name: newCardName,
+        };
+
+        // Exclude the "other_bank" from the saved config
+        const currentBanks = banks.filter(b => b.id !== 'other_bank');
+        const updatedBanks = currentBanks.map(bank => {
+            if (bank.id === bankId) {
+                return {
+                    ...bank,
+                    cards: [...bank.cards, newCard]
+                };
+            }
+            return bank;
+        });
+
+        // Update state with the updated banks + other_bank
+        setBanks([...updatedBanks, {
+            id: 'other_bank',
+            name: 'Diğer / Kategorisiz',
+            logo: 'https://cdn-icons-png.flaticon.com/512/10009/10009968.png',
+            cards: [{ id: 'uncategorized_card', name: 'Tanımsız Kampanyalar' }]
+        }]);
+
+        await saveBanksConfig(updatedBanks);
+        
+        // Activity log
+        const bankName = banks.find(b => b.id === bankId)?.name;
+        logActivity.settings('Card Added', `New card added: ${newCardName} to ${bankName}`, 'success');
+        
+        setNewCardName('');
+        setIsAddingCard(null);
+        
+        // Auto-select the new card
+        setExpandedCard(cardId);
     };
 
     const openModal = (campaign: CampaignProps) => {
@@ -659,7 +754,48 @@ export default function AdminCampaigns() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 {/* Left Column: Banks */}
                 <div className="lg:col-span-4 space-y-3">
-                    <h2 className="text-lg font-bold text-gray-800 px-1">Bankalar & Kartlar</h2>
+                    <div className="flex items-center justify-between px-1">
+                        <h2 className="text-lg font-bold text-gray-800">Bankalar & Kartlar</h2>
+                        <button
+                            onClick={() => setIsAddingBank(true)}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors"
+                        >
+                            <Plus size={16} />
+                            Banka Ekle
+                        </button>
+                    </div>
+                    
+                    {/* Add Bank Form */}
+                    {isAddingBank && (
+                        <div className="bg-white p-4 rounded-xl shadow-sm border border-blue-100 animate-in fade-in slide-in-from-top-2">
+                            <div className="flex gap-2 items-center">
+                                <input
+                                    autoFocus
+                                    type="text"
+                                    placeholder="Banka Adı (örn: Garanti BBVA)"
+                                    className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500"
+                                    value={newBankName}
+                                    onChange={e => setNewBankName(e.target.value)}
+                                    onKeyDown={e => e.key === 'Enter' && handleAddBank()}
+                                />
+                                <button 
+                                    onClick={handleAddBank} 
+                                    className="bg-green-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
+                                >
+                                    Kaydet
+                                </button>
+                                <button 
+                                    onClick={() => {
+                                        setIsAddingBank(false);
+                                        setNewBankName('');
+                                    }} 
+                                    className="bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm hover:bg-gray-300 transition-colors"
+                                >
+                                    İptal
+                                </button>
+                            </div>
+                        </div>
+                    )}
                     {banks.length === 0 && (
                         <div className="text-gray-500 italic text-sm p-4 bg-gray-50 rounded-lg">
                             Henüz banka tanımı yok. "Scraper Araçları" sayfasından ekleyebilirsiniz.
@@ -694,7 +830,7 @@ export default function AdminCampaigns() {
                                             <button
                                                 key={card.id}
                                                 onClick={() => setExpandedCard(card.id)}
-                                                className={`w-full flex items-center justify-between px-4 py-3 text-sm transition-all border-b border-gray-100 last:border-0
+                                                className={`w-full flex items-center justify-between px-4 py-3 text-sm transition-all border-b border-gray-100
                                                       ${expandedCard === card.id
                                                         ? 'bg-blue-100 text-blue-800 font-semibold'
                                                         : 'hover:bg-gray-100 text-gray-600'
@@ -718,6 +854,50 @@ export default function AdminCampaigns() {
                                             </button>
                                         );
                                     })}
+                                    
+                                    {/* Add Card Section */}
+                                    {bank.id !== 'other_bank' && (
+                                        <div className="border-t border-gray-200">
+                                            {isAddingCard === bank.id ? (
+                                                <div className="p-3 bg-white">
+                                                    <div className="flex items-center gap-2">
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Kart adı (örn: Bonus Card, Maximum)"
+                                                            value={newCardName}
+                                                            onChange={(e) => setNewCardName(e.target.value)}
+                                                            onKeyDown={(e) => e.key === 'Enter' && handleAddCard(bank.id)}
+                                                            className="flex-1 text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                                                            autoFocus
+                                                        />
+                                                        <button 
+                                                            onClick={() => handleAddCard(bank.id)}
+                                                            className="bg-green-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
+                                                        >
+                                                            Kaydet
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => {
+                                                                setIsAddingCard(null);
+                                                                setNewCardName('');
+                                                            }}
+                                                            className="bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm hover:bg-gray-300 transition-colors"
+                                                        >
+                                                            İptal
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <button
+                                                    onClick={() => setIsAddingCard(bank.id)}
+                                                    className="w-full p-3 text-left text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 transition-colors flex items-center gap-2 bg-gray-50"
+                                                >
+                                                    <Plus size={14} />
+                                                    Yeni Kart Ekle
+                                                </button>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
