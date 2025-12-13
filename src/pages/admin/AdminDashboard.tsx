@@ -55,8 +55,26 @@ export default function AdminDashboard() {
         return saved ? JSON.parse(saved) : [];
     }, []);
 
-    const allCampaigns = useMemo(() => {
-        return campaignService.getAllCampaigns();
+    const [allCampaigns, setAllCampaigns] = useState<any[]>([]);
+
+    // Load campaigns from Supabase (same as homepage)
+    useEffect(() => {
+        const loadCampaigns = async () => {
+            try {
+                // Use fetchCampaigns(true) to get all campaigns including unapproved
+                const campaigns = await campaignService.fetchCampaigns(true);
+                setAllCampaigns(campaigns);
+                console.log(`📊 AdminDashboard loaded ${campaigns.length} campaigns from Supabase`);
+            } catch (error) {
+                console.error('Failed to load campaigns for dashboard:', error);
+                // Fallback to localStorage if Supabase fails
+                const localCampaigns = campaignService.getAllCampaigns();
+                setAllCampaigns(localCampaigns);
+                console.log(`📊 AdminDashboard fallback: ${localCampaigns.length} campaigns from localStorage`);
+            }
+        };
+        
+        loadCampaigns();
     }, [refreshTrigger]);
 
     const metrics = useMemo(() => {

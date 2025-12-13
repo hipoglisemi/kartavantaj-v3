@@ -70,13 +70,14 @@ class UniversalSyncService {
             syncInterval: 5000
         });
 
-        this.registerSyncConfig('admin_campaigns', {
-            tableName: 'admin_universal_data',
-            primaryKey: 'admin_campaigns',
-            autoCreateTable: true,
-            realTimeSync: true,
-            syncInterval: 3000
-        });
+        // DISABLED: admin_campaigns sync to prevent deleted campaigns from reappearing
+        // this.registerSyncConfig('admin_campaigns', {
+        //     tableName: 'admin_universal_data',
+        //     primaryKey: 'admin_campaigns',
+        //     autoCreateTable: true,
+        //     realTimeSync: true,
+        //     syncInterval: 3000
+        // });
 
         this.registerSyncConfig('admin_members', {
             tableName: 'admin_universal_data',

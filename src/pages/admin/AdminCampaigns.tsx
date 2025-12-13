@@ -118,81 +118,9 @@ export default function AdminCampaigns() {
         ]);
         setCampaignsMap(getCampaignsData()); // Load Local Data Immediately (Preserve Bulk Uploads)
 
-        // DISABLED: Cloud-First Loading (Causes deleted campaigns to reappear)
-        // Only load from cloud if localStorage is completely empty
-        const loadFromCloudIfEmpty = async () => {
-            const currentLocalData = getCampaignsData();
-            const hasLocalCampaigns = Object.values(currentLocalData).some(campaigns => 
-                Array.isArray(campaigns) && campaigns.length > 0
-            );
-            
-            if (hasLocalCampaigns) {
-                console.log("Admin: Local campaigns exist, skipping cloud sync to prevent deleted campaigns from reappearing");
-                return;
-            }
-            
-            console.log("Admin: No local campaigns found, loading from cloud...");
-            const currentBanks = getBanksConfig();
-
-            // Inject "General" Bank for UI
-            const otherBank: BankConfig = {
-                id: 'other_bank',
-                name: 'Diğer / Kategorisiz',
-                logo: 'https://cdn-icons-png.flaticon.com/512/10009/10009968.png',
-                cards: [
-                    { id: 'uncategorized_card', name: 'Tanımsız Kampanyalar' }
-                ]
-            };
-
-            setBanks([...currentBanks, otherBank]);
-
-            // Only fetch from cloud if we have no local data
-            const cloudCampaigns = await campaignService.fetchCampaigns(true);
-
-            if (cloudCampaigns.length > 0) {
-                const newMap: Record<string, CampaignProps[]> = {};
-                
-                // Ensure bucket for uncategorized exists
-                newMap['uncategorized_card'] = [];
-
-                // Ensure all card buckets exist
-                currentBanks.forEach(b => b.cards.forEach(c => {
-                    newMap[c.id] = [];
-                }));
-
-                cloudCampaigns.forEach((camp: any) => {
-                    // Find matching card bucket
-                    let targetCardId: string | undefined;
-
-                    // Try to find by cardName
-                    if (camp.cardName) {
-                        for (const bank of currentBanks) {
-                            const match = bank.cards.find(c => c.name === camp.cardName);
-                            if (match) {
-                                targetCardId = match.id;
-                                break;
-                            }
-                        }
-                    }
-
-                    // Fallback to uncategorized
-                    if (!targetCardId) {
-                        targetCardId = 'uncategorized_card';
-                    }
-
-                    // Add to appropriate bucket
-                    if (targetCardId && newMap[targetCardId]) {
-                        newMap[targetCardId].push(camp);
-                    }
-                });
-
-                setCampaignsMap(newMap);
-                localStorage.setItem('campaign_data', JSON.stringify(newMap));
-                console.log("Admin: Loaded", cloudCampaigns.length, "campaigns from cloud");
-            }
-        };
-
-        loadFromCloudIfEmpty();
+        // COMPLETELY DISABLED: Cloud sync to prevent deleted campaigns from reappearing
+        // Only manual sync via "Canlıya Gönder" button
+        console.log("Admin: Cloud sync disabled - using localStorage only to prevent deleted campaigns from reappearing");
 
         // Listen for storage changes in case other tabs update it
         const handleStorage = () => {
@@ -264,11 +192,16 @@ export default function AdminCampaigns() {
             type: 'danger'
         })) {
             const campaign = (campaignsMap[cardId] || []).find(c => c.id === campaignId);
+            console.log(`🗑️ DELETING Campaign ID: ${campaignId} from card: ${cardId}`);
+            console.log(`🗑️ Campaign title: ${campaign?.title}`);
             
             // 1. Delete from localStorage
             const updatedList = (campaignsMap[cardId] || []).filter(c => c.id !== campaignId);
             const newMap = { ...campaignsMap, [cardId]: updatedList };
+            console.log(`🗑️ Updated list length: ${updatedList.length} (was ${(campaignsMap[cardId] || []).length})`);
+            
             updateCampaigns(newMap);
+            console.log(`🗑️ localStorage updated`);
             
             // 2. Delete from Supabase immediately
             const supabaseUrl = localStorage.getItem('sb_url');
@@ -279,25 +212,29 @@ export default function AdminCampaigns() {
                     const { createClient } = await import('@supabase/supabase-js');
                     const supabase = createClient(supabaseUrl, supabaseKey);
                     
+                    console.log(`🗑️ Attempting to delete from Supabase...`);
                     const { error } = await supabase
                         .from('campaigns')
                         .delete()
                         .eq('id', campaignId);
                     
                     if (error) {
-                        console.error('Supabase delete error:', error);
+                        console.error('🚨 Supabase delete error:', error);
                         logActivity.campaign('Campaign Delete Error', `Failed to delete campaign ${campaignId} from Supabase: ${error.message}`, 'error');
                     } else {
-                        console.log(`✅ Campaign ${campaignId} deleted from Supabase`);
+                        console.log(`✅ Campaign ${campaignId} deleted from Supabase successfully`);
                         logActivity.campaign('Campaign Deleted', `Campaign "${campaign?.title || campaignId}" deleted from both localStorage and Supabase`, 'warning');
                     }
                 } catch (error) {
-                    console.error('Supabase delete failed:', error);
+                    console.error('🚨 Supabase delete failed:', error);
                     logActivity.campaign('Campaign Delete Error', `Failed to delete campaign ${campaignId} from Supabase`, 'error');
                 }
             } else {
+                console.log(`⚠️ No Supabase config, localStorage only delete`);
                 logActivity.campaign('Campaign Deleted', `Campaign "${campaign?.title || campaignId}" deleted from ${cardId} (localStorage only)`, 'warning');
             }
+            
+            console.log(`🗑️ Delete operation completed for campaign ${campaignId}`);
         }
     };
 
@@ -708,6 +645,65 @@ export default function AdminCampaigns() {
         }, 1000);
     };
 
+    // Clear Supabase Only Function
+    const handleClearSupabaseOnly = async () => {
+        if (await confirm({
+            title: '🗑️ Supabase Kampanyalarını Temizle',
+            message: 'Bu işlem SADECE Supabase\'deki tüm kampanyaları silecek.\n\nYerel veriler (localStorage) korunacak.\n\nBu işlem geri alınamaz!\n\nEmin misiniz?',
+            confirmText: 'EVET, Supabase\'i Temizle',
+            type: 'warning'
+        })) {
+            const supabaseUrl = localStorage.getItem('sb_url');
+            const supabaseKey = localStorage.getItem('sb_key');
+            
+            if (!supabaseUrl || !supabaseKey) {
+                await alert('❌ Hata: Supabase bağlantı bilgileri bulunamadı!', 'Bağlantı Hatası');
+                return;
+            }
+            
+            try {
+                const { createClient } = await import('@supabase/supabase-js');
+                const supabase = createClient(supabaseUrl, supabaseKey);
+                
+                // Get count first
+                console.log('🔍 Supabase kampanya sayısı kontrol ediliyor...');
+                const { count, error: countError } = await supabase
+                    .from('campaigns')
+                    .select('*', { count: 'exact', head: true });
+                
+                if (countError) {
+                    throw new Error(`Count error: ${countError.message}`);
+                }
+                
+                console.log(`📊 Supabase'de ${count || 0} kampanya bulundu`);
+                
+                if (count && count > 0) {
+                    // Delete all campaigns
+                    console.log('🗑️ Tüm kampanyalar siliniyor...');
+                    const { error: deleteError } = await supabase
+                        .from('campaigns')
+                        .delete()
+                        .neq('id', 0); // Delete all records
+                    
+                    if (deleteError) {
+                        throw new Error(`Delete error: ${deleteError.message}`);
+                    }
+                    
+                    console.log(`✅ ${count} kampanya Supabase'den silindi`);
+                    logActivity.campaign('Supabase Cleared', `${count} campaigns deleted from Supabase only`, 'warning');
+                    
+                    await alert(`✅ Supabase Temizlendi!\n\n${count} kampanya Supabase'den silindi.\n\nYerel veriler korundu.`, 'Temizlik Tamamlandı');
+                } else {
+                    await alert('ℹ️ Supabase zaten boş!\n\nSilinecek kampanya bulunamadı.', 'Bilgi');
+                }
+                
+            } catch (error) {
+                console.error('🚨 Supabase temizleme hatası:', error);
+                await alert(`❌ Hata Oluştu:\n\n${error}`, 'Supabase Hatası');
+            }
+        }
+    };
+
     // Clear ALL Campaign Data Function (Nuclear Option)
     const handleClearAllData = async () => {
         if (await confirm({
@@ -950,6 +946,13 @@ export default function AdminCampaigns() {
                         >
                             <Trash2 size={20} />
                             TÜM Verileri Sıfırla
+                        </button>
+                        <button
+                            onClick={handleClearSupabaseOnly}
+                            className="px-4 py-2 rounded-lg flex items-center gap-2 font-medium text-orange-600 border border-orange-300 hover:bg-orange-50 transition-colors"
+                        >
+                            <CloudUpload size={20} />
+                            Sadece Supabase'i Temizle
                         </button>
                     </div>
                 </div>
