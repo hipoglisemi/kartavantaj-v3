@@ -58,9 +58,9 @@ export default function Header() {
                 alt="KartAvantaj"
                 className="w-auto object-contain drop-shadow-sm transition-all duration-300"
                 style={{
-                  height: `${settings.logo?.height || 48}px`,
-                  // Ensure it fits within 90px header
-                  maxHeight: '80px',
+                  height: `${settings.logo?.height || 75}px`,
+                  // Fill the header more completely
+                  maxHeight: '85px',
                   maxWidth: '100%',
                   opacity: settings.logo?.opacity ?? 1,
                   transform: `translate(${settings.logo?.offsetX || 0}px, ${settings.logo?.offsetY || 0}px)`
