@@ -899,40 +899,7 @@ export default function AdminCampaigns() {
 
     // Removed unused clear functions - auto-sync handles everything now
 
-    // New: Sync to Live Logic
-    const [isSyncing, setIsSyncing] = useState(false);
-
-    const handleSyncToLive = async () => {
-        const url = localStorage.getItem('sb_url');
-        const key = localStorage.getItem('sb_key');
-
-        if (!url || !key) {
-            await alert("Hata: Supabase bağlantı bilgileri eksik. Lütfen 'Ayarlar' sayfasından yapılandırın.", "Bağlantı Hatası");
-            return;
-        }
-
-        if (!await confirm({
-            title: 'Canlıya Gönder',
-            message: 'TÜM yerel kampanya verileri canlı veritabanına (Supabase) aktarılacak ve mevcut canlı verilerin üzerine yazılacaktır. Bu işlem diğer kullanıcılar için içeriği günceller.\n\nEmin misiniz?',
-            confirmText: 'Evet, Yayınla',
-            type: 'warning'
-        })) {
-            return;
-        }
-
-        setIsSyncing(true);
-
-        // Use the service helper
-        const result = await campaignService.syncToSupabase(url, key);
-
-        setIsSyncing(false);
-
-        if (result.success) {
-            await alert(`✅ Başarılı!\n\n${result.count} kampanya canlıya gönderildi.`, "Yayında");
-        } else {
-            await alert(`❌ Hata Oluştu:\n\n${result.error}`, "Senkronizasyon Hatası");
-        }
-    };
+    // Removed manual sync - auto-sync handles everything
 
 
     return (
@@ -979,23 +946,10 @@ export default function AdminCampaigns() {
                         </button>
                         
                         {/* İkinci Sıra - Sync ve Temizlik İşlemleri */}
-                        <button
-                            onClick={handleSyncToLive}
-                            disabled={isSyncing}
-                            className={`px-2 py-1 rounded text-xs flex items-center gap-1 transition-colors justify-center
-                                ${isSyncing
-                                    ? 'bg-gray-400 cursor-not-allowed text-white'
-                                    : 'bg-green-600 hover:bg-green-700 text-white'
-                                }
-                            `}
-                        >
-                            {isSyncing ? (
-                                <Loader2 size={12} className="animate-spin" />
-                            ) : (
-                                <CloudUpload size={12} />
-                            )}
-                            {isSyncing ? 'Sync...' : 'Canlı'}
-                        </button>
+                        <div className="bg-green-100 px-2 py-1 rounded text-xs text-green-700 flex items-center gap-1 justify-center">
+                            <CloudUpload size={12} />
+                            Otomatik
+                        </div>
                         <button
                             onClick={handleClearSupabaseOnly}
                             className="bg-orange-600 text-white px-2 py-1 rounded text-xs flex items-center gap-1 hover:bg-orange-700 transition-colors justify-center"
