@@ -116,11 +116,59 @@ export default function AdminCampaigns() {
                 cards: [{ id: 'uncategorized_card', name: 'Tanımsız Kampanyalar' }]
             }
         ]);
-        setCampaignsMap(getCampaignsData()); // Load Local Data Immediately (Preserve Bulk Uploads)
-
-        // COMPLETELY DISABLED: Cloud sync to prevent deleted campaigns from reappearing
-        // Only manual sync via "Canlıya Gönder" button
-        console.log("Admin: Cloud sync disabled - using localStorage only to prevent deleted campaigns from reappearing");
+        // Load campaigns from Supabase (same as Dashboard and Homepage)
+        const loadCampaignsFromSupabase = async () => {
+            try {
+                console.log("AdminCampaigns: Loading campaigns from Supabase...");
+                const supabaseCampaigns = await campaignService.fetchCampaigns(true); // Include unapproved
+                
+                if (supabaseCampaigns.length > 0) {
+                    // Convert flat array to card-based map
+                    const newMap: Record<string, CampaignProps[]> = {};
+                    
+                    // Initialize all card buckets
+                    const currentBanks = getBanksConfig();
+                    currentBanks.forEach(b => b.cards.forEach(c => {
+                        newMap[c.id] = [];
+                    }));
+                    newMap['uncategorized_card'] = [];
+                    
+                    // Distribute campaigns to appropriate cards
+                    supabaseCampaigns.forEach((campaign: any) => {
+                        let targetCardId = 'uncategorized_card';
+                        
+                        // Try to find matching card by cardName
+                        if (campaign.cardName) {
+                            for (const bank of currentBanks) {
+                                const match = bank.cards.find(c => c.name === campaign.cardName);
+                                if (match) {
+                                    targetCardId = match.id;
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        if (newMap[targetCardId]) {
+                            newMap[targetCardId].push(campaign);
+                        }
+                    });
+                    
+                    setCampaignsMap(newMap);
+                    // Also update localStorage for consistency
+                    localStorage.setItem('campaign_data', JSON.stringify(newMap));
+                    console.log(`AdminCampaigns: Loaded ${supabaseCampaigns.length} campaigns from Supabase`);
+                } else {
+                    console.log("AdminCampaigns: No campaigns found in Supabase, checking localStorage...");
+                    // Fallback to localStorage if Supabase is empty
+                    setCampaignsMap(getCampaignsData());
+                }
+            } catch (error) {
+                console.error("AdminCampaigns: Failed to load from Supabase, using localStorage:", error);
+                setCampaignsMap(getCampaignsData());
+            }
+        };
+        
+        loadCampaignsFromSupabase();
 
         // Listen for storage changes in case other tabs update it
         const handleStorage = () => {
