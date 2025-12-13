@@ -649,6 +649,35 @@ export default function AdminCampaigns() {
         }, 1000);
     };
 
+    // Clear Legacy Data Function
+    const handleClearLegacyData = async () => {
+        if (await confirm({
+            title: 'Eski Verileri Temizle',
+            message: 'Bu işlem eski sistemden kalan kampanya verilerini temizleyecek. Sadece mevcut admin paneli verileri kalacak. Bu işlem geri alınamaz.\n\nEmin misiniz?',
+            confirmText: 'Evet, Temizle',
+            type: 'danger'
+        })) {
+            // Clear legacy campaigns_data
+            localStorage.removeItem('campaigns_data');
+            
+            // Clear any other legacy keys
+            const keysToCheck = ['campaigns', 'legacy_campaigns', 'old_campaigns'];
+            keysToCheck.forEach(key => {
+                if (localStorage.getItem(key)) {
+                    localStorage.removeItem(key);
+                    console.log(`🗑️ Cleared legacy key: ${key}`);
+                }
+            });
+            
+            // Trigger refresh
+            window.dispatchEvent(new Event('campaigns-updated'));
+            
+            logActivity.campaign('Legacy Data Cleared', 'Old campaign data cleared from localStorage', 'warning');
+            
+            await alert('✅ Eski veriler temizlendi!\n\nDashboard ve anasayfa artık sadece mevcut admin paneli verilerini gösterecek.', 'Temizlik Tamamlandı');
+        }
+    };
+
     // New: Sync to Live Logic
     const [isSyncing, setIsSyncing] = useState(false);
 
@@ -742,6 +771,13 @@ export default function AdminCampaigns() {
                                 <CloudUpload size={20} />
                             )}
                             {isSyncing ? 'Gönderiliyor...' : 'Canlıya Gönder'}
+                        </button>
+                        <button
+                            onClick={handleClearLegacyData}
+                            className="px-4 py-2 rounded-lg flex items-center gap-2 font-medium text-red-600 border border-red-200 hover:bg-red-50 transition-colors"
+                        >
+                            <Trash2 size={20} />
+                            Eski Verileri Temizle
                         </button>
                     </div>
                 </div>
