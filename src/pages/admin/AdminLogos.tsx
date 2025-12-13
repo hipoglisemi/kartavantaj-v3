@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Image, Plus, Trash2, Upload, Search } from 'lucide-react';
+import { Image, Plus, Trash2, Upload, Search, Save, XCircle } from 'lucide-react';
 import { logActivity } from '../../services/activityService';
 import { syncToSupabase, loadFromSupabase } from '../../services/universalSyncService';
 
@@ -280,8 +280,30 @@ export default function AdminLogos() {
                         onChange={e => setNewBankName(e.target.value)}
                         onKeyDown={e => e.key === 'Enter' && handleAddBank()}
                     />
-                    <button onClick={handleAddBank} className="bg-green-600 text-white px-4 py-2 rounded-lg font-bold">Kaydet</button>
-                    <button onClick={() => setIsAddingBank(false)} className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg">İptal</button>
+                    <div className="group relative">
+                        <button 
+                            onClick={handleAddBank} 
+                            className="group relative bg-gradient-to-br from-green-500 via-green-600 to-green-700 hover:from-green-600 hover:via-green-700 hover:to-green-800 text-white px-6 py-3 rounded-2xl text-sm font-bold flex items-center gap-2 transition-all duration-500 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-[1.02] border border-green-400/20"
+                        >
+                            <div className="bg-white/20 p-1 rounded-lg backdrop-blur-sm">
+                                <Save size={14} />
+                            </div>
+                            <span>Kaydet</span>
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
+                        </button>
+                    </div>
+                    <div className="group relative">
+                        <button 
+                            onClick={() => setIsAddingBank(false)} 
+                            className="group relative bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 hover:from-gray-200 hover:via-gray-300 hover:to-gray-400 text-gray-700 px-6 py-3 rounded-2xl text-sm font-bold flex items-center gap-2 transition-all duration-500 shadow-lg hover:shadow-xl transform hover:-translate-y-1 hover:scale-[1.02] border border-gray-300/50"
+                        >
+                            <div className="bg-white/50 p-1 rounded-lg backdrop-blur-sm">
+                                <XCircle size={14} />
+                            </div>
+                            <span>İptal</span>
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
+                        </button>
+                    </div>
                 </div>
             )}
 

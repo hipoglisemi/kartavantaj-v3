@@ -132,20 +132,36 @@ export default function AdminNotifications() {
                                     </div>
                                     
                                     <div className="flex items-center gap-3">
-                                        <button
-                                            onClick={() => handleApproveAdmin(admin.email)}
-                                            className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
-                                        >
-                                            <CheckCircle size={16} />
-                                            Onayla
-                                        </button>
-                                        <button
-                                            onClick={() => handleRejectAdmin(admin.email)}
-                                            className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
-                                        >
-                                            <X size={16} />
-                                            Reddet
-                                        </button>
+                                        <div className="group relative">
+                                            <button
+                                                onClick={() => handleApproveAdmin(admin.email)}
+                                                className="group relative bg-gradient-to-br from-green-500 via-green-600 to-green-700 hover:from-green-600 hover:via-green-700 hover:to-green-800 text-white px-5 py-3 rounded-2xl text-sm font-bold flex items-center gap-2 transition-all duration-500 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-[1.02] border border-green-400/20"
+                                            >
+                                                <div className="bg-white/20 p-1 rounded-lg backdrop-blur-sm">
+                                                    <CheckCircle size={14} />
+                                                </div>
+                                                <span>Onayla</span>
+                                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
+                                            </button>
+                                            <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100 bg-green-500 text-white text-xs px-2 py-1 rounded-lg shadow-lg z-10 whitespace-nowrap">
+                                                Admin olarak onayla
+                                            </div>
+                                        </div>
+                                        <div className="group relative">
+                                            <button
+                                                onClick={() => handleRejectAdmin(admin.email)}
+                                                className="group relative bg-gradient-to-br from-red-500 via-red-600 to-red-700 hover:from-red-600 hover:via-red-700 hover:to-red-800 text-white px-5 py-3 rounded-2xl text-sm font-bold flex items-center gap-2 transition-all duration-500 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-[1.02] border border-red-400/20"
+                                            >
+                                                <div className="bg-white/20 p-1 rounded-lg backdrop-blur-sm">
+                                                    <X size={14} />
+                                                </div>
+                                                <span>Reddet</span>
+                                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
+                                            </button>
+                                            <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100 bg-red-500 text-white text-xs px-2 py-1 rounded-lg shadow-lg z-10 whitespace-nowrap">
+                                                Başvuruyu reddet
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
