@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { CheckCircle, XCircle, Save, RefreshCw, UploadCloud } from 'lucide-react';
+import { syncToSupabase, loadFromSupabase } from '../../services/universalSyncService';
 
 type ServiceType = 'supabase' | 'github' | 'vercel' | 'gemini' | 'googleads';
 
@@ -88,8 +89,8 @@ export default function AdminIntegrations() {
     useEffect(() => {
         const loadConfigs = async () => {
             try {
-                // Önce Supabase'den yükle
-                const remoteConfigs = await loadIntegrationsFromSupabase();
+                // Önce Universal sync'den yükle
+                const remoteConfigs = await loadFromSupabase('admin_integrations');
                 
                 if (remoteConfigs) {
                     console.log('🔄 Loading integrations from Supabase');
@@ -109,8 +110,11 @@ export default function AdminIntegrations() {
                     const mergedConfigs = { ...defaultConfigs, ...parsedConfigs };
                     setConfigs(mergedConfigs);
                     
-                    // İlk kez Supabase'e sync et
-                    syncIntegrationsToSupabase(mergedConfigs);
+                    // İlk kez Universal sync'e kaydet
+                    syncToSupabase('admin_integrations', mergedConfigs, { 
+                        action: 'initial_sync',
+                        source: 'localStorage'
+                    });
                 } else {
                 // Load existing keys from localStorage
                 const adConfigStr = localStorage.getItem('ad_config') || '{}';
@@ -150,8 +154,11 @@ export default function AdminIntegrations() {
                 };
                     setConfigs(initialConfigs);
                     
-                    // İlk kez Supabase'e sync et
-                    syncIntegrationsToSupabase(initialConfigs);
+                    // İlk kez Universal sync'e kaydet
+                    syncToSupabase('admin_integrations', initialConfigs, { 
+                        action: 'initial_setup',
+                        source: 'default_config'
+                    });
                 }
             } catch (error) {
                 console.error('Error loading integrations:', error);
@@ -173,8 +180,11 @@ export default function AdminIntegrations() {
         setConfigs(newConfigs);
         localStorage.setItem('adminIntegrations', JSON.stringify(newConfigs));
         
-        // Supabase'e senkronize et
-        syncIntegrationsToSupabase(newConfigs);
+        // Universal sync
+        syncToSupabase('admin_integrations', newConfigs, { 
+            action: 'service_connect',
+            service: service
+        });
 
         // Save individual keys for compatibility
         if (service === 'supabase') {
@@ -213,9 +223,13 @@ export default function AdminIntegrations() {
                 [service]: { ...prev[service], [field]: value, connected: false } // Reset connection on change
             };
             
-            // Auto-save to localStorage and Supabase
+            // Auto-save to localStorage and Universal sync
             localStorage.setItem('adminIntegrations', JSON.stringify(newConfigs));
-            syncIntegrationsToSupabase(newConfigs);
+            syncToSupabase('admin_integrations', newConfigs, { 
+                action: 'field_change',
+                service: service,
+                field: field
+            });
             
             return newConfigs;
         });

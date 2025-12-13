@@ -24,11 +24,13 @@ import AdminNewsletter from './pages/admin/AdminNewsletter';
 import AdminNotifications from './pages/admin/AdminNotifications';
 import AdminSecurity from './pages/admin/AdminSecurity';
 import AdminLogs from './pages/admin/AdminLogs';
+import AdminSystemStatus from './pages/admin/AdminSystemStatus';
 import EmailConfirmation from './pages/EmailConfirmation';
 import ProtectedRoute from './components/ProtectedRoute';
 import NotFound from './pages/NotFound';
 import { settingsService } from './services/settingsService';
 import AdminService from './services/adminService';
+import { universalSync } from './services/universalSyncService';
 
 import ProfileLayout from "./pages/profile/ProfileLayout";
 import { ProfileInfo, ProfileFavorites, ProfileSettings, ProfileWallet } from "./pages/profile/ProfilePages";
@@ -186,6 +188,13 @@ const router = createBrowserRouter([
       { index: true, element: <AdminLogs /> },
     ]
   },
+  {
+    path: "/panel/system-status",
+    element: <ProtectedRoute requireAdmin={true}><AdminLayout /></ProtectedRoute>,
+    children: [
+      { index: true, element: <AdminSystemStatus /> },
+    ]
+  },
 
   {
     path: "/admin/login",
@@ -225,6 +234,9 @@ function AppWrapper() {
   // Gerçek zamanlı senkronizasyon başlat
   React.useEffect(() => {
     try {
+      // Universal sync başlat
+      console.log('🚀 Starting Universal Sync Service');
+      
       // Settings senkronizasyonu başlat
       if (settingsService?.startPeriodicSync) {
         settingsService.startPeriodicSync();
@@ -255,6 +267,10 @@ function AppWrapper() {
           if (adminSubscription?.unsubscribe) {
             adminSubscription.unsubscribe();
           }
+          
+          // Universal sync cleanup
+          universalSync.stopAllSync();
+          console.log('🛑 Universal Sync Service stopped');
         } catch (error) {
           console.warn('Subscription cleanup hatası:', error);
         }

@@ -138,3 +138,43 @@ alter table public.admin_security_settings enable row level security;
 create policy "Enable read access for all users" on public.admin_security_settings for select using (true);
 create policy "Enable insert for all users" on public.admin_security_settings for insert with check (true);
 create policy "Enable update for all users" on public.admin_security_settings for update using (true);
+
+-- 7. UNIVERSAL DATA TABLE
+-- Single table for all admin panel data with automatic schema evolution
+create table public.admin_universal_data (
+  id text PRIMARY KEY,
+  data_type text NOT NULL, -- e.g. 'admin_settings', 'admin_integrations', etc.
+  data_content jsonb NOT NULL DEFAULT '{}'::jsonb, -- The actual data
+  metadata jsonb DEFAULT '{}'::jsonb, -- Sync metadata, version info, etc.
+  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
+  updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
+  updated_by text, -- Admin email who made the change
+  version integer DEFAULT 1, -- For versioning and conflict resolution
+  is_active boolean DEFAULT true -- Soft delete support
+);
+
+-- Indexes for better performance
+create index admin_universal_data_type_idx on public.admin_universal_data (data_type);
+create index admin_universal_data_updated_at_idx on public.admin_universal_data (updated_at);
+create index admin_universal_data_active_idx on public.admin_universal_data (is_active);
+create index admin_universal_data_composite_idx on public.admin_universal_data (data_type, is_active, updated_at);
+
+-- Enable RLS
+alter table public.admin_universal_data enable row level security;
+
+-- UNIVERSAL DATA POLICIES
+create policy "Enable read access for all users" on public.admin_universal_data for select using (true);
+create policy "Enable insert for all users" on public.admin_universal_data for insert with check (true);
+create policy "Enable update for all users" on public.admin_universal_data for update using (true);
+create policy "Enable delete for all users" on public.admin_universal_data for delete using (true);
+
+-- Function to execute dynamic SQL (for auto table creation)
+create or replace function exec_sql(sql text)
+returns void
+language plpgsql
+security definer
+as $$
+begin
+  execute sql;
+end;
+$$;

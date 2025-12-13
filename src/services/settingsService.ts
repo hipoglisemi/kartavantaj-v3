@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { syncToSupabase, loadFromSupabase } from './universalSyncService';
 
 const STORAGE_KEY = 'site_settings';
 
@@ -202,6 +203,12 @@ export const settingsService = {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(newSettings));
         // Mark as dirty (unsaved changes)
         localStorage.setItem('settings_needs_sync', 'true');
+
+        // Universal sync
+        syncToSupabase('admin_settings', newSettings, { 
+            action: 'draft_save',
+            timestamp: new Date().toISOString()
+        });
 
         window.dispatchEvent(new Event('site-settings-changed'));
         

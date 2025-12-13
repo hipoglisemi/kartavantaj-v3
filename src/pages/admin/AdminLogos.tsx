@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Image, Plus, Trash2, Upload, Search } from 'lucide-react';
 import { logActivity } from '../../services/activityService';
+import { syncToSupabase, loadFromSupabase } from '../../services/universalSyncService';
 
 interface CardConfig {
     id: string;
@@ -15,13 +16,13 @@ interface BankConfig {
     cards: CardConfig[];
 }
 
-// Reuse helper for consistency - now with Supabase support
+// Reuse helper for consistency - now with Universal sync support
 const getBanksConfig = async (): Promise<BankConfig[]> => {
-    // Önce Supabase'den yükle
-    const remoteBanks = await loadBanksFromSupabase();
+    // Önce Universal sync'den yükle
+    const remoteBanks = await loadFromSupabase('admin_logos');
     
-    if (remoteBanks && remoteBanks.length > 0) {
-        console.log('🔄 Loading banks from Supabase');
+    if (remoteBanks && Array.isArray(remoteBanks) && remoteBanks.length > 0) {
+        console.log('🔄 Loading banks from Universal sync');
         // localStorage'ı da güncelle
         localStorage.setItem('scraper_config', JSON.stringify(remoteBanks));
         return remoteBanks;
@@ -31,9 +32,12 @@ const getBanksConfig = async (): Promise<BankConfig[]> => {
     const saved = localStorage.getItem('scraper_config');
     const localBanks = saved ? JSON.parse(saved) : [];
     
-    // İlk kez Supabase'e sync et
+    // İlk kez Universal sync'e kaydet
     if (localBanks.length > 0) {
-        await syncBanksToSupabase(localBanks);
+        await syncToSupabase('admin_logos', localBanks, { 
+            action: 'initial_sync',
+            source: 'localStorage'
+        });
     }
     
     return localBanks;
@@ -42,8 +46,11 @@ const getBanksConfig = async (): Promise<BankConfig[]> => {
 const saveBanksConfig = async (banks: BankConfig[]) => {
     localStorage.setItem('scraper_config', JSON.stringify(banks));
     
-    // Supabase'e senkronize et
-    await syncBanksToSupabase(banks);
+    // Universal sync
+    await syncToSupabase('admin_logos', banks, { 
+        action: 'banks_update',
+        count: banks.length
+    });
     
     // Dispatch event for other components to update
     window.dispatchEvent(new Event('storage'));
