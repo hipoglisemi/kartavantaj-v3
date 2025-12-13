@@ -130,11 +130,11 @@ export default function Footer() {
             </div>
           </div>
 
-          <div className="flex justify-center mt-8 mb-0 relative z-10">
+          <div className="flex justify-center items-center mt-8 mb-0 relative z-10 w-full">
             <img
               src="/assets/logo-clean.png"
               alt="Logo"
-              className="object-contain transition-all duration-300"
+              className="object-contain transition-all duration-300 mx-auto"
               style={{
                 height: '60px',
                 opacity: 0.9,
@@ -143,19 +143,19 @@ export default function Footer() {
             />
           </div>
 
-          <div className="border-t border-white/10 pt-6 text-center text-xs text-gray-500">
-            <div className="flex items-center justify-center gap-3 flex-wrap">
-              <span>{settings.footer.copyright || `© ${currentYear} KartAvantaj. Tüm yasal hakları saklıdır.`}</span>
+          <div className="border-t border-white/10 pt-6 text-center">
+            <div className="flex items-center justify-center gap-3 flex-wrap text-xs text-gray-500">
+              <span className="text-xs">{settings.footer.copyright || `© ${currentYear} KartAvantaj. Tüm yasal hakları saklıdır.`}</span>
               <span className="text-gray-600 text-lg">|</span>
               <div className="flex items-center gap-2">
-                <span className="text-[11px]">Kart Avantaj Ekibi tarafından</span>
+                <span className="text-xs">Kart Avantaj Ekibi tarafından</span>
                 <span 
                   className="text-red-500 text-sm hover:scale-125 transition-transform cursor-pointer heartbeat-animation"
                   title="Made with love ❤️"
                 >
                   ❤️
                 </span>
-                <span className="text-[11px]">ile yapıldı</span>
+                <span className="text-xs">ile yapıldı</span>
               </div>
             </div>
           </div>
