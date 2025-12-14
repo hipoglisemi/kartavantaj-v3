@@ -930,154 +930,180 @@ export default function AdminCampaigns() {
                     <p className="text-blue-100 opacity-90 max-w-xl">
                         Mevcut kampanyaları inceleyin. Yayına almak için <strong>"Onayla"</strong> butonunu kullanın.
                     </p>
-                    <div className="grid grid-cols-4 gap-3 mt-6">
+                    <div className="grid grid-cols-3 gap-4 mt-6">
                         {/* 1. URL'den Ekle - Mavi */}
-                        <button
-                            onClick={handleOpenImportModal}
-                            className="group bg-white border border-blue-200 hover:border-blue-300 rounded-xl p-4 transition-all hover:shadow-md"
-                        >
-                            <div className="flex flex-col items-center text-center space-y-2">
-                                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 group-hover:bg-blue-200 transition-colors">
-                                    <Link size={20} />
+                        <div className="group relative">
+                            <button
+                                onClick={handleOpenImportModal}
+                                className="w-full group relative bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 text-white px-3 py-3 rounded-xl text-sm font-bold flex items-center gap-2 transition-all duration-500 shadow-lg hover:shadow-xl transform hover:-translate-y-1 hover:scale-[1.02] border border-blue-400/20"
+                            >
+                                <div className="bg-white/20 p-1.5 rounded-lg backdrop-blur-sm">
+                                    <Link size={16} className="group-hover:rotate-12 transition-transform duration-300" />
                                 </div>
-                                <div>
-                                    <div className="text-sm font-semibold text-gray-900">URL'den Ekle</div>
-                                    <div className="text-xs text-gray-500">AI analiz</div>
+                                <div className="text-left">
+                                    <div className="font-bold text-xs">URL'den Ekle</div>
+                                    <div className="text-[10px] text-blue-100 opacity-90">AI analiz</div>
                                 </div>
-                            </div>
-                        </button>
+                            </button>
+                        </div>
 
                         {/* 2. ID Listesi - Gri */}
-                        <button
-                            onClick={() => setIsIdListModalOpen(true)}
-                            className="group bg-white border border-gray-200 hover:border-gray-300 rounded-xl p-4 transition-all hover:shadow-md"
-                        >
-                            <div className="flex flex-col items-center text-center space-y-2">
-                                <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-gray-600 group-hover:bg-gray-200 transition-colors">
-                                    <Database size={20} />
-                                </div>
-                                <div>
-                                    <div className="text-sm font-semibold text-gray-900">ID Listesi</div>
-                                    <div className="text-xs text-gray-500">Tüm ID'ler</div>
-                                </div>
-                            </div>
-                        </button>
-
                         <div className="group relative">
                             <button
                                 onClick={() => setIsIdListModalOpen(true)}
-                                className="w-full group relative bg-gradient-to-br from-slate-500 via-slate-600 to-slate-700 hover:from-slate-600 hover:via-slate-700 hover:to-slate-800 text-white px-4 py-4 rounded-2xl text-sm font-bold flex items-center gap-3 transition-all duration-500 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-[1.02] border border-slate-400/20"
+                                className="w-full group relative bg-gradient-to-br from-slate-500 via-slate-600 to-slate-700 hover:from-slate-600 hover:via-slate-700 hover:to-slate-800 text-white px-3 py-3 rounded-xl text-sm font-bold flex items-center gap-2 transition-all duration-500 shadow-lg hover:shadow-xl transform hover:-translate-y-1 hover:scale-[1.02] border border-slate-400/20"
                             >
-                                <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
-                                    <Database size={18} className="group-hover:scale-110 transition-transform duration-300" />
+                                <div className="bg-white/20 p-1.5 rounded-lg backdrop-blur-sm">
+                                    <Database size={16} className="group-hover:scale-110 transition-transform duration-300" />
                                 </div>
                                 <div className="text-left">
-                                    <div className="font-bold">ID Listesi</div>
-                                    <div className="text-xs text-slate-100 opacity-90">Tüm kampanya ID'leri</div>
+                                    <div className="font-bold text-xs">ID Listesi</div>
+                                    <div className="text-[10px] text-slate-100 opacity-90">Tüm ID'ler</div>
                                 </div>
-                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
                             </button>
-                            <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100 bg-slate-500 text-white text-xs px-2 py-1 rounded-lg shadow-lg z-10 whitespace-nowrap">
-                                Hangi kampanya hangi ID'ye sahip göster
-                            </div>
                         </div>
 
-                        
+                        {/* 3. Yeni Oluştur - Turuncu */}
                         <div className="group relative">
                             <button
                                 onClick={handleCreateNew}
-                                className="w-full group relative bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 hover:from-orange-600 hover:via-orange-700 hover:to-orange-800 text-white px-4 py-4 rounded-2xl text-sm font-bold flex items-center gap-3 transition-all duration-500 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-[1.02] border border-orange-400/20"
+                                className="w-full group relative bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 hover:from-orange-600 hover:via-orange-700 hover:to-orange-800 text-white px-3 py-3 rounded-xl text-sm font-bold flex items-center gap-2 transition-all duration-500 shadow-lg hover:shadow-xl transform hover:-translate-y-1 hover:scale-[1.02] border border-orange-400/20"
                             >
-                                <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
-                                    <Plus size={18} className="group-hover:rotate-90 transition-transform duration-300" />
+                                <div className="bg-white/20 p-1.5 rounded-lg backdrop-blur-sm">
+                                    <Plus size={16} className="group-hover:rotate-90 transition-transform duration-300" />
                                 </div>
                                 <div className="text-left">
-                                    <div className="font-bold">Yeni Oluştur</div>
-                                    <div className="text-xs text-orange-100 opacity-90">Sıfırdan kampanya</div>
+                                    <div className="font-bold text-xs">Yeni Oluştur</div>
+                                    <div className="text-[10px] text-orange-100 opacity-90">Sıfırdan</div>
                                 </div>
-                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
                             </button>
-                            <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100 bg-purple-500 text-white text-xs px-2 py-1 rounded-lg shadow-lg z-10 whitespace-nowrap">
-                                Sıfırdan yeni kampanya oluştur
-                            </div>
                         </div>
-                        
+
+                        {/* 4. Tekrar Bul - Cyan */}
                         <div className="group relative">
                             <button
                                 onClick={handleFindDuplicates}
-                                className="w-full group relative bg-gradient-to-br from-cyan-500 via-cyan-600 to-cyan-700 hover:from-cyan-600 hover:via-cyan-700 hover:to-cyan-800 text-white px-4 py-4 rounded-2xl text-sm font-bold flex items-center gap-3 transition-all duration-500 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-[1.02] border border-cyan-400/20"
+                                className="w-full group relative bg-gradient-to-br from-cyan-500 via-cyan-600 to-cyan-700 hover:from-cyan-600 hover:via-cyan-700 hover:to-cyan-800 text-white px-3 py-3 rounded-xl text-sm font-bold flex items-center gap-2 transition-all duration-500 shadow-lg hover:shadow-xl transform hover:-translate-y-1 hover:scale-[1.02] border border-cyan-400/20"
                             >
-                                <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
-                                    <Sparkles size={18} className="group-hover:scale-110 transition-transform duration-300" />
+                                <div className="bg-white/20 p-1.5 rounded-lg backdrop-blur-sm">
+                                    <Sparkles size={16} className="group-hover:scale-110 transition-transform duration-300" />
                                 </div>
                                 <div className="text-left">
-                                    <div className="font-bold">Tekrar Bul</div>
-                                    <div className="text-xs text-cyan-100 opacity-90">Duplikasyon temizle</div>
+                                    <div className="font-bold text-xs">Tekrar Bul</div>
+                                    <div className="text-[10px] text-cyan-100 opacity-90">Duplikasyon</div>
                                 </div>
-                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
                             </button>
-                            <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100 bg-cyan-500 text-white text-xs px-2 py-1 rounded-lg shadow-lg z-10 whitespace-nowrap">
-                                Tekrarlayan kampanyaları bul ve temizle
-                            </div>
                         </div>
-                        
-                        {/* İkinci Sıra - Araçlar */}
+
+                        {/* 5. AI İyileştirme - Mor */}
                         <div className="group relative">
                             <button
                                 onClick={handleBatchAI}
-                                className="w-full group relative bg-gradient-to-br from-indigo-500 via-indigo-600 to-indigo-700 hover:from-indigo-600 hover:via-indigo-700 hover:to-indigo-800 text-white px-4 py-4 rounded-2xl text-sm font-bold flex items-center gap-3 transition-all duration-500 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-[1.02] border border-indigo-400/20"
+                                className="w-full group relative bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 hover:from-purple-600 hover:via-purple-700 hover:to-purple-800 text-white px-3 py-3 rounded-xl text-sm font-bold flex items-center gap-2 transition-all duration-500 shadow-lg hover:shadow-xl transform hover:-translate-y-1 hover:scale-[1.02] border border-purple-400/20"
                             >
-                                <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
-                                    <Sparkles size={18} className="group-hover:animate-pulse" />
+                                <div className="bg-white/20 p-1.5 rounded-lg backdrop-blur-sm">
+                                    <Sparkles size={16} className="group-hover:animate-pulse" />
                                 </div>
                                 <div className="text-left">
-                                    <div className="font-bold">AI İyileştir</div>
-                                    <div className="text-xs text-indigo-100 opacity-90">Toplu zenginleştir</div>
+                                    <div className="font-bold text-xs">AI İyileştir</div>
+                                    <div className="text-[10px] text-purple-100 opacity-90">Toplu</div>
                                 </div>
-                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
                             </button>
-                            <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100 bg-indigo-500 text-white text-xs px-2 py-1 rounded-lg shadow-lg z-10 whitespace-nowrap">
-                                Mevcut kampanyaları AI ile zenginleştir ve iyileştir
-                            </div>
                         </div>
-                        
+
+                        {/* 6. Toplu Yükleme - Yeşil */}
+                        <div className="group relative">
+                            <button
+                                onClick={() => window.location.href = '/panel/bulk-upload'}
+                                className="w-full group relative bg-gradient-to-br from-green-500 via-green-600 to-green-700 hover:from-green-600 hover:via-green-700 hover:to-green-800 text-white px-3 py-3 rounded-xl text-sm font-bold flex items-center gap-2 transition-all duration-500 shadow-lg hover:shadow-xl transform hover:-translate-y-1 hover:scale-[1.02] border border-green-400/20"
+                            >
+                                <div className="bg-white/20 p-1.5 rounded-lg backdrop-blur-sm">
+                                    <CloudUpload size={16} className="group-hover:scale-110 transition-transform duration-300" />
+                                </div>
+                                <div className="text-left">
+                                    <div className="font-bold text-xs">Toplu Yükleme</div>
+                                    <div className="text-[10px] text-green-100 opacity-90">Excel/JSON</div>
+                                </div>
+                            </button>
+                        </div>
+
+                        {/* 7. Ayarlar - İndigo */}
+                        <div className="group relative">
+                            <button
+                                onClick={() => window.location.href = '/panel/design'}
+                                className="w-full group relative bg-gradient-to-br from-indigo-500 via-indigo-600 to-indigo-700 hover:from-indigo-600 hover:via-indigo-700 hover:to-indigo-800 text-white px-3 py-3 rounded-xl text-sm font-bold flex items-center gap-2 transition-all duration-500 shadow-lg hover:shadow-xl transform hover:-translate-y-1 hover:scale-[1.02] border border-indigo-400/20"
+                            >
+                                <div className="bg-white/20 p-1.5 rounded-lg backdrop-blur-sm">
+                                    <Settings size={16} className="group-hover:rotate-180 transition-transform duration-500" />
+                                </div>
+                                <div className="text-left">
+                                    <div className="font-bold text-xs">Ayarlar</div>
+                                    <div className="text-[10px] text-indigo-100 opacity-90">Site tasarım</div>
+                                </div>
+                            </button>
+                        </div>
+
+                        {/* 8. Yedekleme - Kırmızı */}
+                        <div className="group relative">
+                            <button
+                                onClick={() => window.location.href = '/panel/backup'}
+                                className="w-full group relative bg-gradient-to-br from-red-500 via-red-600 to-red-700 hover:from-red-600 hover:via-red-700 hover:to-red-800 text-white px-3 py-3 rounded-xl text-sm font-bold flex items-center gap-2 transition-all duration-500 shadow-lg hover:shadow-xl transform hover:-translate-y-1 hover:scale-[1.02] border border-red-400/20"
+                            >
+                                <div className="bg-white/20 p-1.5 rounded-lg backdrop-blur-sm">
+                                    <Database size={16} className="group-hover:scale-110 transition-transform duration-300" />
+                                </div>
+                                <div className="text-left">
+                                    <div className="font-bold text-xs">Yedekleme</div>
+                                    <div className="text-[10px] text-red-100 opacity-90">Backup</div>
+                                </div>
+                            </button>
+                        </div>
+
+                        {/* 9. Cloud Temizle - Amber */}
                         <div className="group relative">
                             <button
                                 onClick={handleClearSupabaseOnly}
-                                className="w-full group relative bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 hover:from-orange-600 hover:via-orange-700 hover:to-orange-800 text-white px-4 py-4 rounded-2xl text-sm font-bold flex items-center gap-3 transition-all duration-500 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-[1.02] border border-orange-400/20"
+                                className="w-full group relative bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 hover:from-amber-600 hover:via-amber-700 hover:to-amber-800 text-white px-3 py-3 rounded-xl text-sm font-bold flex items-center gap-2 transition-all duration-500 shadow-lg hover:shadow-xl transform hover:-translate-y-1 hover:scale-[1.02] border border-amber-400/20"
                             >
-                                <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
-                                    <CloudUpload size={18} className="group-hover:scale-110 transition-transform duration-300" />
+                                <div className="bg-white/20 p-1.5 rounded-lg backdrop-blur-sm">
+                                    <CloudUpload size={16} className="group-hover:scale-110 transition-transform duration-300" />
                                 </div>
                                 <div className="text-left">
-                                    <div className="font-bold">Cloud Temizle</div>
-                                    <div className="text-xs text-orange-100 opacity-90">Supabase sıfırla</div>
+                                    <div className="font-bold text-xs">Cloud Temizle</div>
+                                    <div className="text-[10px] text-amber-100 opacity-90">Supabase sıfırla</div>
                                 </div>
-                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
                             </button>
-                            <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100 bg-orange-500 text-white text-xs px-2 py-1 rounded-lg shadow-lg z-10 whitespace-nowrap">
-                                Sadece Supabase'deki kampanyaları temizle (yerel veriler korunur)
+                        </div>
+
+                        {/* 10-12. Gelecek özellikler için boş kutular */}
+
+                        <div className="bg-gray-50 border border-dashed border-gray-300 rounded-xl p-3 flex items-center justify-center">
+                            <div className="text-center">
+                                <div className="w-8 h-8 bg-gray-200 rounded-lg flex items-center justify-center text-gray-400 mx-auto mb-1">
+                                    <Plus size={14} />
+                                </div>
+                                <div className="text-[10px] text-gray-400">Yakında</div>
                             </div>
                         </div>
-                        
-                        {/* Sync Durumu Göstergisi */}
-                        <div className="group relative">
-                            <div className="w-full relative bg-gradient-to-br from-green-50 via-green-100 to-green-200 border-2 border-green-300/50 px-4 py-4 rounded-2xl text-sm font-bold flex items-center gap-3 shadow-lg backdrop-blur-sm">
-                                <div className="bg-green-500/20 p-2 rounded-xl backdrop-blur-sm">
-                                    <div className="w-4 h-4 bg-green-500 rounded-full animate-pulse shadow-lg relative">
-                                        <div className="absolute inset-0 bg-green-400 rounded-full animate-ping opacity-75"></div>
-                                    </div>
+
+                        <div className="bg-gray-50 border border-dashed border-gray-300 rounded-xl p-3 flex items-center justify-center">
+                            <div className="text-center">
+                                <div className="w-8 h-8 bg-gray-200 rounded-lg flex items-center justify-center text-gray-400 mx-auto mb-1">
+                                    <Plus size={14} />
                                 </div>
-                                <div className="text-left">
-                                    <div className="text-green-800 font-bold">Sync Aktif</div>
-                                    <div className="text-xs text-green-600 opacity-90">Otomatik kayıt</div>
-                                </div>
-                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-green-200/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
-                            </div>
-                            <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100 bg-green-500 text-white text-xs px-2 py-1 rounded-lg shadow-lg z-10 whitespace-nowrap">
-                                Otomatik senkronizasyon - Kampanyalar otomatik Supabase'e kaydediliyor
+                                <div className="text-[10px] text-gray-400">Yakında</div>
                             </div>
                         </div>
+
+                        <div className="bg-gray-50 border border-dashed border-gray-300 rounded-xl p-3 flex items-center justify-center">
+                            <div className="text-center">
+                                <div className="w-8 h-8 bg-gray-200 rounded-lg flex items-center justify-center text-gray-400 mx-auto mb-1">
+                                    <Plus size={14} />
+                                </div>
+                                <div className="text-[10px] text-gray-400">Yakında</div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
                 <div className="absolute right-0 top-0 h-full w-1/3 opacity-5">
