@@ -269,8 +269,10 @@ function AppWrapper() {
           }
           
           // Universal sync cleanup
-          universalSync.stopAllSync();
-          console.log('🛑 Universal Sync Service stopped');
+          if (universalSync && typeof universalSync.stopAllSync === 'function') {
+            universalSync.stopAllSync();
+            console.log('🛑 Universal Sync Service stopped');
+          }
         } catch (error) {
           console.warn('Subscription cleanup hatası:', error);
         }

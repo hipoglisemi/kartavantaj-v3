@@ -11,17 +11,28 @@ interface SyncConfig {
 
 
 class UniversalSyncService {
+    private static instance: UniversalSyncService | null = null;
     private supabase: any = null;
     private syncConfigs: Map<string, SyncConfig> = new Map();
     private syncIntervals: Map<string, NodeJS.Timeout> = new Map();
     private realtimeSubscriptions: Map<string, any> = new Map();
+    private isInitialized = false;
 
     constructor() {
+        // Singleton pattern - prevent multiple instances
+        if (UniversalSyncService.instance) {
+            console.warn('⚠️ Multiple UniversalSyncService instances detected - using existing instance');
+            return UniversalSyncService.instance;
+        }
+        
+        UniversalSyncService.instance = this;
         this.initializeSupabase();
         this.setupDefaultConfigs();
     }
 
     private async initializeSupabase() {
+        if (this.isInitialized) return;
+        
         try {
             const supabaseUrl = localStorage.getItem('sb_url');
             const supabaseKey = localStorage.getItem('sb_key');
@@ -31,6 +42,7 @@ class UniversalSyncService {
                 this.supabase = createClient(supabaseUrl, supabaseKey);
                 console.log('✅ Universal Sync Service initialized');
             }
+            this.isInitialized = true;
         } catch (error) {
             console.error('Failed to initialize Universal Sync Service:', error);
         }
@@ -319,10 +331,21 @@ class UniversalSyncService {
 
         // Real-time subscriptions'ı kapat
         this.realtimeSubscriptions.forEach((subscription, key) => {
-            subscription.unsubscribe();
-            console.log(`🔴 Stopped real-time sync for ${key}`);
+            if (subscription && typeof subscription.unsubscribe === 'function') {
+                subscription.unsubscribe();
+                console.log(`🔴 Stopped real-time sync for ${key}`);
+            }
         });
         this.realtimeSubscriptions.clear();
+    }
+
+    // Cleanup method for proper disposal
+    cleanup() {
+        this.stopAllSync();
+        this.syncConfigs.clear();
+        this.supabase = null;
+        this.isInitialized = false;
+        UniversalSyncService.instance = null;
     }
 
     // Sistem durumu
@@ -336,8 +359,15 @@ class UniversalSyncService {
     }
 }
 
-// Global instance
-export const universalSync = new UniversalSyncService();
+// Global instance - Singleton
+let universalSyncInstance: UniversalSyncService | null = null;
+
+export const universalSync = (() => {
+    if (!universalSyncInstance) {
+        universalSyncInstance = new UniversalSyncService();
+    }
+    return universalSyncInstance;
+})();
 
 // Helper fonksiyonlar
 export const syncToSupabase = (dataKey: string, data: any, metadata?: any) => {
